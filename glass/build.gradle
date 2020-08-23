@@ -1,0 +1,55 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion "Google Inc.:Glass Development Kit Preview:19"
+    buildToolsVersion "27.0.3"
+    defaultConfig {
+        applicationId "com.damn.anotherglass.host"
+        minSdkVersion 19
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.google.apis:google-api-services-oauth2:v1-rev139-1.23.0'
+    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.squareup.moshi:moshi:1.5.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
+    implementation 'com.squareup.retrofit2:converter-moshi:2.0.2'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.12.0'
+    implementation 'com.squareup.okhttp3:okhttp-urlconnection:3.9.0'
+    // Android SDK does not fork for number of reasons
+    //implementation 'com.uber.sdk:uber-rides:0.5.3'
+    implementation project(path: ':shared')
+}
+
+/**
+ * Loads property from gradle.properties and ~/.gradle/gradle.properties
+ * Use to look up confidential information like keys that shoudln't be stored publicly
+ * @param name to lookup
+ * @return the value of the property
+ */
+def loadSecret(String name) {
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    return properties.hasProperty(name) ? properties.getProperty(name) : "MISSING"
+}
