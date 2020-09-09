@@ -30,26 +30,5 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.google.apis:google-api-services-oauth2:v1-rev139-1.23.0'
     implementation 'com.squareup.picasso:picasso:2.71828'
-    implementation 'com.squareup.moshi:moshi:1.5.0'
-    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
-    implementation 'com.squareup.retrofit2:converter-moshi:2.0.2'
-    implementation 'com.squareup.okhttp3:logging-interceptor:3.9.0'
-    implementation 'com.squareup.okhttp3:okhttp:3.12.0'
-    implementation 'com.squareup.okhttp3:okhttp-urlconnection:3.9.0'
-    // Android SDK does not fork for number of reasons
-    //implementation 'com.uber.sdk:uber-rides:0.5.3'
-    implementation project(path: ':shared')
-}
-
-/**
- * Loads property from gradle.properties and ~/.gradle/gradle.properties
- * Use to look up confidential information like keys that shoudln't be stored publicly
- * @param name to lookup
- * @return the value of the property
- */
-def loadSecret(String name) {
-    Properties properties = new Properties()
-    properties.load(project.rootProject.file('local.properties').newDataInputStream())
-    return properties.hasProperty(name) ? properties.getProperty(name) : "MISSING"
+    implementation project(':shared')
 }

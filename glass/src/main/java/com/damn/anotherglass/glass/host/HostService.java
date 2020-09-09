@@ -14,9 +14,12 @@ import com.damn.anotherglass.glass.host.bluetooth.BluetoothHost;
 import com.damn.anotherglass.glass.host.gps.MockGPS;
 import com.damn.anotherglass.glass.host.ui.ICardViewProvider;
 import com.damn.anotherglass.glass.host.ui.MapCard;
+import com.damn.anotherglass.glass.host.wifi.WiFiActivity;
 import com.damn.shared.gps.GPSServiceAPI;
 import com.damn.shared.gps.Location;
 import com.damn.shared.RPCMessage;
+import com.damn.shared.wifi.WiFiAPI;
+import com.damn.shared.wifi.WiFiConfiguration;
 import com.google.android.glass.timeline.LiveCard;
 import com.google.android.glass.timeline.LiveCard.PublishMode;
 import com.google.android.glass.widget.CardBuilder;
@@ -94,6 +97,10 @@ public class HostService extends Service {
         if(GPSServiceAPI.ID.equals(data.service)) {
             if(data.type.equals(Location.class.getName()))
                 mGPS.publish((Location)data.payload);
+        }
+        else if(WiFiAPI.ID.equals(data.service)) {
+            if(data.type.equals(WiFiConfiguration.class.getName()))
+                WiFiActivity.start(this, (WiFiConfiguration) data.payload);
         }
     }
 

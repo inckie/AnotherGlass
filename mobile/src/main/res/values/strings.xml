@@ -3,4 +3,9 @@
     <string name="msg_send_failed">Send failed</string>
     <string name="btn_stop">Stop</string>
     <string name="notification_channel_state">AnotherGlass Service</string>
+    <string name="lbl_enable_gps">Enable GPS</string>
+    <string name="btn_connect_wifi">Setup WiFi connection</string>
+    <string name="lbl_ssid">SSID</string>
+    <string name="lbl_password">Password</string>
+    <string name="lbl_enable_service">Enable service</string>
 </resources>

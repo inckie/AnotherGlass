@@ -11,7 +11,7 @@ import com.damn.shared.gps.GPSServiceAPI;
 import com.damn.shared.RPCMessage;
 
 @SuppressLint("MissingPermission")
-public class GPSService implements LocationListener{
+public class GPSService implements LocationListener {
 
     private final GlassService service;
     private final LocationManager locationManager;
@@ -19,7 +19,10 @@ public class GPSService implements LocationListener{
     public GPSService(final GlassService service) {
         this.service = service;
         locationManager = (LocationManager) service.getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) this);
+    }
+
+    public void start() {
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
     }
 
     public void stop() {

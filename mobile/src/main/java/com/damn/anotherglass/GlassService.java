@@ -1,5 +1,6 @@
 package com.damn.anotherglass;
 
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -7,6 +8,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
@@ -14,7 +17,12 @@ import android.util.Log;
 
 import com.damn.shared.RPCMessage;
 
-public class GlassService extends Service {
+import java.util.List;
+
+public class GlassService
+        extends Service
+        implements SharedPreferences.OnSharedPreferenceChangeListener {
+
     private static final int NOTIFICATION_ID = 10101;
 
     private static final String sCHANNEL_DEFAULT = "CHANNEL_DEFAULT";
@@ -25,6 +33,10 @@ public class GlassService extends Service {
     private BluetoothClient mClient;
     private GPSService mGPS;
     private NotificationManager mNM;
+
+    private final IBinder mBinder = new LocalBinder();
+
+    private Settings mSettings;
 
     public GlassService() {
     }
@@ -43,7 +55,11 @@ public class GlassService extends Service {
             }
         };
         mClient.start();
+        mSettings = new Settings(this);
+        mSettings.registerListener(this);
         mGPS = new GPSService(this);
+        if(mSettings.isGPSEnabled())
+            mGPS.start();
     }
 
     @Override
@@ -65,6 +81,7 @@ public class GlassService extends Service {
 
     @Override
     public void onDestroy() {
+        mSettings.unregisterListener(this);
         mGPS.stop();
         mClient.stop();
         super.onDestroy();
@@ -110,8 +127,41 @@ public class GlassService extends Service {
         return builder.build();
     }
 
+    public class LocalBinder extends Binder {
+        public GlassService getService() {
+            return GlassService.this;
+        }
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return mBinder;
+    }
+
+    public static boolean isRunning(Context context) {
+        final ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        final List<ActivityManager.RunningServiceInfo> services = activityManager.getRunningServices(Integer.MAX_VALUE);
+
+        final String pkgname = context.getPackageName();
+        final String srvname = GlassService.class.getName();
+
+        for (ActivityManager.RunningServiceInfo info : services) {
+            if (pkgname.equals(info.service.getPackageName()))
+                if (srvname.equals(info.service.getClassName()))
+                    if (info.started)
+                        return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if(Settings.GPS_ENABLED.equals(key)) {
+            if(mSettings.isGPSEnabled())
+                mGPS.start();
+            else
+                mGPS.stop();
+        }
     }
 }

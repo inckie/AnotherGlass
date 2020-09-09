@@ -3,13 +3,32 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
     android:orientation="vertical"
+    android:padding="@dimen/activity_padding"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/bnt_start"
-        android:layout_width="wrap_content"
+    <Switch
+        android:id="@+id/toggle_service"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Start" />
+        android:text="@string/lbl_enable_service" />
+
+    <LinearLayout
+        android:id="@+id/cnt_controls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Switch
+            android:id="@+id/toggle_gps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/lbl_enable_gps" />
+
+        <Button
+            android:id="@+id/btn_connect_wifi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_connect_wifi" />
+    </LinearLayout>
 </LinearLayout>
