@@ -19,8 +19,8 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 
-import com.damn.shared.Constants;
-import com.damn.shared.RPCMessage;
+import com.damn.anotherglass.shared.Constants;
+import com.damn.anotherglass.shared.RPCMessage;
 
 
 public abstract class BluetoothHost {

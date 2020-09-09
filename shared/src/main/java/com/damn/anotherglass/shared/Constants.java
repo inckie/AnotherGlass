@@ -1,4 +1,4 @@
-package com.damn.shared;
+package com.damn.anotherglass.shared;
 
 import java.util.UUID;
 

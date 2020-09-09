@@ -15,7 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import com.damn.shared.RPCMessage;
+import com.damn.anotherglass.shared.RPCMessage;
 
 import java.util.List;
 

@@ -55,7 +55,7 @@ public class MockGPS {
         }
     }
 
-    public void publish(@NonNull com.damn.shared.gps.Location location) {
+    public void publish(@NonNull com.damn.anotherglass.shared.gps.Location location) {
         if (null == locationManager) {
             return;
         }

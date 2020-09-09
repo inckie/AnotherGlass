@@ -10,7 +10,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.damn.anotherglass.glass.host.R;
-import com.damn.shared.wifi.WiFiConfiguration;
+import com.damn.anotherglass.shared.wifi.WiFiConfiguration;
 import com.google.android.glass.widget.CardBuilder;
 
 public class WiFiActivity extends Activity {

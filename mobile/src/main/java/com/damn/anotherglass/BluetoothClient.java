@@ -6,8 +6,8 @@ import android.bluetooth.BluetoothSocket;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.damn.shared.Constants;
-import com.damn.shared.RPCMessage;
+import com.damn.anotherglass.shared.Constants;
+import com.damn.anotherglass.shared.RPCMessage;
 
 import java.io.IOException;
 import java.io.InputStream;

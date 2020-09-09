@@ -19,9 +19,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Switch;
 
-import com.damn.shared.RPCMessage;
-import com.damn.shared.wifi.WiFiAPI;
-import com.damn.shared.wifi.WiFiConfiguration;
+import com.damn.anotherglass.shared.RPCMessage;
+import com.damn.anotherglass.shared.wifi.WiFiAPI;
+import com.damn.anotherglass.shared.wifi.WiFiConfiguration;
 
 
 public class MainActivity extends AppCompatActivity {

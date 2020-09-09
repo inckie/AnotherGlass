@@ -7,8 +7,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
-import com.damn.shared.gps.GPSServiceAPI;
-import com.damn.shared.RPCMessage;
+import com.damn.anotherglass.shared.gps.GPSServiceAPI;
+import com.damn.anotherglass.shared.RPCMessage;
 
 @SuppressLint("MissingPermission")
 public class GPSService implements LocationListener {
@@ -31,7 +31,7 @@ public class GPSService implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        com.damn.shared.gps.Location loc = new com.damn.shared.gps.Location();
+        com.damn.anotherglass.shared.gps.Location loc = new com.damn.anotherglass.shared.gps.Location();
         loc.accuracy = location.getAccuracy();
         loc.latitude = location.getLatitude();
         loc.longitude = location.getLongitude();

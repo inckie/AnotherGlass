@@ -1,4 +1,4 @@
-package com.damn.shared.wifi;
+package com.damn.anotherglass.shared.wifi;
 
 import java.io.Serializable;
 

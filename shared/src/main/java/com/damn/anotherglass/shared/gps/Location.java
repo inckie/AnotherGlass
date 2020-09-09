@@ -1,4 +1,4 @@
-package com.damn.shared.gps;
+package com.damn.anotherglass.shared.gps;
 
 import java.io.Serializable;
 
