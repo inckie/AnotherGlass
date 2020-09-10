@@ -73,6 +73,8 @@ public class HostService extends Service {
                 @Override
                 public void onConnectionStarted(@NonNull String device) {
                     Toast.makeText(HostService.this, device, Toast.LENGTH_SHORT).show();
+                    // map can take a while or not show t all if GPS is off, so show status
+                    displayStatusCard(getString(R.string.msg_connected_to_s, device));
                     mCardProvider = new MapCard(mLiveCard, HostService.this);
                 }
 
