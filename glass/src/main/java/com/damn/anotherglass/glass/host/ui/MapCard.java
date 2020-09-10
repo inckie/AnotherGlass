@@ -145,7 +145,7 @@ public class MapCard extends ICardViewProvider implements LocationListener {
         return String.format(
                 Locale.getDefault(),
                 "https://static-maps.yandex.ru/1.x/?lang=en_US" +
-                        "&size=640,360&z=12&l=map&pt=" +
+                        "&size=640,360&z=15&l=map&pt=" +
                         "%f,%f" +
                         ",pm2rdl",
                 location.getLongitude(), location.getLatitude());
