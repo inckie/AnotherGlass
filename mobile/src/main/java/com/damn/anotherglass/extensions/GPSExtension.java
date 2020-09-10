@@ -1,4 +1,4 @@
-package com.damn.anotherglass;
+package com.damn.anotherglass.extensions;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -7,6 +7,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
+import com.damn.anotherglass.core.GlassService;
 import com.damn.anotherglass.shared.RPCMessage;
 import com.damn.anotherglass.shared.gps.GPSServiceAPI;
 

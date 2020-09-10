@@ -1,4 +1,4 @@
-package com.damn.anotherglass.notifications;
+package com.damn.anotherglass.extensions.notifications;
 
 import android.app.Notification;
 import android.content.Context;

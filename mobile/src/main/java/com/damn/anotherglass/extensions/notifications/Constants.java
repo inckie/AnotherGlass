@@ -1,4 +1,4 @@
-package com.damn.anotherglass.notifications;
+package com.damn.anotherglass.extensions.notifications;
 
 public class Constants {
     public static final String ACTION = "com.damn.anotherglass.notification";

@@ -1,4 +1,4 @@
-package com.damn.anotherglass;
+package com.damn.anotherglass.core;
 
 import android.content.Context;
 import android.content.SharedPreferences;

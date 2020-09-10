@@ -1,4 +1,4 @@
-package com.damn.anotherglass;
+package com.damn.anotherglass.ui;
 
 import android.Manifest;
 import android.content.ComponentName;
@@ -22,7 +22,10 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
 
-import com.damn.anotherglass.notifications.NotificationService;
+import com.damn.anotherglass.R;
+import com.damn.anotherglass.core.GlassService;
+import com.damn.anotherglass.core.Settings;
+import com.damn.anotherglass.extensions.notifications.NotificationService;
 import com.damn.anotherglass.shared.RPCMessage;
 import com.damn.anotherglass.shared.wifi.WiFiAPI;
 import com.damn.anotherglass.shared.wifi.WiFiConfiguration;
@@ -199,13 +202,13 @@ public class MainActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
     private void askEnableNotificationService() {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setTitle(R.string.msg_notification_listener_service_title);
-        alertDialogBuilder.setMessage(R.string.notification_listener_service_message);
-        alertDialogBuilder.setPositiveButton(android.R.string.yes, (dialog, id) ->
-                startActivity(new Intent(ACTION_NOTIFICATION_LISTENER_SETTINGS)));
-        alertDialogBuilder.setNegativeButton(android.R.string.no, null);
-        alertDialogBuilder.create().show();
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.msg_notification_listener_service_title)
+                .setMessage(R.string.notification_listener_service_message)
+                .setPositiveButton(android.R.string.yes, (dialog, id) ->
+                        startActivity(new Intent(ACTION_NOTIFICATION_LISTENER_SETTINGS)))
+                .setNegativeButton(android.R.string.no, null)
+                .show();
     }
 
     private class GlassServiceConnection implements ServiceConnection {

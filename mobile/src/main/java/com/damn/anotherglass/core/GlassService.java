@@ -1,4 +1,4 @@
-package com.damn.anotherglass;
+package com.damn.anotherglass.core;
 
 import android.app.ActivityManager;
 import android.app.Notification;
@@ -15,7 +15,10 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import com.damn.anotherglass.notifications.NotificationExtension;
+import com.damn.anotherglass.ui.MainActivity;
+import com.damn.anotherglass.R;
+import com.damn.anotherglass.extensions.GPSExtension;
+import com.damn.anotherglass.extensions.notifications.NotificationExtension;
 import com.damn.anotherglass.shared.RPCMessage;
 
 import java.util.List;

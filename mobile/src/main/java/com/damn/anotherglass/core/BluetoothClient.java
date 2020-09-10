@@ -1,4 +1,4 @@
-package com.damn.anotherglass;
+package com.damn.anotherglass.core;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -43,8 +43,10 @@ public class BluetoothClient {
                     return;
                 for (BluetoothDevice device : pairedDevices) {
                     final String deviceName = device.getName();
-                    if (deviceName.contains(GLASS_BT_NAME_MARKER))
+                    if (deviceName.contains(GLASS_BT_NAME_MARKER)) {
                         runLoop(device);
+                        break;
+                    }
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Connection exception", e);

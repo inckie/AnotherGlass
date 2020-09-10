@@ -1,4 +1,4 @@
-package com.damn.anotherglass.notifications;
+package com.damn.anotherglass.extensions.notifications;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.service.notification.StatusBarNotification;
 
-import com.damn.anotherglass.GlassService;
+import com.damn.anotherglass.core.GlassService;
 import com.damn.anotherglass.shared.RPCMessage;
 import com.damn.anotherglass.shared.notifications.NotificationData;
 import com.damn.anotherglass.shared.notifications.NotificationsAPI;
