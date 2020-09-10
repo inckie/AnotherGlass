@@ -15,9 +15,11 @@ import com.damn.anotherglass.glass.host.gps.MockGPS;
 import com.damn.anotherglass.glass.host.ui.ICardViewProvider;
 import com.damn.anotherglass.glass.host.ui.MapCard;
 import com.damn.anotherglass.glass.host.wifi.WiFiActivity;
+import com.damn.anotherglass.shared.RPCMessage;
 import com.damn.anotherglass.shared.gps.GPSServiceAPI;
 import com.damn.anotherglass.shared.gps.Location;
-import com.damn.anotherglass.shared.RPCMessage;
+import com.damn.anotherglass.shared.notifications.NotificationData;
+import com.damn.anotherglass.shared.notifications.NotificationsAPI;
 import com.damn.anotherglass.shared.wifi.WiFiAPI;
 import com.damn.anotherglass.shared.wifi.WiFiConfiguration;
 import com.google.android.glass.timeline.LiveCard;
@@ -103,6 +105,12 @@ public class HostService extends Service {
         else if(WiFiAPI.ID.equals(data.service)) {
             if(data.type.equals(WiFiConfiguration.class.getName()))
                 WiFiActivity.start(this, (WiFiConfiguration) data.payload);
+        }
+        else if(NotificationsAPI.ID.equals(data.service)) {
+            if(data.type.equals(NotificationData.class.getName())) {
+                NotificationData notificationData = (NotificationData) data.payload;
+                displayStatusCard(notificationData.packageName);
+            }
         }
     }
 

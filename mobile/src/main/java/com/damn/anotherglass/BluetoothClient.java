@@ -32,6 +32,7 @@ public class BluetoothClient {
         private final BlockingQueue<RPCMessage> mQueue = new LinkedBlockingDeque<>();
 
         private boolean mActive = true;
+        private boolean mConnected = false;
 
         @Override
         public void run() {
@@ -49,6 +50,7 @@ public class BluetoothClient {
                 Log.e(TAG, "Connection exception", e);
             }
             finally {
+                mConnected = false;
                 mConnection = null;
                 onStopped();
             }
@@ -78,7 +80,7 @@ public class BluetoothClient {
 
                     ObjectOutputStream os = new ObjectOutputStream(outputStream);
                     Scanner scanner = new Scanner(inputStream);
-
+                    mConnected = true;
                     while (mActive) {
                         RPCMessage message = mQueue.take();
                         if(null == message.service)
@@ -92,6 +94,10 @@ public class BluetoothClient {
                     }
                 }
             }
+        }
+
+        public boolean isConnected() {
+            return mConnected;
         }
     }
 
@@ -109,7 +115,7 @@ public class BluetoothClient {
 
     public void send(@NonNull RPCMessage message) {
         Connection connection = mConnection;
-        if(null == connection) {
+        if(null == connection || !connection.isConnected()) {
             return;
         }
         connection.send(message);

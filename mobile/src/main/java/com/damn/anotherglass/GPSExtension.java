@@ -7,16 +7,16 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
-import com.damn.anotherglass.shared.gps.GPSServiceAPI;
 import com.damn.anotherglass.shared.RPCMessage;
+import com.damn.anotherglass.shared.gps.GPSServiceAPI;
 
 @SuppressLint("MissingPermission")
-public class GPSService implements LocationListener {
+public class GPSExtension implements LocationListener {
 
     private final GlassService service;
     private final LocationManager locationManager;
 
-    public GPSService(final GlassService service) {
+    public GPSExtension(final GlassService service) {
         this.service = service;
         locationManager = (LocationManager) service.getSystemService(Context.LOCATION_SERVICE);
     }

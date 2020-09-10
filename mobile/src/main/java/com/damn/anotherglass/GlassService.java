@@ -15,6 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.damn.anotherglass.notifications.NotificationExtension;
 import com.damn.anotherglass.shared.RPCMessage;
 
 import java.util.List;
@@ -30,13 +31,19 @@ public class GlassService
     private static final String CMD_STOP = "CMD_STOP";
     private static final String TAG = "GlassService";
 
-    private BluetoothClient mClient;
-    private GPSService mGPS;
-    private NotificationManager mNM;
-
     private final IBinder mBinder = new LocalBinder();
 
+    private BluetoothClient mClient;
+
+    private NotificationManager mNM;
+
     private Settings mSettings;
+
+    // Extensions
+    // todo: generalize
+    private GPSExtension mGPS;
+
+    private NotificationExtension mNotifications;
 
     public GlassService() {
     }
@@ -57,7 +64,12 @@ public class GlassService
         mClient.start();
         mSettings = new Settings(this);
         mSettings.registerListener(this);
-        mGPS = new GPSService(this);
+
+        mNotifications = new NotificationExtension(this);
+        if(mSettings.isNotificationsEnabled())
+            mNotifications.start();
+
+        mGPS = new GPSExtension(this);
         if(mSettings.isGPSEnabled())
             mGPS.start();
     }
@@ -83,6 +95,7 @@ public class GlassService
     public void onDestroy() {
         mSettings.unregisterListener(this);
         mGPS.stop();
+        mNotifications.stop();
         mClient.stop();
         super.onDestroy();
     }
@@ -162,6 +175,12 @@ public class GlassService
                 mGPS.start();
             else
                 mGPS.stop();
+        }
+        else if(Settings.NOTIFICATIONS_ENABLED.equals(key)) {
+            if(mSettings.isNotificationsEnabled())
+                mNotifications.start();
+            else
+                mNotifications.stop();
         }
     }
 }

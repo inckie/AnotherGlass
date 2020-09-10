@@ -10,6 +10,7 @@ public class Settings {
 
     private static final String sPreferencesName = "anotherglass";
     public static final String GPS_ENABLED = "gps_enabled";
+    public static final String NOTIFICATIONS_ENABLED = "notifications_enabled";
     private final SharedPreferences mPreferences;
 
     public Settings(Context context) {
@@ -30,5 +31,13 @@ public class Settings {
 
     public void setGPSEnabled(boolean enabled) {
         mPreferences.edit().putBoolean(GPS_ENABLED, enabled).apply();
+    }
+
+    public boolean isNotificationsEnabled() {
+        return mPreferences.getBoolean(NOTIFICATIONS_ENABLED, true);
+    }
+
+    public void setNotificationsEnabled(boolean enabled) {
+        mPreferences.edit().putBoolean(NOTIFICATIONS_ENABLED, enabled).apply();
     }
 }

@@ -5,10 +5,12 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -16,12 +18,16 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
 
+import com.damn.anotherglass.notifications.NotificationService;
 import com.damn.anotherglass.shared.RPCMessage;
 import com.damn.anotherglass.shared.wifi.WiFiAPI;
 import com.damn.anotherglass.shared.wifi.WiFiConfiguration;
+
+import static android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -69,10 +75,39 @@ public class MainActivity extends AppCompatActivity {
         gps.setChecked(mSettings.isGPSEnabled());
         gps.setOnCheckedChangeListener((buttonView, isChecked) -> mSettings.setGPSEnabled(isChecked));
 
+        // Notifications
+        Switch notifications = findViewById(R.id.toggle_notifications);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
+            notifications.setVisibility(View.GONE);
+        } else {
+            notifications.setChecked(mSettings.isNotificationsEnabled() && NotificationService.isEnabled(this));
+            CompoundButton.OnCheckedChangeListener changeListener = new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    boolean changed = MainActivity.this.toggleNotifications(isChecked);
+                    if (changed)
+                        return;
+                    notifications.setOnCheckedChangeListener(null);
+                    notifications.setChecked(!isChecked);
+                    notifications.setOnCheckedChangeListener(this);
+                }
+            };
+            notifications.setOnCheckedChangeListener(changeListener);
+        }
+
         //WiFi
         findViewById(R.id.btn_connect_wifi).setOnClickListener(view -> connectWiFi());
-
         updateUI();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
+    private boolean toggleNotifications(boolean enabled) {
+        if(enabled && !NotificationService.isEnabled(this)) {
+            askEnableNotificationService();
+            return false;
+        }
+        mSettings.setNotificationsEnabled(enabled);
+        return true;
     }
 
     @Override
@@ -160,6 +195,17 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         return super.onOptionsItemSelected(item);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
+    private void askEnableNotificationService() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(R.string.msg_notification_listener_service_title);
+        alertDialogBuilder.setMessage(R.string.notification_listener_service_message);
+        alertDialogBuilder.setPositiveButton(android.R.string.yes, (dialog, id) ->
+                startActivity(new Intent(ACTION_NOTIFICATION_LISTENER_SETTINGS)));
+        alertDialogBuilder.setNegativeButton(android.R.string.no, null);
+        alertDialogBuilder.create().show();
     }
 
     private class GlassServiceConnection implements ServiceConnection {

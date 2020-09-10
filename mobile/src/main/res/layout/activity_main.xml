@@ -25,6 +25,12 @@
             android:layout_height="wrap_content"
             android:text="@string/lbl_enable_gps" />
 
+        <Switch
+            android:id="@+id/toggle_notifications"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/lbl_enable_notifications" />
+
         <Button
             android:id="@+id/btn_connect_wifi"
             android:layout_width="wrap_content"
