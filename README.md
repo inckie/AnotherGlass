@@ -1,7 +1,9 @@
 # AnotherGlass for Google Glass
 
 Companion application to handle Google Glass communication with a phone without Glass related Google Services.
-Currently, can only pass GPS data from the phone to the Google Glass.
+Currently, the application can:
+ * pass GPS data from the phone to the Google Glass
+ * pass WiFi network information (SSID and password) from the phone to the Google Glass
 
 ## Building
 
