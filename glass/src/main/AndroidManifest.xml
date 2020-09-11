@@ -43,6 +43,10 @@
         <activity
             android:name=".LiveCardMenuActivity"
             android:theme="@style/MenuTheme" />
+
+        <activity
+            android:name=".BroadcastingStopMenuActivity"
+            android:theme="@style/MenuTheme" />
     </application>
 
 </manifest>

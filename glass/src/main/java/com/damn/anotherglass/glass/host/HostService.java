@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.damn.anotherglass.glass.host.bluetooth.BluetoothHost;
 import com.damn.anotherglass.glass.host.gps.MockGPS;
+import com.damn.anotherglass.glass.host.notifications.NotificationsCardController;
 import com.damn.anotherglass.glass.host.ui.ICardViewProvider;
 import com.damn.anotherglass.glass.host.ui.MapCard;
 import com.damn.anotherglass.glass.host.wifi.WiFiActivity;
@@ -42,6 +43,8 @@ public class HostService extends Service {
 
     private ICardViewProvider mCardProvider;
 
+    private NotificationsCardController mNotificationsCardController;
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -64,6 +67,8 @@ public class HostService extends Service {
             mLiveCard.publish(PublishMode.REVEAL);
 
             mGPS = new MockGPS(this);
+
+            mNotificationsCardController = new NotificationsCardController(this);
 
             mBt = new BluetoothHost(this) {
 
@@ -106,7 +111,7 @@ public class HostService extends Service {
         else if(NotificationsAPI.ID.equals(data.service)) {
             if(data.type.equals(NotificationData.class.getName())) {
                 NotificationData notificationData = (NotificationData) data.payload;
-                displayStatusCard(notificationData.text);
+                mNotificationsCardController.onNotificationUpdate(notificationData);
             }
         }
         else if(WiFiAPI.ID.equals(data.service)) {
@@ -131,6 +136,7 @@ public class HostService extends Service {
     @Override
     public void onDestroy() {
         mBt.stop();
+        mNotificationsCardController.remove();
         mGPS.remove();
         if(null != mCardProvider) {
             mCardProvider.onRemoved();

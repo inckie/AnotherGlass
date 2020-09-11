@@ -14,6 +14,7 @@ import com.damn.anotherglass.shared.notifications.NotificationsAPI;
 public class NotificationExtension extends BroadcastReceiver {
 
     private final GlassService service;
+    private boolean mRegistered;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -31,9 +32,13 @@ public class NotificationExtension extends BroadcastReceiver {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Constants.ACTION);
         service.registerReceiver(this, intentFilter);
+        mRegistered = true;
     }
 
     public void stop() {
+        if(!mRegistered)
+            return;
         service.unregisterReceiver(this);
+        mRegistered = false;
     }
 }
