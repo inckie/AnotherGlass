@@ -18,10 +18,12 @@ public class NotificationExtension extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        String acton = intent.getStringExtra(Constants.KEY_ACTION);
+        String action = intent.getStringExtra(Constants.KEY_ACTION);
         StatusBarNotification sbn = intent.getParcelableExtra(Constants.KEY_NOTIFICATION);
-        NotificationData notificationData = Converter.convert(service, acton, sbn);
-        service.send(new RPCMessage(NotificationsAPI.ID, notificationData));
+        if (action != null && sbn != null) { // should always be true
+            NotificationData notificationData = Converter.convert(service, action, sbn);
+            service.send(new RPCMessage(NotificationsAPI.ID, notificationData));
+        }
     }
 
     public NotificationExtension(final GlassService service) {

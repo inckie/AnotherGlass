@@ -64,8 +64,10 @@ public class Converter {
 
             if (null != icon) {
                 Drawable drawable = icon.loadDrawable(context);
-                Bitmap bitmap = drawableToBitmap(drawable);
-                setIconData(data, bitmap);
+                if(null != drawable) {
+                    Bitmap bitmap = drawableToBitmap(drawable);
+                    setIconData(data, bitmap);
+                }
             }
         }
 
