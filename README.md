@@ -16,7 +16,7 @@ Project consist of 3 modules:
 ## Running
 1. Pair the Glass with the phone.
 2. Install both apps
-3. On Glass, use a 'Sing in' menu option ('Help me sing in' voice command) to start Host Service
+3. On Glass, use a 'Sign in' menu option ('Help me sign in' voice command) to start Host Service
 4. Toggle service switch on the phone application to start Client Service
 
 ## Details
