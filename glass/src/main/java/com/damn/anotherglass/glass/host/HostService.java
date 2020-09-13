@@ -98,7 +98,10 @@ public class HostService extends Service {
                 public void onConnectionLost(@Nullable String error) {
                     //noinspection ConstantConditions
                     audio.playSoundEffect(Sounds.ERROR);
-                    Toast.makeText(HostService.this, error, Toast.LENGTH_LONG).show();
+                    Toast.makeText(
+                            HostService.this,
+                            null != error ? error : getString(R.string.msg_disconnected),
+                            Toast.LENGTH_LONG).show();
                     stopSelf(); // do not restart for now
                 }
             };
@@ -111,18 +114,16 @@ public class HostService extends Service {
 
     private void route(@NonNull RPCMessage data) {
         // can use instanceof instead of .type, but for future sub-routing strings are more convenient
-        if(GPSServiceAPI.ID.equals(data.service)) {
-            if(data.type.equals(Location.class.getName()))
-                mGPS.publish((Location)data.payload);
-        }
-        else if(NotificationsAPI.ID.equals(data.service)) {
-            if(data.type.equals(NotificationData.class.getName())) {
+        if (GPSServiceAPI.ID.equals(data.service)) {
+            if (data.type.equals(Location.class.getName()))
+                mGPS.publish((Location) data.payload);
+        } else if (NotificationsAPI.ID.equals(data.service)) {
+            if (data.type.equals(NotificationData.class.getName())) {
                 NotificationData notificationData = (NotificationData) data.payload;
                 mNotificationsCardController.onNotificationUpdate(notificationData);
             }
-        }
-        else if(WiFiAPI.ID.equals(data.service)) {
-            if(data.type.equals(WiFiConfiguration.class.getName()))
+        } else if (WiFiAPI.ID.equals(data.service)) {
+            if (data.type.equals(WiFiConfiguration.class.getName()))
                 WiFiActivity.start(this, (WiFiConfiguration) data.payload);
         }
     }

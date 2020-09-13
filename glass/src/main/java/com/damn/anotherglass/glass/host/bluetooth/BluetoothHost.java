@@ -107,8 +107,7 @@ public abstract class BluetoothHost {
                     break;
                 }
 
-                Message msg = mHandler.obtainMessage(STATE_WAITING_FOR_CONNECT);
-                mHandler.sendMessage(msg);
+                mHandler.obtainMessage(STATE_WAITING_FOR_CONNECT).sendToTarget();
 
                 try (BluetoothSocket socket = serverSocket.accept()) {
                     Closeables.close(serverSocket);
@@ -126,13 +125,13 @@ public abstract class BluetoothHost {
             }
             mWorkerThread = null;
             mActive = false;
-            mHandler.sendMessage(mHandler.obtainMessage(STATE_CONNECTION_LOST, error));
+            mHandler.obtainMessage(STATE_CONNECTION_LOST, error).sendToTarget();
         }
 
         private void runLoop(BluetoothSocket socket) throws IOException, ClassNotFoundException {
             Log.d(TAG, "create ConnectedDevice");
             final BluetoothDevice remoteDevice = socket.getRemoteDevice();
-            mHandler.sendMessage(mHandler.obtainMessage(STATE_CONNECTION_STARTED, remoteDevice.getName()));
+            mHandler.obtainMessage(STATE_CONNECTION_STARTED, remoteDevice.getName()).sendToTarget();
             try (DisconnectReceiver ignored = new DisconnectReceiver(mContext, remoteDevice, this::onConnectionLost)) {
                 try (InputStream inputStream = socket.getInputStream();
                      OutputStream outputStream = socket.getOutputStream()) {
@@ -140,8 +139,7 @@ public abstract class BluetoothHost {
                     while (mActive) {
                         while (inputStream.available() > 0) {
                             RPCMessage objectReceived = (RPCMessage) in.readObject();
-                            Message msg = mHandler.obtainMessage(MSG_DATA_RECEIVED, objectReceived);
-                            mHandler.sendMessage(msg);
+                            mHandler.obtainMessage(MSG_DATA_RECEIVED, objectReceived).sendToTarget();
                             outputStream.write("OK\n".getBytes());
                         }
                         Sleep.sleep(100);

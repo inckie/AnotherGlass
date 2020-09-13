@@ -9,6 +9,7 @@
     <string name="msg_waiting_for_connection">Waiting for connection</string>
     <string name="msg_connecting_to_s">Connecting to %s…</string>
     <string name="msg_connected_to_s">Connected to %s</string>
+    <string name="msg_disconnected">Disconnected</string>
     <string name="msg_failed_to_connect">Failed to connect</string>
     <string name="msg_connection_error_s">Error occurred:\n%s\nTap to retry</string>
     <string name="title_activity_start">AnotherGlass</string>
