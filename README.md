@@ -30,11 +30,11 @@ Glass application acts as a Bluetooth server, so phone can connect and disconnec
 * Handle Bluetooth reconnects (Glass sometimes loses the connection and immediately reconnects, but I stop services for now)
 * Add one time notification stack activity (easy, but lazy)
 * Add notifications filter options and better display
-* Try to handle notifications action buttons on glass
+* Try to handle notifications action buttons on the Glass
 * Make a better Service Dashboard LiveCard
 * Enable/disable GPS dynamically (not sure if we can track it on the Glass though, but can add a toggle intent for use in my GlassWare at least)
 * Bi-directional intent routing (navigation, sharing)
-
+* Add file logging on both devices for debugging
 
 ## GlassWare Plans
 
@@ -47,3 +47,4 @@ Also they will make use of AnotherGlass to handle initial setup and route intent
 * Better navigation directions
 * Basic calendar agenda viewer
 * Voice recorder
+* Timer
