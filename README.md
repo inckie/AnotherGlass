@@ -2,8 +2,9 @@
 
 Companion application to handle Google Glass communication with a phone without Glass related Google Services.
 Currently, the application can:
- * pass GPS data from the phone to the Google Glass
- * pass WiFi network information (SSID and password) from the phone to the Google Glass
+ * pass GPS data from the phone to the Glass
+ * forwarding ongoing and one-shot notifications to the Glass
+ * pass WiFi network information (SSID and password) from the phone to the Glass
 
 ## Building
 
@@ -12,20 +13,29 @@ Project consist of 3 modules:
 * **mobile** - companion application for mobile device, containing Client Service
 * **shared** - a shared module with shared classes and constants
 
+## Running
+1. Pair Glass with the phone.
+2. Install both apps
+3. On Glass, use a 'Sing in' menu option ('Help me sing in' voice command)
+4. Tap to run the host service on Glass (step will be removed later)
+5. Toggle service switch on the phone application
+
 ## Details
 
 Uses Java object stream to send data to Google Glass, since I don't want to mess with protocol buffers yet.
-Glass application acts as a Bluetooth server, so phone can connect and disconnect when needed to save power (not sure how useful this is).
+Glass application acts as a Bluetooth server, so phone can connect and disconnect when needed (not sure how useful this is). Maybe I'll swap these roles, or start Phone service automatically on Glasses connect.
 
 ## AnotherGlass Plans
 
-* Handle sockets lifecycle nicely
-* Make a better Dashboard LiveCard
-* Route notifications to the glass as 'My Glass' app were doing.
-* Enable/disable GPS dynamically
+* Handle sockets lifecycle nicely (keep alive packets, probably)
+* Handle Bluetooth reconnects (Glass sometimes loses the connection and immediately reconnects, but I stop services for now)
+* Add one time notification stack activity (easy, but lazy)
+* Add notifications filter options and better display
+* Try to handle notifications action buttons on glass
+* Make a better Service Dashboard LiveCard
+* Enable/disable GPS dynamically (not sure if we can track it on the Glass though, but can add a toggle intent for use in my GlassWare at least)
 * Bi-directional intent routing (navigation, sharing)
 
-Notifications routing will require finding some way to add cards to the timeline (it was removed from API in latest firmware), or use some another way to present it, like live card.
 
 ## GlassWare Plans
 
