@@ -3,17 +3,14 @@ package com.damn.anotherglass.core;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.damn.anotherglass.shared.Constants;
 import com.damn.anotherglass.shared.RPCMessage;
+import com.damn.anotherglass.shared.utility.DisconnectReceiver;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
@@ -88,7 +85,7 @@ public class BluetoothClient {
         private void runLoop(@NonNull BluetoothDevice device) throws IOException, InterruptedException {
             try (BluetoothSocket socket = device.createInsecureRfcommSocketToServiceRecord(Constants.uuid)) {
                 socket.connect();
-                try (DisconnectedBroadcastReceiver ignored = new DisconnectedBroadcastReceiver(device)) {
+                try (DisconnectReceiver ignored = new DisconnectReceiver(mContext, device, this::shutdown)) {
                     try (OutputStream outputStream = socket.getOutputStream();
                          InputStream inputStream = socket.getInputStream()) {
                         ObjectOutputStream os = new ObjectOutputStream(outputStream);
@@ -114,33 +111,6 @@ public class BluetoothClient {
             return mConnected;
         }
 
-        private class DisconnectedBroadcastReceiver
-                extends BroadcastReceiver implements Closeable {
-
-            private final BluetoothDevice device;
-
-            public DisconnectedBroadcastReceiver(BluetoothDevice device) {
-                this.device = device;
-                mContext.registerReceiver(this, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED));
-            }
-
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                BluetoothDevice d = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
-                    if (device.equals(d)) {
-                        Log.i(TAG, "Device was disconnected");
-                        shutdown();
-                    }
-                }
-            }
-
-            @Override
-            public void close() {
-                mContext.unregisterReceiver(this);
-            }
-        }
     }
 
     public void onStopped() {
@@ -170,4 +140,5 @@ public class BluetoothClient {
             connection.shutdown();
         }
     }
+
 }

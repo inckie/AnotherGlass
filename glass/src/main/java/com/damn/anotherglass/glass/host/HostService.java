@@ -1,6 +1,5 @@
 package com.damn.anotherglass.glass.host;
 
-import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -74,7 +73,7 @@ public class HostService extends Service {
 
             AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
-            mBt = new BluetoothHost() {
+            mBt = new BluetoothHost(this) {
 
                 @Override
                 public void onWaiting() {

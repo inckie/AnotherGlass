@@ -1,6 +1,7 @@
 package com.damn.anotherglass.glass.host.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
@@ -13,14 +14,14 @@ import android.util.Log;
 
 import com.damn.anotherglass.glass.host.utility.Closeables;
 import com.damn.anotherglass.glass.host.utility.Sleep;
+import com.damn.anotherglass.shared.Constants;
+import com.damn.anotherglass.shared.RPCMessage;
+import com.damn.anotherglass.shared.utility.DisconnectReceiver;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
-
-import com.damn.anotherglass.shared.Constants;
-import com.damn.anotherglass.shared.RPCMessage;
 
 
 public abstract class BluetoothHost {
@@ -33,19 +34,24 @@ public abstract class BluetoothHost {
     private static final String NAME = "AnotherGlass";
     private static final String TAG = "GlassHost";
 
-    private BluetoothAdapter mBT;
-    private Handler mHandler;
+    private final Context mContext;
+    private final BluetoothAdapter mBT;
+    private final Handler mHandler;
 
     private volatile WorkerThread mWorkerThread;
-    private volatile boolean mActive;
+    private volatile boolean mActive; // are we still need to run?
 
     // abstract to avoid creating Listener interface, just override these in-place
     public abstract void onWaiting();
+
     public abstract void onConnectionStarted(@NonNull String device);
+
     public abstract void onDataReceived(@NonNull RPCMessage data);
+
     public abstract void onConnectionLost(@Nullable String error);
 
-    public BluetoothHost() {
+    public BluetoothHost(Context context) {
+        mContext = context;
         mBT = BluetoothAdapter.getDefaultAdapter();
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override
@@ -77,18 +83,15 @@ public abstract class BluetoothHost {
 
     public void stop() {
         mActive = false;
-        if(null != mWorkerThread) {
+        WorkerThread thread = this.mWorkerThread;
+        if (null != thread) {
             try {
-                mWorkerThread.join();
+                thread.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            mWorkerThread = null;
+            this.mWorkerThread = null;
         }
-    }
-
-    public boolean isStarted() {
-        return mActive;
     }
 
     private class WorkerThread extends Thread {
@@ -107,7 +110,7 @@ public abstract class BluetoothHost {
                 Message msg = mHandler.obtainMessage(STATE_WAITING_FOR_CONNECT);
                 mHandler.sendMessage(msg);
 
-                try(BluetoothSocket socket = serverSocket.accept()) {
+                try (BluetoothSocket socket = serverSocket.accept()) {
                     Closeables.close(serverSocket);
                     serverSocket = null;
                     if (socket == null)
@@ -116,7 +119,7 @@ public abstract class BluetoothHost {
                 } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
                     error = e.getLocalizedMessage();
-                    break;
+                    break; // quit on any error for now
                 } finally {
                     Closeables.close(serverSocket);
                 }
@@ -128,22 +131,28 @@ public abstract class BluetoothHost {
 
         private void runLoop(BluetoothSocket socket) throws IOException, ClassNotFoundException {
             Log.d(TAG, "create ConnectedDevice");
-            try(InputStream inputStream = socket.getInputStream();
-                OutputStream outputStream = socket.getOutputStream()) {
-                ObjectInputStream in = new ObjectInputStream(inputStream);
-                mHandler.sendMessage(mHandler.obtainMessage(STATE_CONNECTION_STARTED, socket.getRemoteDevice().getName()));
-                // Keep listening to the InputStream while connected
-                while (mActive) {
-                    // todo: use some robust way of passing messages
-                    while (inputStream.available() > 0) {
-                        RPCMessage objectReceived = (RPCMessage) in.readObject();
-                        Message msg = mHandler.obtainMessage(MSG_DATA_RECEIVED, objectReceived);
-                        mHandler.sendMessage(msg);
-                        outputStream.write("OK\n".getBytes());
+            final BluetoothDevice remoteDevice = socket.getRemoteDevice();
+            mHandler.sendMessage(mHandler.obtainMessage(STATE_CONNECTION_STARTED, remoteDevice.getName()));
+            try (DisconnectReceiver ignored = new DisconnectReceiver(mContext, remoteDevice, this::onConnectionLost)) {
+                try (InputStream inputStream = socket.getInputStream();
+                     OutputStream outputStream = socket.getOutputStream()) {
+                    ObjectInputStream in = new ObjectInputStream(inputStream);
+                    while (mActive) {
+                        while (inputStream.available() > 0) {
+                            RPCMessage objectReceived = (RPCMessage) in.readObject();
+                            Message msg = mHandler.obtainMessage(MSG_DATA_RECEIVED, objectReceived);
+                            mHandler.sendMessage(msg);
+                            outputStream.write("OK\n".getBytes());
+                        }
+                        Sleep.sleep(100);
                     }
-                    Sleep.sleep(100);
                 }
             }
+        }
+
+        private void onConnectionLost() {
+            Log.i(TAG, "Device was disconnected");
+            mActive = false;
         }
     }
 
