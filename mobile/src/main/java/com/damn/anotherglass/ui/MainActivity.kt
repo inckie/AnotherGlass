@@ -1,260 +1,208 @@
-package com.damn.anotherglass.ui;
+package com.damn.anotherglass.ui
 
-import android.Manifest;
-import android.content.ComponentName;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.IBinder;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.Switch;
+import android.Manifest
+import android.content.ComponentName
+import android.content.Intent
+import android.content.ServiceConnection
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Bundle
+import android.os.IBinder
+import android.support.annotation.RequiresApi
+import android.support.v4.app.ActivityCompat
+import android.support.v7.app.AlertDialog
+import android.support.v7.app.AppCompatActivity
+import android.text.TextUtils
+import android.view.View
+import android.widget.CompoundButton
+import android.widget.EditText
+import android.widget.Switch
+import com.damn.anotherglass.R
+import com.damn.anotherglass.core.GlassService
+import com.damn.anotherglass.core.GlassService.LocalBinder
+import com.damn.anotherglass.core.Settings
+import com.damn.anotherglass.extensions.notifications.NotificationService
+import com.damn.anotherglass.shared.RPCMessage
+import com.damn.anotherglass.shared.wifi.WiFiAPI
+import com.damn.anotherglass.shared.wifi.WiFiConfiguration
 
-import com.damn.anotherglass.R;
-import com.damn.anotherglass.core.GlassService;
-import com.damn.anotherglass.core.Settings;
-import com.damn.anotherglass.extensions.notifications.NotificationService;
-import com.damn.anotherglass.shared.RPCMessage;
-import com.damn.anotherglass.shared.wifi.WiFiAPI;
-import com.damn.anotherglass.shared.wifi.WiFiConfiguration;
+class MainActivity : AppCompatActivity() {
 
-import static android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS;
+    private lateinit var mSettings: Settings
+    private val mConnection = GlassServiceConnection()
+    private var mSwService: Switch? = null
+    private var mCntControls: View? = null
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-public class MainActivity extends AppCompatActivity {
-
-    // Code is a bit ugly, since we cant use AndroidX and JetPack
-    // due to Glass SDK limitations on Gradle version
-
-    private static final String LOG_TAG = "MainActivity";
-
-    private Settings mSettings;
-
-    private final GlassServiceConnection mConnection = new GlassServiceConnection();
-
-    private Switch mSwService;
-
-    private View mCntControls;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        mSettings = new Settings(this);
-
-        mCntControls = findViewById(R.id.cnt_controls);
+        mSettings = Settings(this)
+        mCntControls = findViewById(R.id.cnt_controls)
 
         // Start/Stop
-        mSwService = findViewById(R.id.toggle_service);
-        mSwService.setChecked(GlassService.isRunning(this));
-        mSwService.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if(isChecked == GlassService.isRunning(this))
-                return;
-            if (isChecked)
-                start();
-            else
-                stop();
-            // Tiny hack to avoid real checks and subscriptions to service lifecycle.
-            // We rely on a fact that, if service will start,
-            // we will be able to bind and then receive onServiceDisconnected
-            // even if it will stop right away due to missing BT connection or something else.
-            buttonView.post(() -> buttonView.setChecked(GlassService.isRunning(this)));
-        });
+        mSwService = findViewById<Switch>(R.id.toggle_service).apply {
+            isChecked = GlassService.isRunning(context)
+            setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, isChecked ->
+                if (isChecked == GlassService.isRunning(context)) return@OnCheckedChangeListener
+                if (isChecked) start() else stop()
+                // Tiny hack to avoid real checks and subscriptions to service lifecycle.
+                // We rely on a fact that, if service will start,
+                // we will be able to bind and then receive onServiceDisconnected
+                // even if it will stop right away due to missing BT connection or something else.
+                this.post { this.isChecked = GlassService.isRunning(context) }
+            })
+        }
 
         // GPS
-        Switch gps = findViewById(R.id.toggle_gps);
-        gps.setChecked(mSettings.isGPSEnabled());
-        gps.setOnCheckedChangeListener((buttonView, isChecked) -> mSettings.setGPSEnabled(isChecked));
+        findViewById<Switch>(R.id.toggle_gps).apply {
+            isChecked = mSettings.isGPSEnabled
+            setOnCheckedChangeListener { _, isChecked -> mSettings.isGPSEnabled = isChecked }
+        }
 
         // Notifications
-        Switch notifications = findViewById(R.id.toggle_notifications);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
-            notifications.setVisibility(View.GONE);
-        } else {
-            notifications.setChecked(mSettings.isNotificationsEnabled() && NotificationService.isEnabled(this));
-            CompoundButton.OnCheckedChangeListener changeListener = new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    boolean changed = MainActivity.this.toggleNotifications(isChecked);
-                    if (changed)
-                        return;
-                    notifications.setOnCheckedChangeListener(null);
-                    notifications.setChecked(!isChecked);
-                    notifications.setOnCheckedChangeListener(this);
+        findViewById<Switch>(R.id.toggle_notifications).apply {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
+                visibility = View.GONE
+            } else {
+                isChecked = mSettings.isNotificationsEnabled && NotificationService.isEnabled(context)
+                val changeListener = object : CompoundButton.OnCheckedChangeListener {
+                    override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
+                        if (toggleNotifications(isChecked)) return
+                        this@apply.setOnCheckedChangeListener(null)
+                        this@apply.isChecked = !isChecked
+                        this@apply.setOnCheckedChangeListener(this)
+                    }
                 }
-            };
-            notifications.setOnCheckedChangeListener(changeListener);
+                setOnCheckedChangeListener(changeListener)
+            }
         }
 
         //WiFi
-        findViewById(R.id.btn_connect_wifi).setOnClickListener(view -> connectWiFi());
-        updateUI();
+        findViewById<View>(R.id.btn_connect_wifi).setOnClickListener { connectWiFi() }
+        updateUI()
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
-    private boolean toggleNotifications(boolean enabled) {
-        if(enabled && !NotificationService.isEnabled(this)) {
-            askEnableNotificationService();
-            return false;
+    private fun toggleNotifications(enabled: Boolean): Boolean {
+        if (enabled && !NotificationService.isEnabled(this)) {
+            askEnableNotificationService()
+            return false
         }
-        mSettings.setNotificationsEnabled(enabled);
-        return true;
+        mSettings.isNotificationsEnabled = enabled
+        return true
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (GlassService.isRunning(this))
-            mConnection.bindGlassService();
+    override fun onResume() {
+        super.onResume()
+        updateUI()
+        if (GlassService.isRunning(this)) mConnection.bindGlassService()
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mConnection.unbindGlassService();
+    override fun onPause() {
+        super.onPause()
+        mConnection.unbindGlassService()
     }
 
-    private void updateUI() {
-        boolean running = GlassService.isRunning(this);
-        mCntControls.setVisibility(running ? View.VISIBLE : View.GONE);
+    private fun updateUI() {
+        val running = GlassService.isRunning(this)
+        mCntControls!!.visibility = if (running) View.VISIBLE else View.GONE
     }
 
-    private void start() {
+    private fun start() {
         // don't bother and always require all permissions
         if (!hasGeoPermission()) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
-            return;
+            ActivityCompat.requestPermissions(this, arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION), 0)
+            return
         }
-        if(!GlassService.isRunning(this)) {
-            startService(new Intent(MainActivity.this, GlassService.class));
+        if (!GlassService.isRunning(this)) {
+            startService(Intent(this@MainActivity, GlassService::class.java))
         }
-        mConnection.bindGlassService();
+        mConnection.bindGlassService()
     }
 
-    private void stop() {
-        stopService(new Intent(MainActivity.this, GlassService.class));
+    private fun stop() {
+        stopService(Intent(this@MainActivity, GlassService::class.java))
     }
 
-    private void connectWiFi() {
-        View view = getLayoutInflater().inflate(R.layout.view_wifi_dialog, null);
-        EditText ssid = view.findViewById(R.id.ed_ssid);
-        EditText pass = view.findViewById(R.id.ed_password);
-        new AlertDialog.Builder(this)
-                .setPositiveButton(android.R.string.ok, (dialog, which) -> connectToWiFi(ssid.getText(), pass.getText()))
+    private fun connectWiFi() {
+        val view = layoutInflater.inflate(R.layout.view_wifi_dialog, null)
+        val ssid = view.findViewById<EditText>(R.id.ed_ssid)
+        val pass = view.findViewById<EditText>(R.id.ed_password)
+        AlertDialog.Builder(this)
+                .setPositiveButton(android.R.string.ok) { _, _ -> connectToWiFi(ssid.text, pass.text) }
                 .setNegativeButton(android.R.string.cancel, null)
                 .setView(view)
-                .show();
+                .show()
     }
 
-    private void connectToWiFi(@NonNull CharSequence ssid,
-                               @NonNull CharSequence pass) {
-        if (TextUtils.isEmpty(ssid))
-            return;
+    private fun connectToWiFi(ssid: CharSequence,
+                              pass: CharSequence) {
+        if (TextUtils.isEmpty(ssid)) return
         // pass can be empty
-        GlassService service = mConnection.getService();
-        if(null == service)
-            return;
-        service.send(new RPCMessage(
+        val service = mConnection.service ?: return
+        service.send(RPCMessage(
                 WiFiAPI.ID,
-                new WiFiConfiguration(ssid.toString(), pass.toString())));
+                WiFiConfiguration(ssid.toString(), pass.toString())))
     }
 
-    private boolean hasGeoPermission() {
+    private fun hasGeoPermission(): Boolean {
         return PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) &&
-                PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+                PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (!hasGeoPermission())
-            return;
-        startService(new Intent(MainActivity.this, GlassService.class));
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        return super.onOptionsItemSelected(item);
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (!hasGeoPermission()) return
+        startService(Intent(this@MainActivity, GlassService::class.java))
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
-    private void askEnableNotificationService() {
-        new AlertDialog.Builder(this)
+    private fun askEnableNotificationService() {
+        AlertDialog.Builder(this)
                 .setTitle(R.string.msg_notification_listener_service_title)
                 .setMessage(R.string.notification_listener_service_message)
-                .setPositiveButton(android.R.string.yes, (dialog, id) ->
-                        startActivity(new Intent(ACTION_NOTIFICATION_LISTENER_SETTINGS)))
+                .setPositiveButton(android.R.string.yes) { _, _ -> startActivity(Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
                 .setNegativeButton(android.R.string.no, null)
-                .show();
+                .show()
     }
 
-    private class GlassServiceConnection implements ServiceConnection {
-
-        private GlassService mGlassService;
-
-        private boolean mBound;
-
-        @Nullable
-        public GlassService getService() {
-            return mGlassService;
-        }
-
-        public void bindGlassService() {
+    private inner class GlassServiceConnection : ServiceConnection {
+        var service: GlassService? = null
+            private set
+        private var mBound = false
+        fun bindGlassService() {
             try {
                 if (mBound) {
-                    unbindService(mConnection);
+                    unbindService(mConnection)
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
-            mBound = bindService(new Intent(MainActivity.this, GlassService.class), mConnection, 0);
+            mBound = bindService(Intent(this@MainActivity, GlassService::class.java), mConnection, 0)
         }
 
-        public void unbindGlassService() {
-            if (!mBound)
-                return;
-            mBound = false;
-            mGlassService = null;
-            unbindService(mConnection);
+        fun unbindGlassService() {
+            if (!mBound) return
+            mBound = false
+            service = null
+            unbindService(mConnection)
         }
 
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mGlassService = ((GlassService.LocalBinder) service).getService();
-            updateUI();
+        override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            this.service = (service as LocalBinder).service
+            updateUI()
         }
 
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mGlassService = null;
-            if(mBound) {
+        override fun onServiceDisconnected(name: ComponentName) {
+            service = null
+            if (mBound) {
                 // service stopped on its own, unbind from it (it won't restart on its own)
-                mSwService.setChecked(false);
-                unbindGlassService();
-                updateUI();
+                mSwService!!.isChecked = false
+                unbindGlassService()
+                updateUI()
             }
         }
     }

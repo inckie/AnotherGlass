@@ -39,7 +39,7 @@ public class NotificationService extends NotificationListenerService {
     }
 
     // https://stackoverflow.com/a/51724784
-    public static boolean isEnabled(Context context){
+    public static boolean isEnabled(Context context) {
         ContentResolver contentResolver = context.getContentResolver();
         String enabledNotificationListeners = Settings.Secure.getString(contentResolver, "enabled_notification_listeners");
         if(TextUtils.isEmpty(enabledNotificationListeners))
