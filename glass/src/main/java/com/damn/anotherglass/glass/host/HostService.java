@@ -3,7 +3,9 @@ package com.damn.anotherglass.glass.host;
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,6 +25,7 @@ import com.damn.anotherglass.shared.notifications.NotificationData;
 import com.damn.anotherglass.shared.notifications.NotificationsAPI;
 import com.damn.anotherglass.shared.wifi.WiFiAPI;
 import com.damn.anotherglass.shared.wifi.WiFiConfiguration;
+import com.google.android.glass.media.Sounds;
 import com.google.android.glass.timeline.LiveCard;
 import com.google.android.glass.timeline.LiveCard.PublishMode;
 import com.google.android.glass.widget.CardBuilder;
@@ -50,7 +53,6 @@ public class HostService extends Service {
         return null;
     }
 
-    @SuppressLint("MissingPermission")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (mLiveCard == null) {
@@ -70,7 +72,9 @@ public class HostService extends Service {
 
             mNotificationsCardController = new NotificationsCardController(this);
 
-            mBt = new BluetoothHost(this) {
+            AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
+            mBt = new BluetoothHost() {
 
                 @Override
                 public void onWaiting() {
@@ -79,8 +83,9 @@ public class HostService extends Service {
 
                 @Override
                 public void onConnectionStarted(@NonNull String device) {
-                    Toast.makeText(HostService.this, device, Toast.LENGTH_SHORT).show();
-                    // map can take a while or not show t all if GPS is off, so show status
+                    //noinspection ConstantConditions
+                    audio.playSoundEffect(Sounds.SUCCESS);
+                    // map can take a while or not show at all, so show status card
                     displayStatusCard(getString(R.string.msg_connected_to_s, device));
                     mCardProvider = new MapCard(mLiveCard, HostService.this);
                 }
@@ -92,7 +97,10 @@ public class HostService extends Service {
 
                 @Override
                 public void onConnectionLost(@Nullable String error) {
-                    displayStatusCard(error);
+                    //noinspection ConstantConditions
+                    audio.playSoundEffect(Sounds.ERROR);
+                    Toast.makeText(HostService.this, error, Toast.LENGTH_LONG).show();
+                    stopSelf(); // do not restart for now
                 }
             };
             mBt.start();
@@ -127,10 +135,9 @@ public class HostService extends Service {
             mCardProvider.onRemoved();
             mCardProvider = null;
         }
-        RemoteViews remoteView = new CardBuilder(getApplicationContext(), CardBuilder.Layout.MENU)
+        mLiveCard.setViews(new CardBuilder(getApplicationContext(), CardBuilder.Layout.MENU)
                 .setText(status)
-                .getRemoteViews();
-        mLiveCard.setViews(remoteView);
+                .getRemoteViews());
     }
 
     @Override

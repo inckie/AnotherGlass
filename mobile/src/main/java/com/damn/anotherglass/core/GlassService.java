@@ -64,7 +64,7 @@ public class GlassService
                 stopSelf();
             }
         };
-        mClient.start();
+        mClient.start(this);
         mSettings = new Settings(this);
         mSettings.registerListener(this);
 

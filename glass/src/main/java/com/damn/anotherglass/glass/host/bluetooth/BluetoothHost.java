@@ -45,32 +45,25 @@ public abstract class BluetoothHost {
     public abstract void onDataReceived(@NonNull RPCMessage data);
     public abstract void onConnectionLost(@Nullable String error);
 
-    public BluetoothHost(@NonNull Context context) {
+    public BluetoothHost() {
         mBT = BluetoothAdapter.getDefaultAdapter();
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
-                switch (msg.what) {
-                    case STATE_CONNECTION_STARTED:
-                        final String device = msg.obj.toString();
-                        Log.d(TAG, "STATE_CONNECTION_STARTED: " + device);
-                        onConnectionStarted(device);
-                        break;
-                    case MSG_DATA_RECEIVED:
-                        final RPCMessage data = (RPCMessage) msg.obj;
-                        Log.d(TAG, "MSG_DATA_RECEIVED: " + data);
-                        onDataReceived(data);
-                        break;
-                    case STATE_CONNECTION_LOST:
-                        final String error = null !=  msg.obj ? msg.obj.toString() : null;
-                        Log.d(TAG, "STATE_CONNECTION_LOST: " + (null != error ? error : " no errors"));
-                        onConnectionLost(error);
-                        break;
-                    case STATE_WAITING_FOR_CONNECT:
-                        onWaiting();
-                        break;
-                    default:
-                        break;
+                if (STATE_CONNECTION_STARTED == msg.what) {
+                    final String device = msg.obj.toString();
+                    Log.d(TAG, "STATE_CONNECTION_STARTED: " + device);
+                    onConnectionStarted(device);
+                } else if (MSG_DATA_RECEIVED == msg.what) {
+                    final RPCMessage data = (RPCMessage) msg.obj;
+                    Log.d(TAG, "MSG_DATA_RECEIVED: " + data);
+                    onDataReceived(data);
+                } else if (STATE_CONNECTION_LOST == msg.what) {
+                    final String error = null != msg.obj ? msg.obj.toString() : null;
+                    Log.d(TAG, "STATE_CONNECTION_LOST: " + (null != error ? error : " no errors"));
+                    onConnectionLost(error);
+                } else if (STATE_WAITING_FOR_CONNECT == msg.what) {
+                    onWaiting();
                 }
             }
         };
