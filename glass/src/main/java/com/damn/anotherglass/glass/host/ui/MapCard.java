@@ -8,8 +8,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.PowerManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -42,15 +40,10 @@ public class MapCard extends ICardViewProvider implements LocationListener {
 
     private Location mLocation;
 
-    // updating
-    private Handler mHandler;
-    private final Runnable mUpdater = this::updateMapStatus;
-
     @SuppressLint("MissingPermission")
     public MapCard(@NonNull LiveCard card, Context context) {
         super(card);
         mContext = context;
-        mHandler = new Handler(Looper.getMainLooper());
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
         updateMapStatus();
@@ -59,7 +52,6 @@ public class MapCard extends ICardViewProvider implements LocationListener {
     @Override
     public void onRemoved() {
         super.onRemoved();
-        mHandler.removeCallbacks(mUpdater);
         locationManager.removeUpdates(this);
     }
 
@@ -118,11 +110,8 @@ public class MapCard extends ICardViewProvider implements LocationListener {
     }
 
     private void updateMapStatus() {
-        mHandler.removeCallbacks(mUpdater);
         PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
-        if(null != pm && !pm.isScreenOn()){
-            // do not stop updating, but do not call API
-            mHandler.postDelayed(mUpdater, UPDATE_FREQ_MS);
+        if(null != pm && !pm.isScreenOn()) {
             return;
         }
         checkMap();

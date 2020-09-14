@@ -119,8 +119,7 @@ public class HostService extends Service {
                 mGPS.publish((Location) data.payload);
         } else if (NotificationsAPI.ID.equals(data.service)) {
             if (data.type.equals(NotificationData.class.getName())) {
-                NotificationData notificationData = (NotificationData) data.payload;
-                mNotificationsCardController.onNotificationUpdate(notificationData);
+                mNotificationsCardController.onNotificationUpdate((NotificationData) data.payload);
             }
         } else if (WiFiAPI.ID.equals(data.service)) {
             if (data.type.equals(WiFiConfiguration.class.getName()))

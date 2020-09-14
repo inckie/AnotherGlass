@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        updateUI()
+        updateUI() // will hide UI until we bind
         if (GlassService.isRunning(this)) mConnection.bindGlassService()
     }
 
@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateUI() {
-        val running = GlassService.isRunning(this)
+        val running = null != mConnection.service
         mCntControls!!.visibility = if (running) View.VISIBLE else View.GONE
     }
 
@@ -172,21 +172,21 @@ class MainActivity : AppCompatActivity() {
     private inner class GlassServiceConnection : ServiceConnection {
         var service: GlassService? = null
             private set
-        private var mBound = false
+        private var bound = false
         fun bindGlassService() {
             try {
-                if (mBound) {
+                if (bound) {
                     unbindService(mConnection)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-            mBound = bindService(Intent(this@MainActivity, GlassService::class.java), mConnection, 0)
+            bound = bindService(Intent(this@MainActivity, GlassService::class.java), mConnection, 0)
         }
 
         fun unbindGlassService() {
-            if (!mBound) return
-            mBound = false
+            if (!bound) return
+            bound = false
             service = null
             unbindService(mConnection)
         }
@@ -198,7 +198,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onServiceDisconnected(name: ComponentName) {
             service = null
-            if (mBound) {
+            if (bound) {
                 // service stopped on its own, unbind from it (it won't restart on its own)
                 mSwService!!.isChecked = false
                 unbindGlassService()
