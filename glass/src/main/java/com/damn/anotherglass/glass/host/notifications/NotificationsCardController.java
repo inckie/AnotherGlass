@@ -11,8 +11,10 @@ import android.widget.RemoteViews;
 
 import com.damn.anotherglass.glass.host.BroadcastingStopMenuActivity;
 import com.damn.anotherglass.glass.host.HostService;
+import com.damn.anotherglass.glass.host.NotificationsActivity;
 import com.damn.anotherglass.shared.notifications.NotificationData;
 import com.google.android.glass.timeline.LiveCard;
+import com.google.android.glass.widget.CardBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,7 +67,7 @@ public class NotificationsCardController extends BroadcastReceiver {
     private void showOngoing(NotificationId id, NotificationData data) {
         LiveCard liveCard = mOngoingCards.get(id);
         if (null != liveCard) {
-            liveCard.setViews(getViews(data));
+            liveCard.setViews(getViews(data, false));
             // do not scroll to ongoing notifications, they can update a lot and block UI
         } else {
             liveCard = new LiveCard(service, STACK_LIVE_CARD_TAG);
@@ -79,15 +81,27 @@ public class NotificationsCardController extends BroadcastReceiver {
     private void showDismissible(NotificationData data) {
         if (mStackedCard == null) {
             mStackedCard = new LiveCard(service, STACK_LIVE_CARD_TAG);
-            // todo: open notifications list activity if there is more than one card in the stack
-            PendingIntent intent = getCardDismissPendingIntent(CARD_ID_STACK);
-            mStackedCard.setAction(intent);
         }
-        mStackedCard.setViews(getViews(data));
+        boolean hasMore = NotificationsRepo.get().getDismissibleNotifications().size() > 1;
+        mStackedCard.setViews(getViews(data, hasMore));
+
+        // Update intent
+        // todo: logic there is a bit flawed, since NotificationsActivity can't clear stack or remove card right now
+        PendingIntent pendingIntent =
+                hasMore
+                        ? getNotificationsPedningListIntent()
+                        : getCardDismissPendingIntent(CARD_ID_STACK);
+        mStackedCard.setAction(pendingIntent);
+
         if (!mStackedCard.isPublished())
             mStackedCard.publish(LiveCard.PublishMode.REVEAL);
         else
             mStackedCard.navigate();
+    }
+
+    private PendingIntent getNotificationsPedningListIntent() {
+        Intent menuIntent = new Intent(service, NotificationsActivity.class);
+        return PendingIntent.getActivity(service, (int) System.currentTimeMillis(), menuIntent, 0);
     }
 
     private void removeOngoing(NotificationId notificationId) {
@@ -145,8 +159,10 @@ public class NotificationsCardController extends BroadcastReceiver {
         }
     }
 
-    private RemoteViews getViews(NotificationData data) {
-        return NotificationViewBuilder.buildView(service.getApplicationContext(), data);
+    private RemoteViews getViews(NotificationData data, boolean showStack) {
+        CardBuilder builder = NotificationViewBuilder.buildView(service.getApplicationContext(), data);
+        builder.showStackIndicator(showStack);
+        return builder.getRemoteViews();
     }
 
 }

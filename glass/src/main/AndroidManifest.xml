@@ -17,6 +17,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".NotificationsActivity"
+            android:icon="@drawable/ic_glass_logo"
+            android:label="@string/title_activity_notifications"/>
+        <activity
             android:name=".wifi.WiFiActivity"
             android:icon="@drawable/ic_glass_logo"
             android:label="@string/title_activity_wi_fi" />
@@ -43,7 +47,6 @@
         <activity
             android:name=".LiveCardMenuActivity"
             android:theme="@style/MenuTheme" />
-
         <activity
             android:name=".BroadcastingStopMenuActivity"
             android:theme="@style/MenuTheme" />

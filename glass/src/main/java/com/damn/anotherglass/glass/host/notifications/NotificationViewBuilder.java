@@ -4,16 +4,16 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.format.DateUtils;
-import android.widget.RemoteViews;
 
 import com.damn.anotherglass.shared.notifications.NotificationData;
 import com.google.android.glass.widget.CardBuilder;
 
+import java.text.DateFormat;
 import java.util.Date;
 
 public class NotificationViewBuilder {
 
-    public static RemoteViews buildView(Context context, NotificationData data) {
+    public static CardBuilder buildView(Context context, NotificationData data) {
         // basic
         CardBuilder builder = new CardBuilder(context, CardBuilder.Layout.AUTHOR)
                 .setHeading(data.title)
@@ -27,14 +27,13 @@ public class NotificationViewBuilder {
         }
 
         // time
-        long elapsedMS = new Date().getTime() - data.postedTime;
-        String elapsed = DateUtils.formatElapsedTime(elapsedMS / 1000);
+        CharSequence elapsed = DateUtils.formatSameDayTime(
+                data.postedTime,
+                new Date().getTime(),
+                DateFormat.MEDIUM,
+                DateFormat.DEFAULT);
         builder.setTimestamp(elapsed);
-
-        // stack indicator
-        builder.showStackIndicator(NotificationsRepo.get().getActiveNotifications().size() > 1);
-
-        return builder.getRemoteViews();
+        return builder;
     }
 
 }
