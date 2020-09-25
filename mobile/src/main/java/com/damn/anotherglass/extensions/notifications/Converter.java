@@ -9,7 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.damn.anotherglass.shared.notifications.NotificationData;
 

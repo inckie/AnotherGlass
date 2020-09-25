@@ -2,7 +2,7 @@ package com.damn.anotherglass.core;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import static android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 

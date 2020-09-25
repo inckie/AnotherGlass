@@ -1,6 +1,6 @@
 package com.damn.anotherglass.glass.host.ui;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.google.android.glass.timeline.LiveCard;
 
