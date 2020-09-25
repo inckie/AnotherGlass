@@ -1,46 +1,35 @@
 package com.damn.anotherglass.extensions.notifications;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.service.notification.StatusBarNotification;
-
 import com.damn.anotherglass.core.GlassService;
 import com.damn.anotherglass.shared.RPCMessage;
 import com.damn.anotherglass.shared.notifications.NotificationData;
 import com.damn.anotherglass.shared.notifications.NotificationsAPI;
 
-public class NotificationExtension extends BroadcastReceiver {
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+public class NotificationExtension {
 
     private final GlassService service;
-    private boolean mRegistered;
-
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        String action = intent.getStringExtra(Constants.KEY_ACTION);
-        StatusBarNotification sbn = intent.getParcelableExtra(Constants.KEY_NOTIFICATION);
-        if (action != null && sbn != null) { // should always be true
-            NotificationData notificationData = Converter.convert(service, action, sbn);
-            service.send(new RPCMessage(NotificationsAPI.ID, notificationData));
-        }
-    }
 
     public NotificationExtension(final GlassService service) {
         this.service = service;
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(NotificationEvent event) {
+        NotificationData notificationData = Converter.convert(service, event.action, event.notification);
+        service.send(new RPCMessage(NotificationsAPI.ID, notificationData));
+    };
+
     public void start() {
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Constants.ACTION);
-        service.registerReceiver(this, intentFilter);
-        mRegistered = true;
+        if(!EventBus.getDefault().isRegistered(this))
+            EventBus.getDefault().register(this);
     }
 
     public void stop() {
-        if(!mRegistered)
-            return;
-        service.unregisterReceiver(this);
-        mRegistered = false;
+        if(EventBus.getDefault().isRegistered(this))
+            EventBus.getDefault().unregister(this);
     }
 }

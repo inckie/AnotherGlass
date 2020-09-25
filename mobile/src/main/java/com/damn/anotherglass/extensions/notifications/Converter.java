@@ -20,14 +20,11 @@ public class Converter {
 
     @NonNull
     public static NotificationData convert(@NonNull Context context,
-                                           @NonNull String acton,
+                                           @NonNull NotificationData.Action acton,
                                            @NonNull StatusBarNotification sbn) {
 
         NotificationData data = new NotificationData();
-        data.action = Constants.ACTION_NOTIFICATION_POSTED.equals(acton)
-                ? NotificationData.Action.Posted
-                : Constants.ACTION_NOTIFICATION_REMOVED.equals(acton)
-                ? NotificationData.Action.Removed : null; // null should not happen
+        data.action = acton;
 
         // parse basic data
         data.id = sbn.getId();
