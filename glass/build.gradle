@@ -31,7 +31,6 @@ repositories {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.google.apis:google-api-services-oauth2:v1-rev139-1.23.0'
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation project(':shared')
 }
