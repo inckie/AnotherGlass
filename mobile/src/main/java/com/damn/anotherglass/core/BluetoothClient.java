@@ -4,9 +4,11 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-import androidx.annotation.NonNull;
-import android.util.Log;
 
+import androidx.annotation.NonNull;
+
+import com.applicaster.xray.core.Logger;
+import com.damn.anotherglass.logging.ALog;
 import com.damn.anotherglass.shared.Constants;
 import com.damn.anotherglass.shared.RPCMessage;
 import com.damn.anotherglass.shared.utility.DisconnectReceiver;
@@ -26,6 +28,8 @@ public class BluetoothClient {
 
     // part of the BT name, should be picked from list
     private static final String GLASS_BT_NAME_MARKER = "Glass";
+
+    private final ALog log = new ALog(Logger.get(TAG));
 
     private Connection mConnection;
 
@@ -57,7 +61,7 @@ public class BluetoothClient {
                     }
                 }
             } catch (Exception e) {
-                Log.e(TAG, "Connection exception", e);
+                log.e(TAG, "Connection exception", e);
             } finally {
                 mConnected = false;
                 mConnection = null;
@@ -70,7 +74,7 @@ public class BluetoothClient {
         }
 
         public void shutdown() {
-            Log.i(TAG, "Connection shutdown requested");
+            log.i(TAG, "Connection shutdown requested");
             mActive = false;
             try {
                 // send empty message to stop the thread
@@ -79,12 +83,13 @@ public class BluetoothClient {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            Log.i(TAG, "Connection was shut down");
+            log.i(TAG, "Connection was shut down");
         }
 
         private void runLoop(@NonNull BluetoothDevice device) throws IOException, InterruptedException {
             try (BluetoothSocket socket = device.createInsecureRfcommSocketToServiceRecord(Constants.uuid)) {
                 socket.connect();
+                log.i(TAG, "Client has connected to " + device.getName());
                 try (DisconnectReceiver ignored = new DisconnectReceiver(mContext, device, this::shutdown)) {
                     try (OutputStream outputStream = socket.getOutputStream();
                          InputStream inputStream = socket.getInputStream()) {
@@ -95,11 +100,11 @@ public class BluetoothClient {
                             RPCMessage message = mQueue.take();
                             if (null == message.service)
                                 return; // shutdown
-
                             os.writeObject(message);
+                            log.v(TAG, "Message " + message.service + "/" + message.type + " was sent");
                             if (scanner.hasNext()) {
                                 String response = scanner.nextLine();
-                                Log.d(TAG, "Got response" + response);
+                                log.v(TAG, "Got response: " + response);
                             }
                         }
                     }
@@ -115,6 +120,7 @@ public class BluetoothClient {
 
     public void onStopped() {
         // override me
+        log.i(TAG, "Client has stopped");
     }
 
     public void start(Context context) {

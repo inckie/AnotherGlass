@@ -11,15 +11,17 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.IBinder;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
-import android.util.Log;
 
-import com.damn.anotherglass.ui.MainActivity;
+import com.applicaster.xray.core.Logger;
 import com.damn.anotherglass.R;
 import com.damn.anotherglass.extensions.GPSExtension;
 import com.damn.anotherglass.extensions.notifications.NotificationExtension;
+import com.damn.anotherglass.logging.ALog;
 import com.damn.anotherglass.shared.RPCMessage;
+import com.damn.anotherglass.ui.MainActivity;
 
 import java.util.List;
 
@@ -42,6 +44,8 @@ public class GlassService
 
     private Settings mSettings;
 
+    private final ALog log = new ALog(Logger.get(TAG));
+
     // Extensions
     // todo: generalize
     private GPSExtension mGPS;
@@ -60,7 +64,7 @@ public class GlassService
         mClient = new BluetoothClient() {
             @Override
             public void onStopped() {
-                Log.i(TAG, "BluetoothClient has stopped, terminating GlassService");
+                log.i(TAG, "BluetoothClient has stopped, terminating GlassService");
                 stopSelf();
             }
         };

@@ -9,6 +9,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.text.TextUtils
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.CompoundButton
 import android.widget.EditText
@@ -22,9 +24,11 @@ import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.core.GlassService.LocalBinder
 import com.damn.anotherglass.core.Settings
 import com.damn.anotherglass.extensions.notifications.NotificationService
+import com.damn.anotherglass.logging.LogActivity
 import com.damn.anotherglass.shared.RPCMessage
 import com.damn.anotherglass.shared.wifi.WiFiAPI
 import com.damn.anotherglass.shared.wifi.WiFiConfiguration
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -212,5 +216,18 @@ class MainActivity : AppCompatActivity() {
                 updateUI()
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (R.id.menu_xray == item.itemId) {
+            startActivity(Intent(this, LogActivity::class.java))
+            return true
+        }
+        return super.onContextItemSelected(item)
     }
 }

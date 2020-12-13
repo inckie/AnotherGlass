@@ -7,15 +7,20 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
+import com.applicaster.xray.core.Logger;
 import com.damn.anotherglass.core.GlassService;
+import com.damn.anotherglass.logging.ALog;
 import com.damn.anotherglass.shared.RPCMessage;
 import com.damn.anotherglass.shared.gps.GPSServiceAPI;
 
 @SuppressLint("MissingPermission")
 public class GPSExtension implements LocationListener {
 
+    private static final String TAG = "GPSExtension";
+
     private final GlassService service;
     private final LocationManager locationManager;
+    private final ALog log = new ALog(Logger.get(TAG));
 
     public GPSExtension(final GlassService service) {
         this.service = service;
@@ -24,14 +29,17 @@ public class GPSExtension implements LocationListener {
 
     public void start() {
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        log.i(TAG, "GPS extension started");
     }
 
     public void stop() {
         locationManager.removeUpdates(this);
+        log.i(TAG, "GPS extension stopped");
     }
 
     @Override
     public void onLocationChanged(Location location) {
+        log.d(TAG, "GPS extension received location update");
         com.damn.anotherglass.shared.gps.Location loc = new com.damn.anotherglass.shared.gps.Location();
         loc.accuracy = location.getAccuracy();
         loc.latitude = location.getLatitude();

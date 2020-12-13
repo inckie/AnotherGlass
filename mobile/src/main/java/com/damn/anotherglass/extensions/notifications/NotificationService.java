@@ -8,8 +8,10 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.text.TextUtils;
 
+import com.applicaster.xray.core.Logger;
 import com.damn.anotherglass.core.GlassService;
 import com.damn.anotherglass.core.Settings;
+import com.damn.anotherglass.logging.ALog;
 import com.damn.anotherglass.shared.notifications.NotificationData;
 
 import org.greenrobot.eventbus.EventBus;
@@ -20,6 +22,9 @@ import org.greenrobot.eventbus.EventBus;
 public class NotificationService extends NotificationListenerService {
 
     private Settings mSettings;
+
+    private static final String TAG = "NotificationService";
+    private final ALog log = new ALog(Logger.get(TAG));
 
     public NotificationService() {
     }
@@ -48,6 +53,7 @@ public class NotificationService extends NotificationListenerService {
     private void emit(StatusBarNotification sbn, NotificationData.Action posted) {
         if (mSettings.isNotificationsEnabled() &&
                 GlassService.isRunning(this)) {
+            log.d(TAG, "Notification received");
             // do not convert notification yet, send as is
             EventBus.getDefault().post(new NotificationEvent(sbn, posted));
         }
