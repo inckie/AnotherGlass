@@ -35,6 +35,7 @@ Glass application acts as a Bluetooth server, so phone can connect and disconnec
 * Enable/disable GPS dynamically (not sure if we can track it on the Glass though, but can add a toggle intent for use in my GlassWare at least)
 * Bi-directional intent routing (navigation, sharing)
 * Add file logging on both devices for debugging
+* Map zoom levels selector
 
 ## GlassWare Plans
 
