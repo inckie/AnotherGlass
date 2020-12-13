@@ -11,6 +11,8 @@
         android:id="@+id/toggle_service"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
         android:text="@string/lbl_enable_service" />
 
     <LinearLayout
@@ -23,12 +25,16 @@
             android:id="@+id/toggle_gps"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
             android:text="@string/lbl_enable_gps" />
 
         <Switch
             android:id="@+id/toggle_notifications"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
             android:text="@string/lbl_enable_notifications" />
 
         <Button
