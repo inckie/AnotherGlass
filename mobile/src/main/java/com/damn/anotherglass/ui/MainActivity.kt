@@ -8,15 +8,15 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
-import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import android.text.TextUtils
 import android.view.View
 import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.Switch
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import com.damn.anotherglass.R
 import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.core.GlassService.LocalBinder
@@ -32,6 +32,15 @@ class MainActivity : AppCompatActivity() {
     private val mConnection = GlassServiceConnection()
     private var mSwService: Switch? = null
     private var mCntControls: View? = null
+
+    private val gpsPermissions =
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION)
+            else
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_BACKGROUND_LOCATION)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,9 +121,9 @@ class MainActivity : AppCompatActivity() {
     private fun start() {
         // don't bother and always require all permissions
         if (!hasGeoPermission()) {
-            ActivityCompat.requestPermissions(this, arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION), 0)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ActivityCompat.requestPermissions(this, gpsPermissions, 0)
+            }
             return
         }
         if (!GlassService.isRunning(this)) {
@@ -148,10 +157,8 @@ class MainActivity : AppCompatActivity() {
                 WiFiConfiguration(ssid.toString(), pass.toString())))
     }
 
-    private fun hasGeoPermission(): Boolean {
-        return PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) &&
-                PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-    }
+    private fun hasGeoPermission(): Boolean =
+            gpsPermissions.all { PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, it) }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
