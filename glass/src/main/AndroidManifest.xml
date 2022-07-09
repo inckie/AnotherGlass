@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.damn.anotherglass.glass.host">
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -8,7 +9,10 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission
+        android:name="android.permission.ACCESS_MOCK_LOCATION"
+        tools:ignore="MockLocation,ProtectedPermissions" />
 
     <application
         android:allowBackup="true"
@@ -19,7 +23,7 @@
         <activity
             android:name=".NotificationsActivity"
             android:icon="@drawable/ic_glass_logo"
-            android:label="@string/title_activity_notifications"/>
+            android:label="@string/title_activity_notifications" />
         <activity
             android:name=".wifi.WiFiActivity"
             android:icon="@drawable/ic_glass_logo"
