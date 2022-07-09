@@ -1,1 +1,12 @@
 include ':mobile', ':glass', ':shared'
+
+def xray = [
+        ':xray-core',
+        ':xray-ui',
+        ':xray-crashreporter'
+]
+
+include(*xray)
+xray.forEach { project(it).projectDir = new File("externals/x-ray/android/" + it.drop(1)) }
+gradle.ext.xray = xray
+
