@@ -11,4 +11,5 @@
     <string name="msg_notification_listener_service_title">Notification forwarding</string>
     <string name="notification_listener_service_message">Please enable notification listener service to use this feature</string>
     <string name="lbl_enable_notifications">Enable notifications mirroring</string>
+    <string name="msg_no_gps_permission">Permission not granted, cannot start GPS</string>
 </resources>

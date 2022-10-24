@@ -1,5 +1,6 @@
 package com.damn.anotherglass.core;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -10,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 
 import androidx.annotation.NonNull;
@@ -111,6 +113,10 @@ public class GlassService
         mClient.send(message);
     }
 
+    public Settings getSettings() {
+        return mSettings;
+    }
+
     private void createChannels() {
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O)
             return;
@@ -133,16 +139,21 @@ public class GlassService
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+        int flag = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ?  PendingIntent.FLAG_MUTABLE : 0;
+
+        @SuppressLint("WrongConstant")
         PendingIntent contentIntent = PendingIntent.getActivity(
                 this, 0, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.FLAG_UPDATE_CURRENT | flag);
         builder.setContentIntent(contentIntent);
 
+        @SuppressLint("WrongConstant")
         PendingIntent stopIntent = PendingIntent.getService(
                 this,
                 R.string.btn_stop,
                 new Intent(this, GlassService.class).putExtra(CMD_NAME, CMD_STOP),
-                0);
+                flag);
         builder.addAction(R.drawable.ic_baseline_stop_24, getString(R.string.btn_stop), stopIntent);
         return builder.build();
     }

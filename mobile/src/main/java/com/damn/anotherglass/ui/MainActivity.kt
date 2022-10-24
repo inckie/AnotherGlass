@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -14,7 +15,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.CompoundButton
 import android.widget.EditText
-import android.widget.Switch
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -23,6 +24,8 @@ import com.damn.anotherglass.R
 import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.core.GlassService.LocalBinder
 import com.damn.anotherglass.core.Settings
+import com.damn.anotherglass.databinding.ActivityMainBinding
+import com.damn.anotherglass.extensions.GPSExtension
 import com.damn.anotherglass.extensions.notifications.NotificationService
 import com.damn.anotherglass.logging.LogActivity
 import com.damn.anotherglass.shared.RPCMessage
@@ -30,51 +33,53 @@ import com.damn.anotherglass.shared.wifi.WiFiAPI
 import com.damn.anotherglass.shared.wifi.WiFiConfiguration
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
 
+    private lateinit var mBinding: ActivityMainBinding
     private lateinit var mSettings: Settings
     private val mConnection = GlassServiceConnection()
-    private var mSwService: Switch? = null
-    private var mCntControls: View? = null
 
-    private val gpsPermissions =
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION)
-            else
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                        Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+    private val gpsPermissionLauncher = createGPSPermissionLauncher {
+        if (it) mSettings.isGPSEnabled= true
+        else mBinding.toggleGps.isChecked = false
+    }
+
+    private val bluetoothPermissionLauncher = registerForActivityResult(
+    ActivityResultContracts.RequestPermission()
+    ) {
+        if(it) start()
+        else mBinding.toggleService.isChecked = false
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        mBinding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(mBinding.root)
 
         mSettings = Settings(this)
-        mCntControls = findViewById(R.id.cnt_controls)
 
         // Start/Stop
-        mSwService = findViewById<Switch>(R.id.toggle_service).apply {
+        mBinding.toggleService.apply {
             isChecked = GlassService.isRunning(context)
-            setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, isChecked ->
-                if (isChecked == GlassService.isRunning(context)) return@OnCheckedChangeListener
+            setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked == GlassService.isRunning(context)) return@setOnCheckedChangeListener
                 if (isChecked) start() else stop()
                 // Tiny hack to avoid real checks and subscriptions to service lifecycle.
                 // We rely on a fact that, if service will start,
                 // we will be able to bind and then receive onServiceDisconnected
                 // even if it will stop right away due to missing BT connection or something else.
                 this.post { this.isChecked = GlassService.isRunning(context) }
-            })
+            }
         }
 
         // GPS
-        findViewById<Switch>(R.id.toggle_gps).apply {
+        mBinding.toggleGps.apply {
             isChecked = mSettings.isGPSEnabled
-            setOnCheckedChangeListener { _, isChecked -> mSettings.isGPSEnabled = isChecked }
+            setOnCheckedChangeListener { _, isChecked -> toggleGPS(isChecked) }
         }
 
         // Notifications
-        findViewById<Switch>(R.id.toggle_notifications).apply {
+        mBinding.toggleNotifications.apply {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
                 visibility = View.GONE
             } else {
@@ -82,17 +87,17 @@ class MainActivity : AppCompatActivity() {
                 val changeListener = object : CompoundButton.OnCheckedChangeListener {
                     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
                         if (toggleNotifications(isChecked)) return
-                        this@apply.setOnCheckedChangeListener(null)
-                        this@apply.isChecked = !isChecked
-                        this@apply.setOnCheckedChangeListener(this)
+                        buttonView.setOnCheckedChangeListener(null)
+                        buttonView.isChecked = !isChecked
+                        buttonView.setOnCheckedChangeListener(this)
                     }
                 }
                 setOnCheckedChangeListener(changeListener)
             }
         }
 
-        //WiFi
-        findViewById<View>(R.id.btn_connect_wifi).setOnClickListener { connectWiFi() }
+        // WiFi
+        mBinding.btnConnectWifi.setOnClickListener { connectWiFi() }
         updateUI()
     }
 
@@ -106,29 +111,45 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    private fun toggleGPS(isChecked: Boolean) {
+        if(isChecked && !GPSExtension.hasGeoPermission(this)) {
+            gpsPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            return
+        }
+        mSettings.isGPSEnabled = isChecked
+    }
+
     override fun onResume() {
         super.onResume()
+        mSettings.registerListener(this)
         updateUI() // will hide UI until we bind
         if (GlassService.isRunning(this)) mConnection.bindGlassService()
     }
 
     override fun onPause() {
         super.onPause()
+        mSettings.unregisterListener(this)
         mConnection.unbindGlassService()
     }
 
     private fun updateUI() {
         val running = null != mConnection.service
-        mCntControls!!.visibility = if (running) View.VISIBLE else View.GONE
+        mBinding.cntControls.visibility = if (running) View.VISIBLE else View.GONE
+        if (running) {
+            mBinding.toggleGps.isChecked = mSettings.isGPSEnabled
+        }
     }
 
     private fun start() {
-        // don't bother and always require all permissions
-        if (!hasGeoPermission()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                ActivityCompat.requestPermissions(this, gpsPermissions, 0)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                bluetoothPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+                return
             }
-            return
         }
         if (!GlassService.isRunning(this)) {
             startService(Intent(this@MainActivity, GlassService::class.java))
@@ -145,39 +166,31 @@ class MainActivity : AppCompatActivity() {
         val ssid = view.findViewById<EditText>(R.id.ed_ssid)
         val pass = view.findViewById<EditText>(R.id.ed_password)
         AlertDialog.Builder(this)
-                .setPositiveButton(android.R.string.ok) { _, _ -> connectToWiFi(ssid.text, pass.text) }
-                .setNegativeButton(android.R.string.cancel, null)
-                .setView(view)
-                .show()
+            .setPositiveButton(android.R.string.ok) { _, _ -> connectToWiFi(ssid.text, pass.text) }
+            .setNegativeButton(android.R.string.cancel, null)
+            .setView(view)
+            .show()
     }
 
-    private fun connectToWiFi(ssid: CharSequence,
-                              pass: CharSequence) {
+    private fun connectToWiFi(
+        ssid: CharSequence,
+        pass: CharSequence
+    ) {
         if (TextUtils.isEmpty(ssid)) return
         // pass can be empty
-        val service = mConnection.service ?: return
-        service.send(RPCMessage(
-                WiFiAPI.ID,
-                WiFiConfiguration(ssid.toString(), pass.toString())))
-    }
-
-    private fun hasGeoPermission(): Boolean =
-            gpsPermissions.all { PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(this, it) }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (!hasGeoPermission()) return
-        startService(Intent(this@MainActivity, GlassService::class.java))
+        mConnection.service?.send(
+            RPCMessage(WiFiAPI.ID, WiFiConfiguration(ssid.toString(), pass.toString()))
+        )
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP_MR1)
     private fun askEnableNotificationService() {
         AlertDialog.Builder(this)
-                .setTitle(R.string.msg_notification_listener_service_title)
-                .setMessage(R.string.notification_listener_service_message)
-                .setPositiveButton(android.R.string.yes) { _, _ -> startActivity(Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
-                .setNegativeButton(android.R.string.no, null)
-                .show()
+            .setTitle(R.string.msg_notification_listener_service_title)
+            .setMessage(R.string.notification_listener_service_message)
+            .setPositiveButton(android.R.string.yes) { _, _ -> startActivity(Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
+            .setNegativeButton(android.R.string.no, null)
+            .show()
     }
 
     private inner class GlassServiceConnection : ServiceConnection {
@@ -211,7 +224,7 @@ class MainActivity : AppCompatActivity() {
             service = null
             if (bound) {
                 // service stopped on its own, unbind from it (it won't restart on its own)
-                mSwService!!.isChecked = false
+                mBinding.toggleService.isChecked = false
                 unbindGlassService()
                 updateUI()
             }
@@ -224,10 +237,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (R.id.menu_xray == item.itemId) {
-            startActivity(Intent(this, LogActivity::class.java))
-            return true
+        when (item.itemId) {
+            R.id.menu_xray -> startActivity(Intent(this, LogActivity::class.java))
+            else -> return super.onContextItemSelected(item)
         }
-        return super.onContextItemSelected(item)
+        return true
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
+        when (key) {
+            Settings.GPS_ENABLED -> mBinding.toggleGps.isChecked = mSettings.isGPSEnabled
+        }
     }
 }

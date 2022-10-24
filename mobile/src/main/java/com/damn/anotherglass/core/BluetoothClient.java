@@ -1,11 +1,15 @@
 package com.damn.anotherglass.core;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
 import com.applicaster.xray.core.Logger;
 import com.damn.anotherglass.logging.ALog;
@@ -50,9 +54,15 @@ public class BluetoothClient {
         public void run() {
             try {
                 BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
-                Set<BluetoothDevice> pairedDevices = bt.getBondedDevices();
-                if (null == pairedDevices)
+                if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    log.e(TAG, "Missing permission, aborting the connection");
                     return;
+                }
+                Set<BluetoothDevice> pairedDevices = bt.getBondedDevices();
+                if (null == pairedDevices || pairedDevices.isEmpty()) {
+                    log.e(TAG, "No paired devices found, aborting the connection");
+                    return;
+                }
                 for (BluetoothDevice device : pairedDevices) {
                     final String deviceName = device.getName();
                     if (deviceName.contains(GLASS_BT_NAME_MARKER)) {
@@ -86,8 +96,9 @@ public class BluetoothClient {
             log.i(TAG, "Connection was shut down");
         }
 
+        @SuppressLint("MissingPermission")
         private void runLoop(@NonNull BluetoothDevice device) throws IOException, InterruptedException {
-            try (BluetoothSocket socket = device.createInsecureRfcommSocketToServiceRecord(Constants.uuid)) {
+            try ( BluetoothSocket socket = device.createInsecureRfcommSocketToServiceRecord(Constants.uuid)) {
                 socket.connect();
                 log.i(TAG, "Client has connected to " + device.getName());
                 try (DisconnectReceiver ignored = new DisconnectReceiver(mContext, device, this::shutdown)) {

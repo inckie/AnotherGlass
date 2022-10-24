@@ -23,6 +23,7 @@ android {
     lint {
         checkReleaseBuilds false
     }
+    namespace 'com.damn.anotherglass.glass.host'
 }
 
 repositories {
