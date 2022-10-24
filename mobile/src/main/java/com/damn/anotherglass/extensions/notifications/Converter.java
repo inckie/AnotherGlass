@@ -47,7 +47,12 @@ public class Converter {
             data.tickerText = notification.tickerText.toString();
         }
 
-        extractIcon(context, data, notification);
+        try {
+            extractIcon(context, data, notification);
+        } catch (Exception e) {
+            // todo: new Android version do not allow that, add required permission
+            e.printStackTrace();
+        }
         return data;
     }
 
