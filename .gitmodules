@@ -1,4 +1,4 @@
 [submodule "externals/x-ray"]
 	path = externals/x-ray
-	url = git@github.com:applicaster/x-ray.git
+	url = git@github.com:inckie/x-ray.git
 	shallow = true
