@@ -222,12 +222,9 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
 
         override fun onServiceDisconnected(name: ComponentName) {
             service = null
-            if (bound) {
-                // service stopped on its own, unbind from it (it won't restart on its own)
-                mBinding.toggleService.isChecked = false
-                unbindGlassService()
-                updateUI()
-            }
+            mBinding.toggleService.isChecked = false
+            unbindGlassService()
+            updateUI()
         }
     }
 

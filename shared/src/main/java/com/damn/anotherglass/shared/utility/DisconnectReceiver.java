@@ -12,7 +12,7 @@ import java.io.Closeable;
 public class DisconnectReceiver
         extends BroadcastReceiver implements Closeable {
 
-    private static final String TAG = "DisconnectedBroadcastReceiver";
+    private static final String TAG = "DisconnectReceiver";
     private final Context context;
     private final BluetoothDevice device;
     private final IListener listener;
@@ -22,9 +22,10 @@ public class DisconnectReceiver
         void onDeviceDisconnected();
     }
 
-    public DisconnectReceiver(Context context,
-                              BluetoothDevice device,
-                              IListener listener) {
+    public DisconnectReceiver(
+            Context context,
+            BluetoothDevice device,
+            IListener listener) {
         this.context = context;
         this.device = device;
         this.listener = listener;

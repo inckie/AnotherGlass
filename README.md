@@ -9,20 +9,19 @@ Currently, the application can:
 ## Building
 
 Project consist of 3 modules:
-* **glass** - Google Glass application, containing Host Service
-* **mobile** - companion application for mobile device, containing Client Service
+* **glass** - Google Glass application, containing Client Service
+* **mobile** - companion application for mobile device, containing Host Service
 * **shared** - a shared module with shared classes and constants
 
 ## Running
 1. Pair the Glass with the phone.
 2. Install both apps
-3. On Glass, use a 'Sign in' menu option ('Help me sign in' voice command) to start Host Service
-4. Toggle service switch on the phone application to start Client Service
+3. Toggle service switch on the phone application to start Host Service
+4. On Glass, use a 'Sign in' menu option ('Help me sign in' voice command) to start Client Service
 
 ## Details
 
 Uses Java object stream to send data to Google Glass, since I don't want to mess with protocol buffers yet.
-Glass application acts as a Bluetooth server, so phone can connect and disconnect when needed (not sure how useful this is). Maybe I'll swap these roles, and start services automatically on Glasses connect.
 
 ## AnotherGlass Plans
 
