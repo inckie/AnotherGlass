@@ -2,6 +2,7 @@ package com.damn.anotherglass.glass.host.bluetooth;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
@@ -63,8 +64,8 @@ public class BluetoothClient {
                     return;
                 }
                 for (BluetoothDevice device : pairedDevices) {
-                    final String deviceName = device.getName();
-                    if (deviceName.contains("S10")) {
+                    // connect to the first phone we find
+                    if (BluetoothClass.Device.PHONE_SMART == device.getBluetoothClass().getDeviceClass()) {
                         runLoop(device);
                         break;
                     }
