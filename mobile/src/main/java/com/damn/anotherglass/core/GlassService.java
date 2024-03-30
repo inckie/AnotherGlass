@@ -13,8 +13,10 @@ import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.applicaster.xray.core.Logger;
@@ -23,6 +25,7 @@ import com.damn.anotherglass.extensions.GPSExtension;
 import com.damn.anotherglass.extensions.notifications.NotificationExtension;
 import com.damn.anotherglass.logging.ALog;
 import com.damn.anotherglass.shared.RPCMessage;
+import com.damn.anotherglass.shared.RPCMessageListener;
 import com.damn.anotherglass.ui.MainActivity;
 
 import java.util.List;
@@ -40,7 +43,7 @@ public class GlassService
 
     private final IBinder mBinder = new LocalBinder();
 
-    private BluetoothClient mClient;
+    private BluetoothHost mClient;
 
     private NotificationManager mNM;
 
@@ -63,24 +66,55 @@ public class GlassService
         mNM = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         createChannels();
         startForeground(NOTIFICATION_ID, buildNotification());
-        mClient = new BluetoothClient() {
+
+        // todo: update notification and UI on changes
+        mClient = new BluetoothHost(this, new RPCMessageListener() {
+            @Override
+            public void onWaiting() {
+                log.i(TAG, "Waiting for connection");
+                Toast.makeText(GlassService.this, "Waiting for connection", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onConnectionStarted(@NonNull String device) {
+                log.i(TAG, "Connected to " + device);
+                Toast.makeText(GlassService.this, "Connected to " + device, Toast.LENGTH_SHORT).show();
+                if(mSettings.isGPSEnabled())
+                    mGPS.start();
+                if(mSettings.isNotificationsEnabled())
+                    mNotifications.start();
+            }
+
+            @Override
+            public void onDataReceived(@NonNull RPCMessage data) {
+                log.d(TAG, "Received " + data);
+            }
+
+            @Override
+            public void onConnectionLost(@Nullable String error) {
+                if(null != error)
+                    log.e(TAG, "Disconnected with error: " + error);
+                else
+                    log.i(TAG, "Disconnected");
+                Toast.makeText(GlassService.this, "Disconnected", Toast.LENGTH_SHORT).show();
+                mGPS.stop();
+                mNotifications.stop();
+            }
+        }) {
             @Override
             public void onStopped() {
                 log.i(TAG, "BluetoothClient has stopped, terminating GlassService");
+                Toast.makeText(GlassService.this, "BluetoothClient has stopped, terminating GlassService", Toast.LENGTH_SHORT).show();
                 stopSelf();
             }
         };
-        mClient.start(this);
         mSettings = new Settings(this);
         mSettings.registerListener(this);
 
         mNotifications = new NotificationExtension(this);
-        if(mSettings.isNotificationsEnabled())
-            mNotifications.start();
-
         mGPS = new GPSExtension(this);
-        if(mSettings.isGPSEnabled())
-            mGPS.start();
+
+        mClient.start();
     }
 
     @Override

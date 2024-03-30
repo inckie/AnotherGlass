@@ -6,18 +6,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.IBinder;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
-import com.damn.anotherglass.glass.host.bluetooth.BluetoothHost;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.damn.anotherglass.glass.host.bluetooth.BluetoothClient;
 import com.damn.anotherglass.glass.host.gps.MockGPS;
 import com.damn.anotherglass.glass.host.notifications.NotificationsCardController;
 import com.damn.anotherglass.glass.host.ui.ICardViewProvider;
 import com.damn.anotherglass.glass.host.ui.MapCard;
 import com.damn.anotherglass.glass.host.wifi.WiFiActivity;
 import com.damn.anotherglass.shared.RPCMessage;
+import com.damn.anotherglass.shared.RPCMessageListener;
 import com.damn.anotherglass.shared.gps.GPSServiceAPI;
 import com.damn.anotherglass.shared.gps.Location;
 import com.damn.anotherglass.shared.notifications.NotificationData;
@@ -41,7 +43,7 @@ public class HostService extends Service {
 
     private MockGPS mGPS;
 
-    private BluetoothHost mBt;
+    private BluetoothClient mBt;
 
     private ICardViewProvider mCardProvider;
 
@@ -73,7 +75,8 @@ public class HostService extends Service {
 
             AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
-            mBt = new BluetoothHost(this) {
+            mBt = new BluetoothClient();
+            mBt.start(this, new RPCMessageListener() {
 
                 @Override
                 public void onWaiting() {
@@ -104,8 +107,7 @@ public class HostService extends Service {
                             Toast.LENGTH_LONG).show();
                     stopSelf(); // do not restart for now
                 }
-            };
-            mBt.start();
+            });
         } else {
             mLiveCard.navigate();
         }
