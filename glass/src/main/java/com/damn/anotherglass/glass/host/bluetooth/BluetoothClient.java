@@ -19,6 +19,7 @@ import com.damn.anotherglass.shared.RPCHandler;
 import com.damn.anotherglass.shared.RPCMessage;
 import com.damn.anotherglass.shared.RPCMessageListener;
 import com.damn.anotherglass.shared.utility.DisconnectReceiver;
+import com.damn.anotherglass.shared.utility.Sleep;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -123,6 +124,7 @@ public class BluetoothClient {
                                 mHandler.onDataReceived(objectReceived);
                                 Log.v(TAG, "Message " + objectReceived.service + "/" + objectReceived.type + " was received");
                             }
+                            Sleep.sleep(100);
                         }
                     }
                 }
