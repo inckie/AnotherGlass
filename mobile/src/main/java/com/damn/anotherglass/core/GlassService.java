@@ -103,6 +103,7 @@ public class GlassService
         }) {
             @Override
             public void onStopped() {
+                super.onStopped();
                 log.i(TAG, "BluetoothClient has stopped, terminating GlassService");
                 Toast.makeText(GlassService.this, "BluetoothClient has stopped, terminating GlassService", Toast.LENGTH_SHORT).show();
                 stopSelf();
