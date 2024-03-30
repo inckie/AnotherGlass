@@ -1,4 +1,4 @@
-package com.damn.anotherglass.glass.host.utility;
+package com.damn.anotherglass.shared.utility;
 
 public class Sleep {
 

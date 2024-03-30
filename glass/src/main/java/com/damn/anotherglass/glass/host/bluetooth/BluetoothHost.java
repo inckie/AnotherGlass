@@ -12,8 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.util.Log;
 
-import com.damn.anotherglass.glass.host.utility.Closeables;
-import com.damn.anotherglass.glass.host.utility.Sleep;
+import com.damn.anotherglass.shared.utility.Closeables;
+import com.damn.anotherglass.shared.utility.Sleep;
 import com.damn.anotherglass.shared.Constants;
 import com.damn.anotherglass.shared.RPCMessage;
 import com.damn.anotherglass.shared.utility.DisconnectReceiver;
