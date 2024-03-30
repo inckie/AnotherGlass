@@ -35,7 +35,7 @@ class NotificationExtension(private val service: GlassService) {
         if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this)
         }
-        log.i(TAG).message(TAG, "Notification extension stopped")
+        log.i(TAG).message("Notification extension stopped")
     }
 
     companion object {
