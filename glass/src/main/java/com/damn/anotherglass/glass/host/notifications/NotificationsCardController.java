@@ -36,7 +36,7 @@ public class NotificationsCardController extends BroadcastReceiver {
     private final HostService service;
 
     // each ongoing notification gets its own card
-    private Map<NotificationId, LiveCard> mOngoingCards = new HashMap<>();
+    private final Map<NotificationId, LiveCard> mOngoingCards = new HashMap<>();
 
     // fake 'stack' of dismissible notifications
     private LiveCard mStackedCard;

@@ -9,18 +9,14 @@ import java.util.Map;
 
 public class NotificationsRepo {
 
-    private static NotificationsRepo instance;
-
     private final Map<NotificationId, NotificationData> notifications = new HashMap<>();
 
+    private static final class InstanceHolder {
+        static final NotificationsRepo instance = new NotificationsRepo();
+    }
+
     public static NotificationsRepo get() {
-        if (null == instance) {
-            synchronized (NotificationsRepo.class) {
-                if (instance == null)
-                    instance = new NotificationsRepo();
-            }
-        }
-        return instance;
+        return InstanceHolder.instance;
     }
 
     // synchronization is not really needed, all updates are in UI thread now
