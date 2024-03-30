@@ -85,7 +85,7 @@ public abstract class BluetoothHost {
     }
 
     private class WorkerThread extends Thread {
-        BluetoothServerSocket serverSocket; // should use atomic reference, but it's not that critical
+        private BluetoothServerSocket serverSocket; // should use atomic reference, but it's not that critical
 
         @SuppressLint("MissingPermission")
         public void run() {
@@ -136,8 +136,8 @@ public abstract class BluetoothHost {
 
         @SuppressLint("MissingPermission")
         private void runLoop(BluetoothSocket socket) throws IOException, ClassNotFoundException, InterruptedException {
-            ALog.d(TAG, "create ConnectedDevice");
             final BluetoothDevice remoteDevice = socket.getRemoteDevice();
+            ALog.d(TAG, "Connected to " + remoteDevice.getName());
             mHandler.onConnectionStarted(remoteDevice.getName());
             try (DisconnectReceiver ignored = new DisconnectReceiver(mContext, remoteDevice, this::onConnectionLost)) {
                 try (InputStream inputStream = socket.getInputStream();

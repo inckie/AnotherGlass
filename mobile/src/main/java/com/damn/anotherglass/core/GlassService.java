@@ -109,11 +109,12 @@ public class GlassService
                 stopSelf();
             }
         };
-        mSettings = new Settings(this);
-        mSettings.registerListener(this);
 
         mNotifications = new NotificationExtension(this);
         mGPS = new GPSExtension(this);
+
+        mSettings = new Settings(this);
+        mSettings.registerListener(this);
 
         mClient.start();
     }
@@ -165,25 +166,23 @@ public class GlassService
     }
 
     private Notification buildNotification() {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, sCHANNEL_DEFAULT);
-        builder.setOngoing(true);
-        builder.setContentTitle(getString(R.string.app_name));
-        builder.setSmallIcon(R.mipmap.ic_launcher);
-        builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-        builder.setOnlyAlertOnce(true);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, sCHANNEL_DEFAULT)
+                .setOngoing(true)
+                .setContentTitle(getString(R.string.app_name))
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setOnlyAlertOnce(true);
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
         int flag = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ?  PendingIntent.FLAG_MUTABLE : 0;
 
-        @SuppressLint("WrongConstant")
         PendingIntent contentIntent = PendingIntent.getActivity(
                 this, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | flag);
         builder.setContentIntent(contentIntent);
 
-        @SuppressLint("WrongConstant")
         PendingIntent stopIntent = PendingIntent.getService(
                 this,
                 R.string.btn_stop,
@@ -225,13 +224,13 @@ public class GlassService
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if(Settings.GPS_ENABLED.equals(key)) {
             if(mSettings.isGPSEnabled())
-                mGPS.start();
+                mGPS.start(); // todo: check if any device is connected
             else
                 mGPS.stop();
         }
         else if(Settings.NOTIFICATIONS_ENABLED.equals(key)) {
             if(mSettings.isNotificationsEnabled())
-                mNotifications.start();
+                mNotifications.start(); // todo: check if any device is connected
             else
                 mNotifications.stop();
         }
