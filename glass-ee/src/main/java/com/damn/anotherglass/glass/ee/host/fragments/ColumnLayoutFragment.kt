@@ -13,83 +13,82 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.damn.anotherglass.glass.ee.host.fragments
 
-package com.damn.anotherglass.glass.ee.host.fragments;
-
-import android.graphics.Typeface;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.TextView;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.damn.anotherglass.glass.ee.host.R;
+import android.graphics.Typeface
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.TextView
+import com.damn.anotherglass.glass.ee.host.R
 
 /**
  * Fragment with the two column layout.
  */
-public class ColumnLayoutFragment extends BaseFragment {
+class ColumnLayoutFragment : BaseFragment() {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.left_column_layout, container, false)
 
-  private static final String IMAGE_KEY = "image_key";
-  private static final String TEXT_KEY = "text_key";
-  private static final String FOOTER_KEY = "footer_key";
-  private static final String TIMESTAMP_KEY = "timestamp_key";
-  private static final int TEXT_SIZE = 30;
-  private static final int IMAGE_PADDING = 40;
+        arguments?.let { args ->
+            val imageView = ImageView(activity)
+            imageView.setPadding(IMAGE_PADDING, IMAGE_PADDING, IMAGE_PADDING, IMAGE_PADDING)
+            imageView.setImageResource(args.getInt(IMAGE_KEY))
+            val leftColumn = view.findViewById<FrameLayout>(R.id.left_column)
+            leftColumn.addView(imageView)
 
-  /**
-   * Returns new instance of {@link ColumnLayoutFragment}.
-   *
-   * @param image is a android image resource to create a imageView on the left column.
-   * @param text is a String with the card main text.
-   * @param footer is a String with the card footer text.
-   * @param timestamp is a String with the card timestamp text.
-   */
-  public static ColumnLayoutFragment newInstance(int image, String text, String footer,
-      String timestamp) {
-    final ColumnLayoutFragment myFragment = new ColumnLayoutFragment();
+            val textView = TextView(activity)
+            textView.text = args.getString(TEXT_KEY)
+            textView.textSize = TEXT_SIZE.toFloat()
+            textView.setTypeface(Typeface.create(getString(R.string.thin_font), Typeface.NORMAL))
 
-    final Bundle args = new Bundle();
-    args.putInt(IMAGE_KEY, image);
-    args.putString(TEXT_KEY, text);
-    args.putString(FOOTER_KEY, footer);
-    args.putString(TIMESTAMP_KEY, timestamp);
-    myFragment.setArguments(args);
+            val rightColumn = view.findViewById<FrameLayout>(R.id.right_column)
+            rightColumn.addView(textView)
 
-    return myFragment;
-  }
+            val footer = view.findViewById<TextView>(R.id.footer)
+            footer.text = args.getString(FOOTER_KEY, getString(R.string.empty_string))
 
-  @Nullable
-  @Override
-  public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-      @Nullable Bundle savedInstanceState) {
-    final View view = inflater.inflate(R.layout.left_column_layout, container, false);
-
-    if (getArguments() != null) {
-      final ImageView imageView = new ImageView(getActivity());
-      imageView.setPadding(IMAGE_PADDING, IMAGE_PADDING, IMAGE_PADDING, IMAGE_PADDING);
-      imageView.setImageResource(getArguments().getInt(IMAGE_KEY));
-
-      final FrameLayout leftColumn = view.findViewById(R.id.left_column);
-      leftColumn.addView(imageView);
-
-      final TextView textView = new TextView(getActivity());
-      textView.setText(getArguments().getString(TEXT_KEY));
-      textView.setTextSize(TEXT_SIZE);
-      textView.setTypeface(Typeface.create(getString(R.string.thin_font), Typeface.NORMAL));
-
-      final FrameLayout rightColumn = view.findViewById(R.id.right_column);
-      rightColumn.addView(textView);
-
-      final TextView footer = view.findViewById(R.id.footer);
-      footer.setText(getArguments().getString(FOOTER_KEY, getString(R.string.empty_string)));
-
-      final TextView timestamp = view.findViewById(R.id.timestamp);
-      timestamp.setText(getArguments().getString(TIMESTAMP_KEY, getString(R.string.empty_string)));
+            val timestamp = view.findViewById<TextView>(R.id.timestamp)
+            timestamp.text = args.getString(TIMESTAMP_KEY, getString(R.string.empty_string))
+        }
+        return view
     }
-    return view;
-  }
+
+    companion object {
+        private const val IMAGE_KEY = "image_key"
+        private const val TEXT_KEY = "text_key"
+        private const val FOOTER_KEY = "footer_key"
+        private const val TIMESTAMP_KEY = "timestamp_key"
+        private const val TEXT_SIZE = 30
+        private const val IMAGE_PADDING = 40
+
+        /**
+         * Returns new instance of [ColumnLayoutFragment].
+         *
+         * @param image is a android image resource to create a imageView on the left column.
+         * @param text is a String with the card main text.
+         * @param footer is a String with the card footer text.
+         * @param timestamp is a String with the card timestamp text.
+         */
+        fun newInstance(
+            image: Int,
+            text: String?,
+            footer: String?,
+            timestamp: String?
+        ): ColumnLayoutFragment = ColumnLayoutFragment().apply {
+            val args = Bundle().apply {
+                putInt(IMAGE_KEY, image) // todo: add Drawable support?
+                putString(TEXT_KEY, text)
+                putString(FOOTER_KEY, footer)
+                putString(TIMESTAMP_KEY, timestamp)
+            }
+            setArguments(args)
+        }
+    }
 }
