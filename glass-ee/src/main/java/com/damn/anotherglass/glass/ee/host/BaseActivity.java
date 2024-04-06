@@ -46,12 +46,9 @@ public abstract class BaseActivity extends AppCompatActivity implements OnGestur
     }
     decorView = getWindow().getDecorView();
     decorView
-        .setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
-          @Override
-          public void onSystemUiVisibilityChange(int visibility) {
-            if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-              hideSystemUI();
-            }
+        .setOnSystemUiVisibilityChangeListener(visibility -> {
+          if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+            hideSystemUI();
           }
         });
     glassGestureDetector = new GlassGestureDetector(this, this);
