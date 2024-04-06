@@ -44,10 +44,10 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         else mBinding.toggleGps.isChecked = false
     }
 
-    private val bluetoothPermissionLauncher = registerForActivityResult(
-    ActivityResultContracts.RequestPermission()
+    private val servicePermissionLauncher = registerForActivityResult(
+    ActivityResultContracts.RequestMultiplePermissions()
     ) {
-        if(it) start()
+        if (it.values.all { it }) start()
         else mBinding.toggleService.isChecked = false
     }
 
@@ -133,24 +133,47 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     }
 
     private fun updateUI() {
-        val running = null != mConnection.service
-        mBinding.cntControls.visibility = if (running) View.VISIBLE else View.GONE
-        if (running) {
+        val isRunning = GlassService.isRunning(this)
+        if(isRunning != mBinding.toggleService.isChecked) {
+            mBinding.toggleService.isChecked = isRunning // only update if different in order to avoid callback
+        }
+        if (isRunning) {
             mBinding.toggleGps.isChecked = mSettings.isGPSEnabled
         }
+        val isConnected = null != mConnection.service
+        mBinding.cntControls.visibility = if (isConnected) View.VISIBLE else View.GONE
     }
 
     private fun start() {
+
+        val permissions = mutableListOf<String>()
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (ActivityCompat.checkSelfPermission(
                     this,
                     Manifest.permission.BLUETOOTH_CONNECT
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                bluetoothPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
-                return
+                permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
             }
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                permissions.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
+        if (permissions.isNotEmpty()) {
+            servicePermissionLauncher.launch(permissions.toTypedArray())
+            mBinding.toggleGps.isChecked = false
+            return
+        }
+
         if (!GlassService.isRunning(this)) {
             startService(Intent(this@MainActivity, GlassService::class.java))
         }

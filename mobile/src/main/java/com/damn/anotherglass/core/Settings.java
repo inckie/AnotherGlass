@@ -26,7 +26,7 @@ public class Settings {
     }
 
     public boolean isGPSEnabled() {
-        return mPreferences.getBoolean(GPS_ENABLED, true);
+        return mPreferences.getBoolean(GPS_ENABLED, false);
     }
 
     public void setGPSEnabled(boolean enabled) {
@@ -34,7 +34,7 @@ public class Settings {
     }
 
     public boolean isNotificationsEnabled() {
-        return mPreferences.getBoolean(NOTIFICATIONS_ENABLED, true);
+        return mPreferences.getBoolean(NOTIFICATIONS_ENABLED, false);
     }
 
     public void setNotificationsEnabled(boolean enabled) {
