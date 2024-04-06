@@ -1,6 +1,7 @@
 # AnotherGlass for Google Glass
 
-Companion application to handle Google Glass communication with a phone without Glass related Google Services.
+Companion application to handle **Google Glass Explorer Edition** communication with a phone without official My Glass application and related Google Services.
+
 Currently, the application can:
  * pass GPS data from the phone to the Glass
  * forwarding ongoing and one-shot notifications to the Glass
@@ -21,20 +22,23 @@ Project consist of 3 modules:
 
 ## Details
 
+Originally, Glass application was serving as a host, and mobile was supposed to connect to it when some updates needed to be passed over, like notification status change or URL intent. But it turned out that the primary use case for the service was to serve as a GPS location provider, since most of my glassware is relying directly on web backends through tethered connection, so I switched the roles. In the future, I can add some 'temporary disconnected' state, when the Glass side will disconnect from the mobile app, but will open listening port so mobile app can 'knock' to re-instantiate the connection.
+
 Uses Java object stream to send data to Google Glass, since I don't want to mess with protocol buffers yet.
 
 ## AnotherGlass Plans
 
-* Handle sockets lifecycle nicely (keep alive packets, probably)
-* Handle Bluetooth reconnects (Glass sometimes loses the connection and immediately reconnects, but I stop services for now)
-* Add one time notification stack activity (easy, but lazy)
-* Add notifications filter options and better display
-* Try to handle notifications action buttons on the Glass
-* Make a better Service Dashboard LiveCard
-* Enable/disable GPS dynamically (not sure if we can track it on the Glass though, but can add a toggle intent for use in my GlassWare at least)
-* Bi-directional intent routing (navigation, sharing)
-* Add file logging on both devices for debugging
-* Map zoom levels selector
+* Add version for Google Glass Enterprise Edition 2 (Android 8.1). It has built-in GPS, so I only need to handle notifications and intent routing. Will require a separate module, since it lacks stock Glass APIs like LiveCards, and also needs to handle permissions and so on.
+* Rewrite the connections loops, so listening thread will be waiting for the incoming messages, and sending will happen in a separate thread (how I have peek/sleep cycle typical for desktop applications).
+* Handle Bluetooth reconnects (Glass sometimes loses the Bluetooth connection and immediately reconnects, but I stop the service for now).
+* Add one time notification stack activity (easy, but lazy).
+* Add notifications filter options and better display.
+* Try to handle notifications action buttons on the Glass.
+* Make a better Service Dashboard LiveCard.
+* Enable/disable GPS dynamically (not sure if we can track it on the Glass though, but can add a toggle intent for use in my GlassWare at least).
+* Bi-directional intent routing (navigation, sharing). Actually, done in separate repo due to tight integration with private GlassWare.
+* Add file logging on both devices for debugging.
+* Map zoom levels selector.
 
 ## GlassWare Plans
 
@@ -43,8 +47,9 @@ I plan to write a number of small GlassWare applications to provide contextual A
 These applications will work with their own back-ends, and in some cases, have companion applications on the mobile to offload heavy calculations, or access some specific device data.
 Also they will make use of AnotherGlass to handle initial setup and route intents.
 
-* Face capture/recognizer
-* Better navigation directions
+* Face capture/recognizer (written, but not public)
+* Better navigation directions (written, but not public)
 * Basic calendar agenda viewer
 * Voice recorder
 * Timer
+* Better QR2 scanner
