@@ -47,13 +47,14 @@ class GPSExtension(private val service: GlassService) : LocationListener {
 
     override fun onLocationChanged(location: Location) {
         log.d(TAG, "GPS extension received location update")
-        val loc = com.damn.anotherglass.shared.gps.Location()
-        loc.accuracy = location.accuracy
-        loc.latitude = location.latitude
-        loc.longitude = location.longitude
-        loc.altitude = location.altitude
-        loc.bearing = location.bearing
-        loc.speed = location.speed
+        val loc = com.damn.anotherglass.shared.gps.Location().apply {
+            accuracy = location.accuracy
+            latitude = location.latitude
+            longitude = location.longitude
+            altitude = location.altitude
+            bearing = location.bearing
+            speed = location.speed
+        }
         val rpcMessage = RPCMessage(GPSServiceAPI.ID, loc)
         service.send(rpcMessage)
     }
