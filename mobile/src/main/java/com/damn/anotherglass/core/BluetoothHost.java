@@ -15,9 +15,10 @@ import androidx.core.app.ActivityCompat;
 
 import com.applicaster.xray.android.adapters.ALog;
 import com.damn.anotherglass.shared.Constants;
-import com.damn.anotherglass.shared.RPCHandler;
-import com.damn.anotherglass.shared.RPCMessage;
-import com.damn.anotherglass.shared.RPCMessageListener;
+import com.damn.anotherglass.shared.rpc.IRPCHost;
+import com.damn.anotherglass.shared.rpc.RPCHandler;
+import com.damn.anotherglass.shared.rpc.RPCMessage;
+import com.damn.anotherglass.shared.rpc.RPCMessageListener;
 import com.damn.anotherglass.shared.utility.Closeables;
 import com.damn.anotherglass.shared.utility.DisconnectReceiver;
 import com.damn.anotherglass.shared.utility.Sleep;
@@ -31,12 +32,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
 
-public abstract class BluetoothHost {
+public abstract class BluetoothHost implements IRPCHost {
 
     private static final String NAME = "AnotherGlass";
     private static final String TAG = "GlassHost";
-
-    private final Context mContext;
 
     private final RPCHandler mHandler;
 
@@ -45,21 +44,22 @@ public abstract class BluetoothHost {
     private volatile WorkerThread mWorkerThread;
     private volatile boolean mActive; // are we still need to run?
 
-    public BluetoothHost(Context context, RPCMessageListener listener) {
-        mContext = context;
+    public BluetoothHost(RPCMessageListener listener) {
         mHandler = new RPCHandler(listener);
     }
 
-    public void start() {
-        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+    @Override
+    public void start(Context context) {
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             onStopped();
             return;
         }
         mActive = true;
-        mWorkerThread = new WorkerThread();
+        mWorkerThread = new WorkerThread(context);
         mWorkerThread.start();
     }
 
+    @Override
     public void stop() {
         mActive = false;
         WorkerThread thread = this.mWorkerThread;
@@ -69,11 +69,13 @@ public abstract class BluetoothHost {
         }
     }
 
+    @Override
     @CallSuper
     public void onStopped() {
         mQueue.clear();
     }
 
+    @Override
     public void send(RPCMessage message) {
         if (!mActive) {
             ALog.e(TAG, "send() called when not active");
@@ -85,7 +87,12 @@ public abstract class BluetoothHost {
     }
 
     private class WorkerThread extends Thread {
+        private final Context mContext;
         private BluetoothServerSocket serverSocket; // should use atomic reference, but it's not that critical
+
+        public WorkerThread(Context context) {
+            mContext = context;
+        }
 
         @SuppressLint("MissingPermission")
         public void run() {

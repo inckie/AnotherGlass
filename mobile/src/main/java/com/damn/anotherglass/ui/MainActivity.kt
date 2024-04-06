@@ -26,7 +26,7 @@ import com.damn.anotherglass.databinding.ActivityMainBinding
 import com.damn.anotherglass.extensions.GPSExtension
 import com.damn.anotherglass.extensions.notifications.NotificationService
 import com.damn.anotherglass.logging.LogActivity
-import com.damn.anotherglass.shared.RPCMessage
+import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.wifi.WiFiAPI
 import com.damn.anotherglass.shared.wifi.WiFiConfiguration
 import com.damn.anotherglass.utility.hasPermission

@@ -13,7 +13,7 @@ import com.applicaster.xray.core.Logger
 import com.damn.anotherglass.R
 import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.logging.ALog
-import com.damn.anotherglass.shared.RPCMessage
+import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.gps.GPSServiceAPI
 import com.damn.anotherglass.utility.hasPermission
 

@@ -13,13 +13,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.damn.anotherglass.glass.host.bluetooth.BluetoothClient;
+import com.damn.anotherglass.shared.rpc.IRPCClient;
 import com.damn.anotherglass.glass.host.gps.MockGPS;
 import com.damn.anotherglass.glass.host.notifications.NotificationsCardController;
 import com.damn.anotherglass.glass.host.ui.ICardViewProvider;
 import com.damn.anotherglass.glass.host.ui.MapCard;
 import com.damn.anotherglass.glass.host.wifi.WiFiActivity;
-import com.damn.anotherglass.shared.RPCMessage;
-import com.damn.anotherglass.shared.RPCMessageListener;
+import com.damn.anotherglass.shared.rpc.RPCMessage;
+import com.damn.anotherglass.shared.rpc.RPCMessageListener;
 import com.damn.anotherglass.shared.gps.GPSServiceAPI;
 import com.damn.anotherglass.shared.gps.Location;
 import com.damn.anotherglass.shared.notifications.NotificationData;
@@ -43,7 +44,7 @@ public class HostService extends Service {
 
     private MockGPS mGPS;
 
-    private BluetoothClient mBt;
+    private IRPCClient mRPCClient;
 
     private ICardViewProvider mCardProvider;
 
@@ -75,8 +76,8 @@ public class HostService extends Service {
 
             AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
-            mBt = new BluetoothClient();
-            mBt.start(this, new RPCMessageListener() {
+            mRPCClient = new BluetoothClient();
+            mRPCClient.start(this, new RPCMessageListener() {
 
                 @Override
                 public void onWaiting() {
@@ -143,7 +144,7 @@ public class HostService extends Service {
 
     @Override
     public void onDestroy() {
-        mBt.stop();
+        mRPCClient.stop();
         mNotificationsCardController.remove();
         mGPS.remove();
         if(null != mCardProvider) {

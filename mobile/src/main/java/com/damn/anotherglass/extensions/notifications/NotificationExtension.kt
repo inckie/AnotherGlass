@@ -2,7 +2,7 @@ package com.damn.anotherglass.extensions.notifications
 
 import com.applicaster.xray.core.Logger
 import com.damn.anotherglass.core.GlassService
-import com.damn.anotherglass.shared.RPCMessage
+import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.notifications.NotificationsAPI
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe

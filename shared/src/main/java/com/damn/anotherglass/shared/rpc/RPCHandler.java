@@ -1,9 +1,11 @@
-package com.damn.anotherglass.shared;
+package com.damn.anotherglass.shared.rpc;
 
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 
 public class RPCHandler extends Handler implements RPCMessageListener {
@@ -47,12 +49,12 @@ public class RPCHandler extends Handler implements RPCMessageListener {
     }
 
     @Override
-    public void onConnectionStarted(/*@NonNull*/ String device) {
+    public void onConnectionStarted(@NonNull String device) {
         obtainMessage(RPCHandler.STATE_CONNECTION_STARTED, device).sendToTarget();
     }
 
     @Override
-    public void onDataReceived(/*@NonNull*/ RPCMessage data) {
+    public void onDataReceived(@NonNull RPCMessage data) {
         obtainMessage(RPCHandler.MSG_DATA_RECEIVED, data).sendToTarget();
     }
 

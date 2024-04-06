@@ -6,18 +6,15 @@ import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.damn.anotherglass.shared.Constants;
-import com.damn.anotherglass.shared.RPCHandler;
-import com.damn.anotherglass.shared.RPCMessage;
-import com.damn.anotherglass.shared.RPCMessageListener;
+import com.damn.anotherglass.shared.rpc.IRPCClient;
+import com.damn.anotherglass.shared.rpc.RPCHandler;
+import com.damn.anotherglass.shared.rpc.RPCMessage;
+import com.damn.anotherglass.shared.rpc.RPCMessageListener;
 import com.damn.anotherglass.shared.utility.DisconnectReceiver;
 import com.damn.anotherglass.shared.utility.Sleep;
 
@@ -31,7 +28,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class BluetoothClient {
+public class BluetoothClient implements IRPCClient {
 
     private static final String TAG = "BluetoothClient";
 
@@ -140,6 +137,7 @@ public class BluetoothClient {
         }
     }
 
+    @Override
     public void start(Context context, RPCMessageListener listener) {
         if (null != mConnection) {
             Log.d(TAG, "Connection is already present");
@@ -149,6 +147,7 @@ public class BluetoothClient {
         mConnection.start();
     }
 
+    @Override
     public void send(@NonNull RPCMessage message) {
         Connection connection = mConnection;
         if (null == connection || !connection.isConnected()) {
@@ -158,6 +157,7 @@ public class BluetoothClient {
         connection.send(message);
     }
 
+    @Override
     public void stop() {
         Connection connection = mConnection;
         mConnection = null;
