@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".logging.LogActivity">
 
-    <androidx.viewpager.widget.ViewPager
+    <com.applicaster.xray.ui.views.DefaultViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -32,5 +32,5 @@
             android:layout_height="match_parent"
             app:sink_name="memory_sink" />
 
-    </androidx.viewpager.widget.ViewPager>
+    </com.applicaster.xray.ui.views.DefaultViewPager>
 </androidx.constraintlayout.widget.ConstraintLayout>
