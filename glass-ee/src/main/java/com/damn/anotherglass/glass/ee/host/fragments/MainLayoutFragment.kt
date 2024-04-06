@@ -13,73 +13,71 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.damn.anotherglass.glass.ee.host.fragments
 
-package com.damn.anotherglass.glass.ee.host.fragments;
-
-import android.graphics.Typeface;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.TextView;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.damn.anotherglass.glass.ee.host.R;
+import android.graphics.Typeface
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.TextView
+import com.damn.anotherglass.glass.ee.host.R
 
 /**
  * Fragment with the main card layout.
  */
-public class MainLayoutFragment extends BaseFragment {
+class MainLayoutFragment : BaseFragment() {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val args = requireArguments()
 
-  private static final String TEXT_KEY = "text_key";
-  private static final String FOOTER_KEY = "footer_key";
-  private static final String TIMESTAMP_KEY = "timestamp_key";
-  private static final int BODY_TEXT_SIZE = 40;
+        val view = inflater.inflate(R.layout.main_layout, container, false)
 
-  /**
-   * Returns new instance of {@link MainLayoutFragment}.
-   *
-   * @param text is a String with the card main text.
-   * @param footer is a String with the card footer text.
-   * @param timestamp is a String with the card timestamp text.
-   */
-  public static MainLayoutFragment newInstance(String text, String footer, String timestamp,
-      @Nullable Integer menu) {
-    final MainLayoutFragment myFragment = new MainLayoutFragment();
+        val textView = TextView(context)
+        textView.text = args.getString(TEXT_KEY, getString(R.string.empty_string))
+        textView.textSize = BODY_TEXT_SIZE.toFloat()
+        textView.setTypeface(Typeface.create(getString(R.string.thin_font), Typeface.NORMAL))
+        val bodyLayout = view.findViewById<FrameLayout>(R.id.body_layout)
+        bodyLayout.addView(textView)
 
-    final Bundle args = new Bundle();
-    args.putString(TEXT_KEY, text);
-    args.putString(FOOTER_KEY, footer);
-    args.putString(TIMESTAMP_KEY, timestamp);
-    if (menu != null) {
-      args.putInt(MENU_KEY, menu);
+        val footer = view.findViewById<TextView>(R.id.footer)
+        footer.text = args.getString(FOOTER_KEY, getString(R.string.empty_string))
+        val timestamp = view.findViewById<TextView>(R.id.timestamp)
+        timestamp.text = args.getString(TIMESTAMP_KEY, getString(R.string.empty_string))
+        return view
     }
-    myFragment.setArguments(args);
 
-    return myFragment;
-  }
+    companion object {
+        private const val TEXT_KEY = "text_key"
+        private const val FOOTER_KEY = "footer_key"
+        private const val TIMESTAMP_KEY = "timestamp_key"
+        private const val BODY_TEXT_SIZE = 40
 
-  @Nullable
-  @Override
-  public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-      @Nullable Bundle savedInstanceState) {
-    final View view = inflater.inflate(R.layout.main_layout, container, false);
-    if (getArguments() != null) {
-      final TextView textView = new TextView(getContext());
-      textView.setText(getArguments().getString(TEXT_KEY, getString(R.string.empty_string)));
-      textView.setTextSize(BODY_TEXT_SIZE);
-      textView.setTypeface(Typeface.create(getString(R.string.thin_font), Typeface.NORMAL));
-
-      final FrameLayout bodyLayout = view.findViewById(R.id.body_layout);
-      bodyLayout.addView(textView);
-
-      final TextView footer = view.findViewById(R.id.footer);
-      footer.setText(getArguments().getString(FOOTER_KEY, getString(R.string.empty_string)));
-
-      final TextView timestamp = view.findViewById(R.id.timestamp);
-      timestamp.setText(getArguments().getString(TIMESTAMP_KEY, getString(R.string.empty_string)));
+        /**
+         * Returns new instance of [MainLayoutFragment].
+         *
+         * @param text is a String with the card main text.
+         * @param footer is a String with the card footer text.
+         * @param timestamp is a String with the card timestamp text.
+         */
+        @JvmStatic
+        fun newInstance(
+            text: String,
+            footer: String,
+            timestamp: String,
+            menu: Int?
+        ): MainLayoutFragment = MainLayoutFragment().apply {
+            val args = Bundle().apply {
+                putString(TEXT_KEY, text)
+                putString(FOOTER_KEY, footer)
+                putString(TIMESTAMP_KEY, timestamp)
+                menu?.let { putInt(MENU_KEY, it) }
+            }
+            setArguments(args)
+        }
     }
-    return view;
-  }
 }
