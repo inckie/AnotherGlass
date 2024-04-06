@@ -205,8 +205,8 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         AlertDialog.Builder(this)
             .setTitle(R.string.msg_notification_listener_service_title)
             .setMessage(R.string.notification_listener_service_message)
-            .setPositiveButton(android.R.string.yes) { _, _ -> startActivity(Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
-            .setNegativeButton(android.R.string.no, null)
+            .setPositiveButton(android.R.string.ok) { _, _ -> startActivity(Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
+            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
