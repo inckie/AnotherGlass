@@ -30,6 +30,6 @@ import android.graphics.drawable.Drawable
  **/
 data class GlassMenuItem(
     val id: Int,
-    val icon: Drawable,
+    val icon: Drawable, // todo: make it nullable?
     val text: String
 )
