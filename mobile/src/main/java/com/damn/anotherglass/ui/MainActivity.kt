@@ -39,12 +39,12 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     private val mConnection = GlassServiceConnection()
 
     private val gpsPermissionLauncher = createGPSPermissionLauncher {
-        if (it) mSettings.isGPSEnabled= true
+        if (it) mSettings.isGPSEnabled = true
         else mBinding.toggleGps.isChecked = false
     }
 
     private val servicePermissionLauncher = registerForActivityResult(
-    ActivityResultContracts.RequestMultiplePermissions()
+        ActivityResultContracts.RequestMultiplePermissions()
     ) {
         if (it.values.all { it }) start()
         else mBinding.toggleService.isChecked = false
@@ -82,7 +82,8 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
                 visibility = View.GONE
             } else {
-                isChecked = mSettings.isNotificationsEnabled && NotificationService.isEnabled(context)
+                isChecked =
+                    mSettings.isNotificationsEnabled && NotificationService.isEnabled(context)
                 val changeListener = object : CompoundButton.OnCheckedChangeListener {
                     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
                         if (toggleNotifications(isChecked)) return
@@ -111,7 +112,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     }
 
     private fun toggleGPS(isChecked: Boolean) {
-        if(isChecked && !GPSExtension.hasGeoPermission(this)) {
+        if (isChecked && !GPSExtension.hasGeoPermission(this)) {
             gpsPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             return
         }
@@ -133,7 +134,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
 
     private fun updateUI() {
         val isRunning = GlassService.isRunning(this)
-        if(isRunning != mBinding.toggleService.isChecked) {
+        if (isRunning != mBinding.toggleService.isChecked) {
             mBinding.toggleService.isChecked = isRunning // only update if different in order to avoid callback
         }
         if (isRunning) {
@@ -163,7 +164,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
 
         if (permissions.isNotEmpty()) {
             servicePermissionLauncher.launch(permissions.toTypedArray())
-            mBinding.toggleGps.isChecked = false
+            mBinding.toggleService.isChecked = false
             return
         }
 
