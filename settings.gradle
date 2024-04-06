@@ -10,3 +10,5 @@ include(*xray)
 xray.forEach { project(it).projectDir = new File("externals/x-ray/android/" + it.drop(1)) }
 gradle.ext.xray = xray
 
+include ':glass-ee-gestures'
+project(':glass-ee-gestures').projectDir = new File('externals/glass-enterprise-samples/GestureLibrarySample/main')
