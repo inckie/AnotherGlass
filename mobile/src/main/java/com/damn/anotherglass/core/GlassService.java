@@ -100,15 +100,14 @@ public class GlassService
                 mGPS.stop();
                 mNotifications.stop();
             }
-        }) {
+
             @Override
-            public void onStopped() {
-                super.onStopped();
-                log.i(TAG, "BluetoothClient has stopped, terminating GlassService");
-                Toast.makeText(GlassService.this, "BluetoothClient has stopped, terminating GlassService", Toast.LENGTH_SHORT).show();
+            public void onShutdown() {
+                log.i(TAG, "BluetoothHost has stopped, terminating GlassService");
+                Toast.makeText(GlassService.this, "BluetoothHost has stopped, terminating GlassService", Toast.LENGTH_SHORT).show();
                 stopSelf();
             }
-        };
+        });
 
         mNotifications = new NotificationExtension(this);
         mGPS = new GPSExtension(this);

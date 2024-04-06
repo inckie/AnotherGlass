@@ -12,4 +12,6 @@ public interface RPCMessageListener {
     void onDataReceived(@NonNull RPCMessage data);
 
     void onConnectionLost(@Nullable String error);
+
+    void onShutdown();
 }

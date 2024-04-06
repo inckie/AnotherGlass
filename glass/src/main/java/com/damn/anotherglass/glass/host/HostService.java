@@ -108,6 +108,11 @@ public class HostService extends Service {
                             Toast.LENGTH_LONG).show();
                     stopSelf(); // do not restart for now
                 }
+
+                @Override
+                public void onShutdown() {
+                    // already stopped in onConnectionLost
+                }
             });
         } else {
             mLiveCard.navigate();

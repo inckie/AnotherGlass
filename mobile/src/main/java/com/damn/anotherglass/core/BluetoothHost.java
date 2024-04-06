@@ -32,7 +32,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
 
-public abstract class BluetoothHost implements IRPCHost {
+public class BluetoothHost implements IRPCHost {
 
     private static final String NAME = "AnotherGlass";
     private static final String TAG = "GlassHost";
@@ -69,10 +69,10 @@ public abstract class BluetoothHost implements IRPCHost {
         }
     }
 
-    @Override
     @CallSuper
-    public void onStopped() {
+    private void onStopped() {
         mQueue.clear();
+        mHandler.onShutdown();
     }
 
     @Override
