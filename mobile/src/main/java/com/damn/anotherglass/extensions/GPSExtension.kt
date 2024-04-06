@@ -3,20 +3,19 @@ package com.damn.anotherglass.extensions
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
 import com.applicaster.xray.core.Logger
 import com.damn.anotherglass.R
 import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.logging.ALog
 import com.damn.anotherglass.shared.RPCMessage
 import com.damn.anotherglass.shared.gps.GPSServiceAPI
+import com.damn.anotherglass.utility.hasPermission
 
 @SuppressLint("MissingPermission")
 class GPSExtension(private val service: GlassService) : LocationListener {
@@ -69,12 +68,7 @@ class GPSExtension(private val service: GlassService) : LocationListener {
 
         @JvmStatic
         fun hasGeoPermission(context: Context): Boolean =
-            gpsPermissions.all {
-                PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(
-                    context,
-                    it
-                )
-            }
+            gpsPermissions.all { context.hasPermission(it) }
 
         @JvmStatic
         val gpsPermissions =

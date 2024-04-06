@@ -5,7 +5,6 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -19,7 +18,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import com.damn.anotherglass.R
 import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.core.GlassService.LocalBinder
@@ -31,6 +29,7 @@ import com.damn.anotherglass.logging.LogActivity
 import com.damn.anotherglass.shared.RPCMessage
 import com.damn.anotherglass.shared.wifi.WiFiAPI
 import com.damn.anotherglass.shared.wifi.WiFiConfiguration
+import com.damn.anotherglass.utility.hasPermission
 
 
 class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
@@ -149,20 +148,14 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         val permissions = mutableListOf<String>()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) != PackageManager.PERMISSION_GRANTED
+            if (!hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
             ) {
                 permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
             }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
+            if (!hasPermission(Manifest.permission.POST_NOTIFICATIONS)
             ) {
                 permissions.add(Manifest.permission.POST_NOTIFICATIONS)
             }
