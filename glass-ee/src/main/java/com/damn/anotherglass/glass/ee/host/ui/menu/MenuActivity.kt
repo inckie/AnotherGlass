@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.damn.anotherglass.glass.ee.host.menu
+package com.damn.anotherglass.glass.ee.host.ui.menu
 
 import android.content.Intent
 import android.os.Bundle
@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SnapHelper
-import com.damn.anotherglass.glass.ee.host.BaseActivity
+import com.damn.anotherglass.glass.ee.host.ui.BaseActivity
 import com.damn.anotherglass.glass.ee.host.R
 import com.example.glass.ui.GlassGestureDetector
 

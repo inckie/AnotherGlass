@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.damn.anotherglass.glass.ee.host.fragments
+package com.damn.anotherglass.glass.ee.host.ui.cards
 
 import android.graphics.Typeface
 import android.os.Bundle
@@ -25,9 +25,10 @@ import android.widget.TextView
 import com.damn.anotherglass.glass.ee.host.R
 
 /**
- * Fragment with the main card layout.
+ * CardBuilder.Layout.TEXT_FIXED but without images support.
+ * https://developers.google.com/glass/develop/gdk/card-design#text_and_text_fixed
  */
-class MainLayoutFragment : BaseFragment() {
+class TextLayoutFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -58,7 +59,7 @@ class MainLayoutFragment : BaseFragment() {
         private const val BODY_TEXT_SIZE = 40
 
         /**
-         * Returns new instance of [MainLayoutFragment].
+         * Returns new instance of [TextLayoutFragment].
          *
          * @param text is a String with the card main text.
          * @param footer is a String with the card footer text.
@@ -70,7 +71,7 @@ class MainLayoutFragment : BaseFragment() {
             footer: String,
             timestamp: String,
             menu: Int?
-        ): MainLayoutFragment = MainLayoutFragment().apply {
+        ): TextLayoutFragment = TextLayoutFragment().apply {
             val args = Bundle().apply {
                 putString(TEXT_KEY, text)
                 putString(FOOTER_KEY, footer)

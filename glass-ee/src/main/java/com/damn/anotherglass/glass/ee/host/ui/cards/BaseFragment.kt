@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.damn.anotherglass.glass.ee.host.fragments
+package com.damn.anotherglass.glass.ee.host.ui.cards
 
 import android.app.Activity
 import android.content.Intent
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.damn.anotherglass.glass.ee.host.R
-import com.damn.anotherglass.glass.ee.host.menu.MenuActivity
+import com.damn.anotherglass.glass.ee.host.ui.menu.MenuActivity
 
 /**
  * Base class for each fragment. Provides functionality to start new activity with a menu.

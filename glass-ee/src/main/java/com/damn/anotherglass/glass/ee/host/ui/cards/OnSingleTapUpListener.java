@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.damn.anotherglass.glass.ee.host.fragments;
+package com.damn.anotherglass.glass.ee.host.ui.cards;
 
 /**
  * Listener for the singleTapUp gesture.

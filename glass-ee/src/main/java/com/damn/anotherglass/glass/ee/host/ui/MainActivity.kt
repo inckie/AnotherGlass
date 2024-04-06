@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.damn.anotherglass.glass.ee.host
+package com.damn.anotherglass.glass.ee.host.ui
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.viewpager.widget.ViewPager
-import com.damn.anotherglass.glass.ee.host.fragments.BaseFragment
-import com.damn.anotherglass.glass.ee.host.fragments.ColumnLayoutFragment
-import com.damn.anotherglass.glass.ee.host.fragments.MainLayoutFragment
+import com.damn.anotherglass.glass.ee.host.R
+import com.damn.anotherglass.glass.ee.host.ui.cards.BaseFragment
+import com.damn.anotherglass.glass.ee.host.ui.cards.ColumnLayoutFragment
+import com.damn.anotherglass.glass.ee.host.ui.cards.TextLayoutFragment
 import com.example.glass.ui.GlassGestureDetector
 import com.google.android.material.tabs.TabLayout
 
@@ -39,13 +40,13 @@ class MainActivity : BaseActivity() {
         viewPager = findViewById(R.id.viewPager)
 
         fragments.add(
-            MainLayoutFragment.newInstance(
+            TextLayoutFragment.newInstance(
                 getString(R.string.text_sample), getString(R.string.footnote_sample),
                 getString(R.string.timestamp_sample), null
             )
         )
         fragments.add(
-            MainLayoutFragment.newInstance(
+            TextLayoutFragment.newInstance(
                 getString(R.string.different_options), getString(R.string.empty_string),
                 getString(R.string.empty_string), R.menu.main_menu
             )
@@ -58,7 +59,7 @@ class MainActivity : BaseActivity() {
                 )
         )
         fragments.add(
-            MainLayoutFragment.newInstance(
+            TextLayoutFragment.newInstance(
                 getString(R.string.like_this_sample), getString(R.string.empty_string),
                 getString(R.string.empty_string), null
             )

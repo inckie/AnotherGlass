@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.damn.anotherglass.glass.ee.host.fragments
+package com.damn.anotherglass.glass.ee.host.ui.cards
 
 import android.graphics.Typeface
 import android.os.Bundle
@@ -26,7 +26,8 @@ import android.widget.TextView
 import com.damn.anotherglass.glass.ee.host.R
 
 /**
- * Fragment with the two column layout.
+ * CardBuilder.Layout.COLUMNS_FIXED but without multiple images support.
+ * https://developers.google.com/glass/develop/gdk/card-design#columns_and_columns_fixed
  */
 class ColumnLayoutFragment : BaseFragment() {
     override fun onCreateView(

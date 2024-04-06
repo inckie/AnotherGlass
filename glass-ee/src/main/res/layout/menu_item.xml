@@ -20,7 +20,7 @@
 
         <variable
             name="item"
-            type="com.damn.anotherglass.glass.ee.host.menu.GlassMenuItem" />
+            type="com.damn.anotherglass.glass.ee.host.ui.menu.GlassMenuItem" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
