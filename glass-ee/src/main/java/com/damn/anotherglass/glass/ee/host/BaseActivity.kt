@@ -13,79 +13,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.damn.anotherglass.glass.ee.host
 
-package com.damn.anotherglass.glass.ee.host;
-
-import android.os.Bundle;
-import android.view.MotionEvent;
-import android.view.View;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import com.example.glass.ui.GlassGestureDetector;
-import com.example.glass.ui.GlassGestureDetector.Gesture;
-import com.example.glass.ui.GlassGestureDetector.OnGestureListener;
+import android.os.Bundle
+import android.view.MotionEvent
+import android.view.View
+import androidx.appcompat.app.AppCompatActivity
+import com.example.glass.ui.GlassGestureDetector
 
 /**
  * Base activity which provides:
- * <ul>
- *   <li>gestures detection by {@link GlassGestureDetector}</li>
- *   <li>reaction for {@link Gesture#SWIPE_DOWN} gesture as finishing current activity</li>
- *   <li>hiding system UI</li>
- * </ul>
+ *
+ *  * gestures detection by [GlassGestureDetector]
+ *  * reaction for [Gesture.SWIPE_DOWN] gesture as finishing current activity
+ *  * hiding system UI
+ *
  */
-public abstract class BaseActivity extends AppCompatActivity implements OnGestureListener {
+abstract class BaseActivity : AppCompatActivity(), GlassGestureDetector.OnGestureListener {
+    private lateinit var decorView: View
+    private lateinit var glassGestureDetector: GlassGestureDetector;
 
-  private View decorView;
-  private GlassGestureDetector glassGestureDetector;
-
-  @Override
-  protected void onCreate(@Nullable Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    if (getSupportActionBar() != null) {
-      getSupportActionBar().hide();
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        supportActionBar?.apply { hide() }
+        decorView = window.decorView
+        decorView.setOnSystemUiVisibilityChangeListener { visibility: Int ->
+                if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
+                    hideSystemUI()
+                }
+            }
+        glassGestureDetector = GlassGestureDetector(this, this)
     }
-    decorView = getWindow().getDecorView();
-    decorView
-        .setOnSystemUiVisibilityChangeListener(visibility -> {
-          if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-            hideSystemUI();
-          }
-        });
-    glassGestureDetector = new GlassGestureDetector(this, this);
-  }
 
-  @Override
-  protected void onResume() {
-    super.onResume();
-    hideSystemUI();
-  }
-
-  @Override
-  public boolean dispatchTouchEvent(MotionEvent ev) {
-    if (glassGestureDetector.onTouchEvent(ev)) {
-      return true;
+    override fun onResume() {
+        super.onResume()
+        hideSystemUI()
     }
-    return super.dispatchTouchEvent(ev);
-  }
 
-  @Override
-  public boolean onGesture(Gesture gesture) {
-    switch (gesture) {
-      case SWIPE_DOWN:
-        finish();
-        return true;
-      default:
-        return false;
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean =
+        if (glassGestureDetector.onTouchEvent(ev)) true
+        else super.dispatchTouchEvent(ev)
+
+    override fun onGesture(gesture: GlassGestureDetector.Gesture): Boolean =
+        when (gesture) {
+            GlassGestureDetector.Gesture.SWIPE_DOWN -> {
+                finish()
+                true
+            }
+
+            else -> false
+        }
+
+    private fun hideSystemUI() {
+        decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
+                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
-  }
-
-  private void hideSystemUI() {
-    decorView.setSystemUiVisibility(
-        View.SYSTEM_UI_FLAG_IMMERSIVE
-            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_FULLSCREEN);
-  }
 }
