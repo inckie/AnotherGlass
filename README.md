@@ -28,7 +28,7 @@ Uses Java object stream to send data to Google Glass, since I don't want to mess
 
 ## AnotherGlass Plans
 
-* Add version for Google Glass Enterprise Edition 2 (Android 8.1). It has built-in GPS, so I only need to handle notifications and intent routing. Will require a separate module, since it lacks stock Glass APIs like LiveCards, and also needs to handle permissions and so on.
+* Add version for Google Glass Enterprise Edition 2 (Android 8.1). Will require a separate module, since it lacks stock Glass APIs like LiveCards, and also needs to handle permissions and so on. Latest firmware has known issues with Bluetooth, so I will need to add WiFi tethering support mode.
 * Rewrite the connections loops, so listening thread will be waiting for the incoming messages, and sending will happen in a separate thread (how I have peek/sleep cycle typical for desktop applications).
 * Handle Bluetooth reconnects (Glass sometimes loses the Bluetooth connection and immediately reconnects, but I stop the service for now).
 * Add one time notification stack activity (easy, but lazy).
