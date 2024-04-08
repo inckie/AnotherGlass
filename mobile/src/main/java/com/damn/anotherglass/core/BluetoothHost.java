@@ -35,7 +35,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class BluetoothHost implements IRPCHost {
 
     private static final String NAME = "AnotherGlass";
-    private static final String TAG = "GlassHost";
+    private static final String TAG = "GlassHostBt";
 
     private final RPCHandler mHandler;
 
