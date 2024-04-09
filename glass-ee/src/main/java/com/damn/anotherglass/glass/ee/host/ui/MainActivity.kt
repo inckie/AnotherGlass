@@ -16,14 +16,18 @@
 package com.damn.anotherglass.glass.ee.host.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.damn.anotherglass.glass.ee.host.R
+import com.damn.anotherglass.glass.ee.host.core.WiFiClient
 import com.damn.anotherglass.glass.ee.host.ui.cards.BaseFragment
 import com.damn.anotherglass.glass.ee.host.ui.cards.ColumnLayoutFragment
 import com.damn.anotherglass.glass.ee.host.ui.cards.TextLayoutFragment
+import com.damn.anotherglass.shared.rpc.RPCMessage
+import com.damn.anotherglass.shared.rpc.RPCMessageListener
 import com.example.glass.ui.GlassGestureDetector
 import com.google.android.material.tabs.TabLayout
 
@@ -31,8 +35,11 @@ import com.google.android.material.tabs.TabLayout
  * Main activity of the application. It provides viewPager to move between fragments.
  */
 class MainActivity : BaseActivity() {
+
     private val fragments: MutableList<BaseFragment> = ArrayList()
     private lateinit var viewPager: ViewPager
+
+    private val client = WiFiClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +75,35 @@ class MainActivity : BaseActivity() {
 
         val tabLayout = findViewById<TabLayout>(R.id.page_indicator)
         tabLayout.setupWithViewPager(viewPager, true)
+        val listener: RPCMessageListener = object : RPCMessageListener {
+            override fun onWaiting() {
+                Log.d(TAG, "Waiting")
+            }
+
+            override fun onConnectionStarted(device: String) {
+                Log.d(TAG, "Connected to $device")
+            }
+
+            override fun onDataReceived(data: RPCMessage) {
+                Log.d(TAG, "onDataReceived: $data")
+            }
+
+            override fun onConnectionLost(error: String?) {
+                Log.e(TAG, "onConnectionLost: $error");
+            }
+
+            override fun onShutdown() {
+                Log.d(TAG, "onShutdown")
+            }
+        }
+        // todo: check if we have wifi connection, and it looks like tethering one
+        // todo: must be a service
+        client.start(this, listener)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        client.stop()
     }
 
     override fun onGesture(gesture: GlassGestureDetector.Gesture): Boolean =
@@ -86,5 +122,9 @@ class MainActivity : BaseActivity() {
         override fun getItem(position: Int): Fragment = fragments[position]
 
         override fun getCount(): Int = fragments.size
+    }
+
+    companion object {
+        private const val TAG = "MainActivity"
     }
 }
