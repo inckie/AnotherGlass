@@ -25,8 +25,6 @@ class WiFiHost(listener: RPCMessageListener) : IRPCHost {
 
     private val mHandler: RPCHandler = RPCHandler(listener)
 
-    private val mQueue: BlockingQueue<RPCMessage> = LinkedBlockingDeque()
-
     @Volatile
     private var mWorkerThread: WorkerThread? = null
 
@@ -45,7 +43,7 @@ class WiFiHost(listener: RPCMessageListener) : IRPCHost {
             else -> if (!workerThread.isConnected())
                 logger.e(TAG, "Not connected")
             else
-                mQueue.add(message)
+                workerThread.send(message)
         }
     }
 
@@ -59,6 +57,8 @@ class WiFiHost(listener: RPCMessageListener) : IRPCHost {
 
     inner class WorkerThread : Thread() {
         // not amazing threading code, but will do for now
+
+        private val mQueue: BlockingQueue<RPCMessage> = LinkedBlockingDeque()
 
         // has to expose these for cleaner shutdown
         @Volatile
@@ -125,6 +125,9 @@ class WiFiHost(listener: RPCMessageListener) : IRPCHost {
         }
 
         fun isConnected(): Boolean = mSocket != null
+        fun send(message: RPCMessage) {
+            mQueue.add(message)
+        }
     }
 
     companion object {

@@ -39,8 +39,6 @@ public class BluetoothHost implements IRPCHost {
 
     private final RPCHandler mHandler;
 
-    private final BlockingQueue<RPCMessage> mQueue = new LinkedBlockingDeque<>();
-
     private volatile WorkerThread mWorkerThread;
     private volatile boolean mActive; // are we still need to run?
 
@@ -51,7 +49,7 @@ public class BluetoothHost implements IRPCHost {
     @Override
     public void start(Context context) {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            onStopped();
+            mHandler.onShutdown();
             return;
         }
         mActive = true;
@@ -69,26 +67,25 @@ public class BluetoothHost implements IRPCHost {
         }
     }
 
-    @CallSuper
-    private void onStopped() {
-        mQueue.clear();
-        mHandler.onShutdown();
-    }
-
     @Override
     public void send(RPCMessage message) {
         if (!mActive) {
             ALog.e(TAG, "send() called when not active");
             return;
         }
-        if(!mQueue.offer(message)){
-            ALog.e(TAG, "send() failed to queue message");
+        WorkerThread thread = this.mWorkerThread;
+        if (null != thread) {
+            thread.send(message);
+        } else {
+            ALog.e(TAG, "send() failed to queue message, no connection thread available");
         }
     }
 
     private class WorkerThread extends Thread {
         private final Context mContext;
         private BluetoothServerSocket serverSocket; // should use atomic reference, but it's not that critical
+
+        private final BlockingQueue<RPCMessage> mQueue = new LinkedBlockingDeque<>();
 
         public WorkerThread(Context context) {
             mContext = context;
@@ -126,7 +123,11 @@ public class BluetoothHost implements IRPCHost {
             }
             mWorkerThread = null;
             mActive = false;
-            mHandler.post(BluetoothHost.this::onStopped);
+            mHandler.onShutdown();
+        }
+
+        public void send(RPCMessage message) {
+            mQueue.add(message);
         }
 
         public void shutdown() {
