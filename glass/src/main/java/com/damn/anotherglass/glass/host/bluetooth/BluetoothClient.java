@@ -139,8 +139,9 @@ public class BluetoothClient implements IRPCClient {
 
     @Override
     public void start(Context context, RPCMessageListener listener) {
+        // todo: pass startup errors up
         if (null != mConnection) {
-            Log.d(TAG, "Connection is already present");
+            Log.e(TAG, "Connection is already present");
             return;
         }
         mConnection = new Connection(context, listener);
