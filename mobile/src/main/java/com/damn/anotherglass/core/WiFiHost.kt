@@ -3,10 +3,12 @@ package com.damn.anotherglass.core
 import android.content.Context
 import com.applicaster.xray.core.Logger
 import com.damn.anotherglass.logging.ALog
+import com.damn.anotherglass.shared.Constants
 import com.damn.anotherglass.shared.rpc.IRPCHost
 import com.damn.anotherglass.shared.rpc.RPCHandler
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.rpc.RPCMessageListener
+import com.damn.anotherglass.shared.utility.Closeables
 import com.damn.anotherglass.shared.utility.Sleep
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
@@ -68,18 +70,15 @@ class WiFiHost(listener: RPCMessageListener) : IRPCHost {
             while (!isInterrupted) {
                 try {
                     mHandler.onWaiting()
-                    ServerSocket(9090).use { serverSocket ->
+                    ServerSocket(Constants.defaultPort).use { serverSocket ->
                         mServerSocket = serverSocket
                         // do not accept more than one connection
                         serverSocket.accept().use { socket ->
                             mServerSocket = null
-                            serverSocket.close()
+                            Closeables.close(serverSocket)
                             mSocket = socket
                             mHandler.onConnectionStarted(socket.inetAddress.toString())
-                            runLoop(
-                                ObjectInputStream(socket.getInputStream()),
-                                ObjectOutputStream(socket.getOutputStream())
-                            )
+                            runLoop(socket)
                         }
                         mHandler.onConnectionLost(null) // client disconnected
                     }
@@ -98,14 +97,17 @@ class WiFiHost(listener: RPCMessageListener) : IRPCHost {
             mHandler.onShutdown()
         }
 
-        private fun runLoop(ois: ObjectInputStream, oos: ObjectOutputStream) {
+        private fun runLoop(socket: Socket) {
+            val iss = socket.getInputStream()
+            val oos = ObjectOutputStream(socket.getOutputStream())
+            val ois = ObjectInputStream(iss)
             while (!isInterrupted) {
                 while (mQueue.peek() != null) {
                     val message = mQueue.take()
                     oos.writeObject(message)
                     oos.flush()
                 }
-                while (ois.available() > 0) {
+                while (iss.available() > 0) {
                     val message = ois.readObject() as RPCMessage
                     if (message.service == null) {
                         return // client disconnected

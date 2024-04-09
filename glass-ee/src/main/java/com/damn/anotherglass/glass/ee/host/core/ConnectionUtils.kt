@@ -1,5 +1,9 @@
 package com.damn.anotherglass.glass.ee.host.core
 
+import android.content.Context
+import android.net.wifi.WifiManager
+import android.text.format.Formatter
+
 object ConnectionUtils {
     fun isPossiblyTethering(ip: String): Boolean {
         // Check is IP address is in the range of possible tethering addresses.
@@ -13,5 +17,14 @@ object ConnectionUtils {
         // or configurable in device settings.
         // We just check for 192.168. mask, and that bluetooth is not connected in the calling code
         return ip.startsWith("192.168.")
+    }
+
+    // todo: replace deprecated API, move isPossiblyTethering up
+    fun getHostIPAddress(context: Context): String? {
+        val wf = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val dhcpInfo = wf.dhcpInfo ?: return null
+        val tmp = dhcpInfo.gateway
+        val ip = Formatter.formatIpAddress(tmp)
+        return if(isPossiblyTethering(ip)) ip else null
     }
 }
