@@ -1,43 +1,50 @@
-package com.damn.anotherglass.core;
+package com.damn.anotherglass.core
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import androidx.annotation.NonNull;
+import android.content.Context
+import android.content.SharedPreferences
 
-import static android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+class Settings(context: Context) {
+    private val mPreferences: SharedPreferences
 
-public class Settings {
-
-    private static final String sPreferencesName = "anotherglass";
-    public static final String GPS_ENABLED = "gps_enabled";
-    public static final String NOTIFICATIONS_ENABLED = "notifications_enabled";
-    private final SharedPreferences mPreferences;
-
-    public Settings(Context context) {
-        mPreferences = context.getSharedPreferences(sPreferencesName, Context.MODE_PRIVATE);
+    enum class HostMode(val value: String) {
+        Bluetooth("bluetooth"),
+        WiFi("wifi")
     }
 
-    public void registerListener(@NonNull OnSharedPreferenceChangeListener listener) {
-        mPreferences.registerOnSharedPreferenceChangeListener(listener);
+    init {
+        mPreferences = context.getSharedPreferences(sPreferencesName, Context.MODE_PRIVATE)
     }
 
-    public void unregisterListener(@NonNull OnSharedPreferenceChangeListener listener) {
-        mPreferences.unregisterOnSharedPreferenceChangeListener(listener);
+    fun registerListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        mPreferences.registerOnSharedPreferenceChangeListener(listener)
     }
 
-    public boolean isGPSEnabled() {
-        return mPreferences.getBoolean(GPS_ENABLED, false);
+    fun unregisterListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        mPreferences.unregisterOnSharedPreferenceChangeListener(listener)
     }
 
-    public void setGPSEnabled(boolean enabled) {
-        mPreferences.edit().putBoolean(GPS_ENABLED, enabled).apply();
-    }
+    var isGPSEnabled: Boolean
+        get() = mPreferences.getBoolean(GPS_ENABLED, false)
+        set(enabled) {
+            mPreferences.edit().putBoolean(GPS_ENABLED, enabled).apply()
+        }
+    var isNotificationsEnabled: Boolean
+        get() = mPreferences.getBoolean(NOTIFICATIONS_ENABLED, false)
+        set(enabled) {
+            mPreferences.edit().putBoolean(NOTIFICATIONS_ENABLED, enabled).apply()
+        }
+    var hostMode: HostMode
+        get() = mPreferences.getString(HOST_MODE, HostMode.WiFi.value)?.let { mode ->
+            HostMode.entries.firstOrNull { mode == it.value }
+        } ?: HostMode.WiFi
+        set(mode) {
+            mPreferences.edit().putString(HOST_MODE, mode.value).apply()
+        }
 
-    public boolean isNotificationsEnabled() {
-        return mPreferences.getBoolean(NOTIFICATIONS_ENABLED, false);
-    }
-
-    public void setNotificationsEnabled(boolean enabled) {
-        mPreferences.edit().putBoolean(NOTIFICATIONS_ENABLED, enabled).apply();
+    companion object {
+        private const val sPreferencesName = "anotherglass"
+        const val GPS_ENABLED = "gps_enabled"
+        const val NOTIFICATIONS_ENABLED = "notifications_enabled"
+        const val HOST_MODE = "host_mode"
     }
 }
