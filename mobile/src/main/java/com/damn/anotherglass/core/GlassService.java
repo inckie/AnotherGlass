@@ -68,7 +68,7 @@ public class GlassService
         startForeground(NOTIFICATION_ID, buildNotification());
 
         // todo: update notification and UI on changes
-        mHost = new BluetoothHost(new RPCMessageListener() {
+        RPCMessageListener rpcMessageListener = new RPCMessageListener() {
             @Override
             public void onWaiting() {
                 log.i(TAG, "Waiting for connection");
@@ -79,9 +79,9 @@ public class GlassService
             public void onConnectionStarted(@NonNull String device) {
                 log.i(TAG, "Connected to " + device);
                 Toast.makeText(GlassService.this, "Connected to " + device, Toast.LENGTH_SHORT).show();
-                if(mSettings.isGPSEnabled())
+                if (mSettings.isGPSEnabled())
                     mGPS.start();
-                if(mSettings.isNotificationsEnabled())
+                if (mSettings.isNotificationsEnabled())
                     mNotifications.start();
             }
 
@@ -92,7 +92,7 @@ public class GlassService
 
             @Override
             public void onConnectionLost(@Nullable String error) {
-                if(null != error)
+                if (null != error)
                     log.e(TAG, "Disconnected with error: " + error);
                 else
                     log.i(TAG, "Disconnected");
@@ -107,12 +107,15 @@ public class GlassService
                 Toast.makeText(GlassService.this, "BluetoothHost has stopped, terminating GlassService", Toast.LENGTH_SHORT).show();
                 stopSelf();
             }
-        });
+        };
 
+        mSettings = new Settings(this);
         mNotifications = new NotificationExtension(this);
         mGPS = new GPSExtension(this);
 
-        mSettings = new Settings(this);
+        final boolean useWifi = Settings.HostMode.WiFi == mSettings.getHostMode();
+        mHost = useWifi ? new WiFiHost(rpcMessageListener) : new BluetoothHost(rpcMessageListener);
+
         mSettings.registerListener(this);
 
         mHost.start(this);
