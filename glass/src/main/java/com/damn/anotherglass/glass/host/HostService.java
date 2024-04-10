@@ -14,7 +14,7 @@ import androidx.annotation.Nullable;
 
 import com.damn.anotherglass.glass.host.bluetooth.BluetoothClient;
 import com.damn.anotherglass.shared.rpc.IRPCClient;
-import com.damn.anotherglass.glass.host.gps.MockGPS;
+import com.damn.glass.shared.gps.MockGPS;
 import com.damn.anotherglass.glass.host.notifications.NotificationsCardController;
 import com.damn.anotherglass.glass.host.ui.ICardViewProvider;
 import com.damn.anotherglass.glass.host.ui.MapCard;
@@ -71,6 +71,13 @@ public class HostService extends Service {
             mLiveCard.publish(PublishMode.REVEAL);
 
             mGPS = new MockGPS(this);
+
+            try {
+                mGPS.start();
+            } catch (SecurityException e) {
+                // Will not happen on Explorer Edition
+                Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            }
 
             mNotificationsCardController = new NotificationsCardController(this);
 

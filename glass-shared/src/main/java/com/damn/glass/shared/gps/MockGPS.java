@@ -1,21 +1,34 @@
-package com.damn.anotherglass.glass.host.gps;
+package com.damn.glass.shared.gps;
 
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.SystemClock;
+
 import androidx.annotation.NonNull;
+
 import android.util.Log;
 
+// Requires MOCK_LOCATION permission on Android 6+
+// On most devices it's enabled in Developer Options
+// On Glass use adb shell to grant permission:
+// "adb shell appops set <id> android:mock_location allow"
+// where <uid> is from exception message
+// "java.lang.SecurityException: com.damn.anotherglass.glass.ee from uid <uid> not allowed to perform MOCK_LOCATION
 public class MockGPS {
 
     private static final String LOG_TAG = "MockGPS";
 
     private final LocationManager locationManager;
 
+    private boolean installed;
+
     public MockGPS(@NonNull Context context) {
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+    }
+
+    public void start() throws java.lang.SecurityException {
         if (null == locationManager) {
             return;
         }
@@ -42,6 +55,7 @@ public class MockGPS {
                 null,
                 System.currentTimeMillis()
         );
+        installed = true;
     }
 
     public void remove() {
@@ -53,10 +67,11 @@ public class MockGPS {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        installed = false;
     }
 
     public void publish(@NonNull com.damn.anotherglass.shared.gps.Location location) {
-        if (null == locationManager) {
+        if (null == locationManager || !installed) {
             return;
         }
         try {
@@ -73,7 +88,10 @@ public class MockGPS {
             locationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, location1);
         } catch (Exception e) {
             Log.e(LOG_TAG, "Failed to post mock GPS", e);
-            e.printStackTrace();
         }
+    }
+
+    public boolean isInstalled() {
+        return installed;
     }
 }

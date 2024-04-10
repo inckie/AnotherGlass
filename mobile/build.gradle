@@ -31,7 +31,7 @@ android {
 
 dependencies {
 
-    implementation project(path: ':shared')
+    implementation project(':shared')
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
@@ -42,8 +42,6 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     implementation 'org.greenrobot:eventbus:3.3.1'
-    implementation project(path: ':shared')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     // Logging
     gradle.ext.xray.forEach { implementation project(it) }

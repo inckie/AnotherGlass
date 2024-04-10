@@ -15,19 +15,23 @@
  */
 package com.damn.anotherglass.glass.ee.host.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.damn.anotherglass.glass.ee.host.R
-import com.damn.anotherglass.glass.ee.host.core.WiFiClient
+import com.damn.anotherglass.glass.ee.host.core.HostService
 import com.damn.anotherglass.glass.ee.host.ui.cards.BaseFragment
 import com.damn.anotherglass.glass.ee.host.ui.cards.ColumnLayoutFragment
 import com.damn.anotherglass.glass.ee.host.ui.cards.TextLayoutFragment
-import com.damn.anotherglass.shared.rpc.RPCMessage
-import com.damn.anotherglass.shared.rpc.RPCMessageListener
 import com.example.glass.ui.GlassGestureDetector
 import com.google.android.material.tabs.TabLayout
 
@@ -39,7 +43,10 @@ class MainActivity : BaseActivity() {
     private val fragments: MutableList<BaseFragment> = ArrayList()
     private lateinit var viewPager: ViewPager
 
-    private val client = WiFiClient()
+    private lateinit var client: HostService
+
+    // temporary test listener
+    private var listener: LocationListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,35 +82,80 @@ class MainActivity : BaseActivity() {
 
         val tabLayout = findViewById<TabLayout>(R.id.page_indicator)
         tabLayout.setupWithViewPager(viewPager, true)
-        val listener: RPCMessageListener = object : RPCMessageListener {
-            override fun onWaiting() {
-                Log.d(TAG, "Waiting")
-            }
 
-            override fun onConnectionStarted(device: String) {
-                Log.d(TAG, "Connected to $device")
-            }
+        // todo: must be a service
+        client = HostService(this)
 
-            override fun onDataReceived(data: RPCMessage) {
-                Log.d(TAG, "onDataReceived: $data")
-            }
+        tryStartService()
+    }
 
-            override fun onConnectionLost(error: String?) {
-                Log.e(TAG, "onConnectionLost: $error");
-            }
+    private fun tryStartService() {
+        // todo: check if we have wifi connection, and it looks like tethering one
+        if (!checkLocationPermission()) return
 
-            override fun onShutdown() {
-                Log.d(TAG, "onShutdown")
+        // Requires MOCK_LOCATION permission given through ADB
+        // adb shell appops set <id> android:mock_location allow
+        // where <uid> is from exception message
+        // `java.lang.SecurityException: com.damn.anotherglass.glass.ee from uid 10063 not allowed to perform MOCK_LOCATION`
+
+        val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+        if (locationManager.allProviders.contains(LocationManager.GPS_PROVIDER)) {
+            // temporary test listener
+            listener = LocationListener { location ->
+                Toast.makeText(this@MainActivity, "Location: $location", Toast.LENGTH_LONG).show()
+            }
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, listener!!)
+        } else {
+            Log.e(TAG, "GPS provider not available")
+            // todo: do call to addTestProvider to parse and display uid for ADB command
+            Toast.makeText(
+                this@MainActivity,
+                "GPS provider not available, please enable location mocking using ADB or developer settings",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+        client.start()
+    }
+
+    private fun checkLocationPermission(): Boolean {
+        val missing = gpsPermissions.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+        return when {
+            missing.isEmpty() -> true
+            else -> {
+                requestPermissions(missing.toTypedArray(), PERMISSIONS_REQUEST_LOCATION)
+                false
             }
         }
-        // todo: check if we have wifi connection, and it looks like tethering one
-        // todo: must be a service
-        client.start(this, listener)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            PERMISSIONS_REQUEST_LOCATION -> {
+                if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                    client.start()
+                } else {
+                    Log.e(TAG, "Location permission denied")
+                    // todo: show missing permission message
+                }
+            }
+            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         client.stop()
+        listener?.let {
+            listener = null
+            val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+            locationManager.removeUpdates(it)
+        }
     }
 
     override fun onGesture(gesture: GlassGestureDetector.Gesture): Boolean =
@@ -126,5 +178,10 @@ class MainActivity : BaseActivity() {
 
     companion object {
         private const val TAG = "MainActivity"
+        private const val PERMISSIONS_REQUEST_LOCATION = 1
+        val gpsPermissions = arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
     }
 }

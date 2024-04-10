@@ -34,4 +34,5 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation project(':shared')
+    implementation project(':glass-shared')
 }

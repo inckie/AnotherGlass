@@ -44,6 +44,7 @@ android {
 
 dependencies {
     implementation project(':shared')
+    implementation project(':glass-shared')
     implementation project(':glass-ee-gestures')
     implementation 'androidx.recyclerview:recyclerview:1.3.2'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
