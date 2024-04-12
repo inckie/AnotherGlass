@@ -17,7 +17,6 @@ package com.damn.anotherglass.glass.ee.host.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
@@ -30,8 +29,7 @@ import androidx.viewpager.widget.ViewPager
 import com.damn.anotherglass.glass.ee.host.R
 import com.damn.anotherglass.glass.ee.host.core.HostService
 import com.damn.anotherglass.glass.ee.host.ui.cards.BaseFragment
-import com.damn.anotherglass.glass.ee.host.ui.cards.ColumnLayoutFragment
-import com.damn.anotherglass.glass.ee.host.ui.cards.TextLayoutFragment
+import com.damn.anotherglass.glass.ee.host.ui.cards.MapCard
 import com.example.glass.ui.GlassGestureDetector
 import com.google.android.material.tabs.TabLayout
 
@@ -45,39 +43,12 @@ class MainActivity : BaseActivity() {
 
     private lateinit var client: HostService
 
-    // temporary test listener
-    private var listener: LocationListener? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.view_pager_layout)
         viewPager = findViewById(R.id.viewPager)
 
-        fragments.add(
-            TextLayoutFragment.newInstance(
-                getString(R.string.text_sample), getString(R.string.footnote_sample),
-                getString(R.string.timestamp_sample), null
-            )
-        )
-        fragments.add(
-            TextLayoutFragment.newInstance(
-                getString(R.string.different_options), getString(R.string.empty_string),
-                getString(R.string.empty_string), R.menu.main_menu
-            )
-        )
-        fragments.add(
-            ColumnLayoutFragment
-                .newInstance(
-                    R.drawable.ic_style, getString(R.string.columns_sample),
-                    getString(R.string.footnote_sample), getString(R.string.timestamp_sample)
-                )
-        )
-        fragments.add(
-            TextLayoutFragment.newInstance(
-                getString(R.string.like_this_sample), getString(R.string.empty_string),
-                getString(R.string.empty_string), null
-            )
-        )
+        fragments.add(MapCard.newInstance())
         viewPager.setAdapter(ScreenSlidePagerAdapter(supportFragmentManager))
 
         val tabLayout = findViewById<TabLayout>(R.id.page_indicator)
@@ -99,13 +70,7 @@ class MainActivity : BaseActivity() {
         // `java.lang.SecurityException: com.damn.anotherglass.glass.ee from uid 10063 not allowed to perform MOCK_LOCATION`
 
         val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
-        if (locationManager.allProviders.contains(LocationManager.GPS_PROVIDER)) {
-            // temporary test listener
-            listener = LocationListener { location ->
-                Toast.makeText(this@MainActivity, "Location: $location", Toast.LENGTH_LONG).show()
-            }
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, listener!!)
-        } else {
+        if (!locationManager.allProviders.contains(LocationManager.GPS_PROVIDER)) {
             Log.e(TAG, "GPS provider not available")
             // todo: do call to addTestProvider to parse and display uid for ADB command
             Toast.makeText(
@@ -151,11 +116,6 @@ class MainActivity : BaseActivity() {
     override fun onDestroy() {
         super.onDestroy()
         client.stop()
-        listener?.let {
-            listener = null
-            val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
-            locationManager.removeUpdates(it)
-        }
     }
 
     override fun onGesture(gesture: GlassGestureDetector.Gesture): Boolean =
