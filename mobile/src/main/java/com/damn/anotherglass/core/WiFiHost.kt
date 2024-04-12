@@ -120,8 +120,8 @@ class WiFiHost(listener: RPCMessageListener) : IRPCHost {
 
         fun shutdown() {
             interrupt()
-            mSocket?.close()
-            mServerSocket?.close()
+            Closeables.close(mSocket)
+            Closeables.close(mServerSocket)
         }
 
         fun isConnected(): Boolean = mSocket != null
