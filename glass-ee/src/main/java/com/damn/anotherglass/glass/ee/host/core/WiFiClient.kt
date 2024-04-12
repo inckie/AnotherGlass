@@ -82,11 +82,14 @@ class WiFiClient : IRPCClient {
             val iss = socket.getInputStream()
             val oos = ObjectOutputStream(socket.getOutputStream())
             val ois = ObjectInputStream(iss)
-            while (!isInterrupted) {
+            while (true) {
                 while (null != mQueue.peek()) {
                     val message = mQueue.take()
                     oos.writeObject(message)
                     oos.flush()
+                    if (message.service == null) {
+                        return // disconnect requested
+                    }
                 }
                 while (iss.available() > 0) {
                     val message = ois.readObject() as RPCMessage
@@ -104,8 +107,9 @@ class WiFiClient : IRPCClient {
         }
 
         fun shutdown() {
+            // send empty message to notify host we are shutting down (we do not guarantee it will be sent though)
             // we do not keep the socket reference, so just wait till next iteration
-            interrupt()
+            mQueue.add(RPCMessage(null, null))
         }
 
     }

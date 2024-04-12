@@ -56,6 +56,7 @@ class HostService(private val context: Context) {
     fun stop() {
         Log.i(TAG, "HostService stopped")
         gps.remove()
+        client.stop()
     }
 
     companion object {

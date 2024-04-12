@@ -65,9 +65,11 @@ class WiFiHost(listener: RPCMessageListener) : IRPCHost {
         private var mServerSocket: ServerSocket? = null
         @Volatile
         private var mSocket: Socket? = null
+        @Volatile
+        private var mActive = true
 
         override fun run() {
-            while (!isInterrupted) {
+            while (mActive) {
                 try {
                     mHandler.onWaiting()
                     ServerSocket(Constants.defaultPort).use { serverSocket ->
@@ -101,13 +103,16 @@ class WiFiHost(listener: RPCMessageListener) : IRPCHost {
             val iss = socket.getInputStream()
             val oos = ObjectOutputStream(socket.getOutputStream())
             val ois = ObjectInputStream(iss)
-            while (!isInterrupted) {
+            while (mActive) {
                 while (mQueue.peek() != null) {
                     val message = mQueue.take()
                     oos.writeObject(message)
                     oos.flush()
+                    if (message.service == null) {
+                        return // disconnect requested
+                    }
                 }
-                while (iss.available() > 0) {
+                while (mActive && iss.available() > 0) {
                     val message = ois.readObject() as RPCMessage
                     if (message.service == null) {
                         return // client disconnected
@@ -119,7 +124,9 @@ class WiFiHost(listener: RPCMessageListener) : IRPCHost {
         }
 
         fun shutdown() {
-            interrupt()
+            // send empty message to notify host we are shutting down (we do not guarantee it will be sent though)
+            mQueue.add(RPCMessage(null, null))
+            mActive = false
             Closeables.close(mSocket)
             Closeables.close(mServerSocket)
         }
