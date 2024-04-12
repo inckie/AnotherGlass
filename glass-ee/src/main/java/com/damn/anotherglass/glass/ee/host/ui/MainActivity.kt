@@ -1,35 +1,20 @@
-/*
- * Copyright 2019 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.damn.anotherglass.glass.ee.host.ui
 
-import android.Manifest
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.damn.anotherglass.glass.ee.host.R
 import com.damn.anotherglass.glass.ee.host.core.HostService
+import com.damn.anotherglass.glass.ee.host.gpsPermissions
 import com.damn.anotherglass.glass.ee.host.ui.cards.BaseFragment
 import com.damn.anotherglass.glass.ee.host.ui.cards.MapCard
+import com.damn.anotherglass.glass.ee.host.utility.hasPermission
 import com.example.glass.ui.GlassGestureDetector
 import com.google.android.material.tabs.TabLayout
 
@@ -83,9 +68,7 @@ class MainActivity : BaseActivity() {
     }
 
     private fun checkLocationPermission(): Boolean {
-        val missing = gpsPermissions.filter {
-            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
-        }
+        val missing = gpsPermissions.filter { !hasPermission(it) }
         return when {
             missing.isEmpty() -> true
             else -> {
@@ -139,9 +122,6 @@ class MainActivity : BaseActivity() {
     companion object {
         private const val TAG = "MainActivity"
         private const val PERMISSIONS_REQUEST_LOCATION = 1
-        val gpsPermissions = arrayOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        )
+
     }
 }
