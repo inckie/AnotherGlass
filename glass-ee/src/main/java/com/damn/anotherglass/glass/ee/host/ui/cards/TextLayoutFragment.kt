@@ -70,7 +70,7 @@ class TextLayoutFragment : BaseFragment() {
             text: String,
             footer: String,
             timestamp: String,
-            menu: Int?
+            menu: Int? = null
         ): TextLayoutFragment = TextLayoutFragment().apply {
             val args = Bundle().apply {
                 putString(TEXT_KEY, text)
