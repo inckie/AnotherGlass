@@ -48,22 +48,6 @@ class MainActivity : BaseActivity() {
     private fun tryStartService() {
         // todo: check if we have wifi connection, and it looks like tethering one
         if (!checkLocationPermission()) return
-
-        // Requires MOCK_LOCATION permission given through ADB
-        // adb shell appops set <id> android:mock_location allow
-        // where <uid> is from exception message
-        // `java.lang.SecurityException: com.damn.anotherglass.glass.ee from uid 10063 not allowed to perform MOCK_LOCATION`
-
-        val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
-        if (!locationManager.allProviders.contains(LocationManager.GPS_PROVIDER)) {
-            Log.e(TAG, "GPS provider not available")
-            // todo: do call to addTestProvider to parse and display uid for ADB command
-            Toast.makeText(
-                this@MainActivity,
-                "GPS provider not available, please enable location mocking using ADB or developer settings",
-                Toast.LENGTH_LONG
-            ).show()
-        }
         client.start()
     }
 

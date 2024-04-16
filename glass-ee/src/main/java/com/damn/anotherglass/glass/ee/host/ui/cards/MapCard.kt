@@ -2,10 +2,12 @@ package com.damn.anotherglass.glass.ee.host.ui.cards
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -39,6 +41,17 @@ class MapCard : BaseFragment(), LocationListener {
         root = null
     }
 
+    override fun onSingleTapUp() {
+        super.onSingleTapUp()
+
+        val context = requireContext()
+        val locationManager = context.locationManager()
+        // probably will not work on Glass
+        if (!locationManager.allProviders.contains(LocationManager.GPS_PROVIDER)) {
+            startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
+        }
+    }
+
     @SuppressLint("MissingPermission", "SetTextI18n")
     override fun onResume() {
         super.onResume()
@@ -54,7 +67,8 @@ class MapCard : BaseFragment(), LocationListener {
 
         if (!locationManager.allProviders.contains(LocationManager.GPS_PROVIDER)) {
             // usually means MockGPS is not available
-            root?.lblGpsStatus?.text = "GPS provider not available"
+            root?.lblGpsStatus?.text = "GPS provider not available. Tap to open developer settings or enable using ADB."
+            // todo: also ask service to re-init mock GPS
             return
         }
 

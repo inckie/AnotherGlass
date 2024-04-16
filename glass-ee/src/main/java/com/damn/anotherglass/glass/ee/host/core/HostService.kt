@@ -2,6 +2,7 @@ package com.damn.anotherglass.glass.ee.host.core
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import com.damn.anotherglass.shared.gps.GPSServiceAPI
 import com.damn.anotherglass.shared.gps.Location
 import com.damn.anotherglass.shared.rpc.RPCMessage
@@ -48,7 +49,17 @@ class HostService(private val context: Context) {
         try {
             gps.start()
         } catch (e: SecurityException) {
+            // Requires MOCK_LOCATION permission given through ADB
+            // `adb shell appops set <id> android:mock_location allow`
+            // where <uid> is from exception message
+            // `java.lang.SecurityException: com.damn.anotherglass.glass.ee from uid 10063 not allowed to perform MOCK_LOCATION`
+            // or `adb shell appops set com.damn.anotherglass.glass.ee android:mock_location allow`
             Log.e(TAG, "GPS mocking is not enabled: $e")
+            Toast.makeText(
+                context,
+                "GPS provider not available, please enable location mocking using ADB or developer settings",
+                Toast.LENGTH_LONG
+            ).show()
         }
         client.start(context, listener)
     }
