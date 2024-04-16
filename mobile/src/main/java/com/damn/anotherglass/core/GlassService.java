@@ -161,7 +161,7 @@ public class GlassService
         NotificationChannel defaultChannel = new NotificationChannel(
                 sCHANNEL_DEFAULT,
                 getString(R.string.notification_channel_state),
-                NotificationManager.IMPORTANCE_HIGH);
+                NotificationManager.IMPORTANCE_DEFAULT);
         defaultChannel.setShowBadge(false);
         defaultChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         mNM.createNotificationChannel(defaultChannel);
