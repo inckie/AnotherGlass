@@ -6,18 +6,20 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import coil.load
+import coil.request.CachePolicy
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutCardMapBinding
 import com.damn.anotherglass.glass.ee.host.gpsPermissions
 import com.damn.anotherglass.glass.ee.host.utility.hasPermission
 import com.damn.anotherglass.glass.ee.host.utility.locationManager
-import com.squareup.picasso.MemoryPolicy
-import com.squareup.picasso.Picasso
 import java.util.Locale
 
 class MapCard : BaseFragment(), LocationListener {
+
     private var root: LayoutCardMapBinding? = null
     private var lastMapUrl: String? = null
 
@@ -58,7 +60,7 @@ class MapCard : BaseFragment(), LocationListener {
 
         // rate and distance are managed by mobile app, so we can use 0, 0
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
-        root?.lblGpsStatus?.text = "Waiting for GPS signal..."
+        root?.lblGpsStatus?.text = "Waiting for GPS signal…"
     }
 
     override fun onPause() {
@@ -67,9 +69,6 @@ class MapCard : BaseFragment(), LocationListener {
         if (hasLocationPermissions(context)) {
             val locationManager = context.locationManager()
             locationManager.removeUpdates(this)
-        }
-        root?.mapView?.apply {
-            Picasso.get().cancelRequest(this)
         }
     }
 
@@ -80,17 +79,21 @@ class MapCard : BaseFragment(), LocationListener {
             mapView.apply {
                 val url = getMapUrl(location)
                 if (lastMapUrl == url) return
-                lastMapUrl = url
-                Picasso.get()
-                    .load(url)
-                    .noPlaceholder()
-                    .memoryPolicy(MemoryPolicy.NO_STORE)
-                    .into(this)
+                load(url) {
+                    diskCachePolicy(CachePolicy.DISABLED)
+                    lifecycle(getViewLifecycleOwner())
+                    crossfade(false)
+                    listener(
+                        onSuccess = { _, _ -> lastMapUrl = url },
+                        onError = { _, _ -> Log.e(TAG, "Failed to load $url") })
+                }
             }
         }
     }
 
     companion object {
+
+        private const val TAG = "MapCard"
 
         // We need at least one
         private fun hasLocationPermissions(context: Context) =
