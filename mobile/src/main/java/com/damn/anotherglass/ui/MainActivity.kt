@@ -57,6 +57,22 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
 
         mSettings = Settings(this)
 
+        // Connection type
+        mBinding.rbConnectionType.check(
+            when (mSettings.hostMode) {
+                Settings.HostMode.Bluetooth -> R.id.btn_bt
+                Settings.HostMode.WiFi -> R.id.btn_wifi
+            }
+        )
+
+        mBinding.rbConnectionType.addOnButtonCheckedListener { _, checkedId, _ ->
+            mSettings.hostMode = when (checkedId) {
+                R.id.btn_bt -> Settings.HostMode.Bluetooth
+                R.id.btn_wifi -> Settings.HostMode.WiFi
+                else -> Settings.HostMode.Bluetooth // should not happen
+            }
+        }
+
         // Start/Stop
         mBinding.toggleService.apply {
             isChecked = GlassService.isRunning(context)
@@ -140,6 +156,12 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         if (isRunning) {
             mBinding.toggleGps.isChecked = mSettings.isGPSEnabled
         }
+
+        // can't change connection type while running
+        // can't enable/disable GroupView
+        mBinding.btnBt.isEnabled = !isRunning
+        mBinding.btnWifi.isEnabled =!isRunning
+
         val isConnected = null != mConnection.service
         mBinding.cntControls.visibility = if (isConnected) View.VISIBLE else View.GONE
     }
