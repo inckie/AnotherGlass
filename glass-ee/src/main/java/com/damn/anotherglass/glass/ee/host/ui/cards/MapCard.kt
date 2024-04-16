@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import coil.load
 import coil.request.CachePolicy
+import coil.transition.CrossfadeTransition
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutCardMapBinding
 import com.damn.anotherglass.glass.ee.host.gpsPermissions
 import com.damn.anotherglass.glass.ee.host.utility.hasPermission
@@ -46,7 +47,6 @@ class MapCard : BaseFragment(), LocationListener {
 
         val context = requireContext()
         val locationManager = context.locationManager()
-        // probably will not work on Glass
         if (!locationManager.allProviders.contains(LocationManager.GPS_PROVIDER)) {
             startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
         }
@@ -67,7 +67,7 @@ class MapCard : BaseFragment(), LocationListener {
 
         if (!locationManager.allProviders.contains(LocationManager.GPS_PROVIDER)) {
             // usually means MockGPS is not available
-            root?.lblGpsStatus?.text = "GPS provider not available. Tap to open developer settings or enable using ADB."
+            root?.lblGpsStatus?.text = "GPS provider not available. Tap to open developer settings and select GPS mock application provider."
             // todo: also ask service to re-init mock GPS
             return
         }
@@ -96,7 +96,7 @@ class MapCard : BaseFragment(), LocationListener {
                 load(url) {
                     diskCachePolicy(CachePolicy.DISABLED)
                     lifecycle(getViewLifecycleOwner())
-                    crossfade(false)
+                    transitionFactory(CrossfadeTransition.Factory())
                     listener(
                         onSuccess = { _, _ -> lastMapUrl = url },
                         onError = { _, _ -> Log.e(TAG, "Failed to load $url") })
