@@ -17,6 +17,8 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
 
+apply from: file('../gradle/signing.gradle')
+
 android {
     defaultConfig {
         compileSdk 34
@@ -26,6 +28,23 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
+    }
+
+    signingConfigs {
+        if (null != project.ext.signingConfig) {
+            config project.ext.signingConfig
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig null != project.ext.signingConfig ? signingConfigs.config : signingConfigs.debug
+        }
+        debug {
+            signingConfig null != project.ext.signingConfig ? signingConfigs.config : signingConfigs.debug
+        }
     }
 
     buildFeatures {

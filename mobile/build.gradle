@@ -1,6 +1,8 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
+apply from: file('../gradle/signing.gradle')
+
 android {
     compileSdk 34
     defaultConfig {
@@ -10,12 +12,24 @@ android {
         versionCode 1
         versionName "1.0"
     }
+
+    signingConfigs {
+        if (null != project.ext.signingConfig) {
+            config project.ext.signingConfig
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig null != project.ext.signingConfig ? signingConfigs.config : signingConfigs.debug
+        }
+        debug {
+            signingConfig null != project.ext.signingConfig ? signingConfigs.config : signingConfigs.debug
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
