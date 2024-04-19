@@ -30,6 +30,7 @@ class WiFiClient : IRPCClient {
         val ip = getHostIPAddress(context)
         if (null == ip) {
             Log.e(TAG, "No host IP address")
+            listener.onShutdown()
             return
         }
         mWorkerThread = WorkerThread(listener, ip)
