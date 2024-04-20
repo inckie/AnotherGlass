@@ -13,9 +13,7 @@ import android.util.Log;
 // Requires MOCK_LOCATION permission on Android 6+
 // On most devices it's enabled in Developer Options
 // On Glass use adb shell to grant permission:
-// "adb shell appops set <id> android:mock_location allow"
-// where <uid> is from exception message
-// "java.lang.SecurityException: com.damn.anotherglass.glass.ee from uid <uid> not allowed to perform MOCK_LOCATION
+// "adb shell appops set com.damn.anotherglass.glass.ee android:mock_location allow"
 public class MockGPS {
 
     private static final String LOG_TAG = "MockGPS";
