@@ -65,7 +65,9 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
             }
         )
 
-        mBinding.rbConnectionType.addOnButtonCheckedListener { _, checkedId, _ ->
+        mBinding.rbConnectionType.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if(!isChecked)
+                return@addOnButtonCheckedListener
             mSettings.hostMode = when (checkedId) {
                 R.id.btn_bt -> Settings.HostMode.Bluetooth
                 R.id.btn_wifi -> Settings.HostMode.WiFi
