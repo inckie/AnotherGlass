@@ -1,6 +1,5 @@
 package com.damn.anotherglass.core;
 
-import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -24,8 +23,9 @@ import com.damn.anotherglass.R;
 import com.damn.anotherglass.extensions.GPSExtension;
 import com.damn.anotherglass.extensions.notifications.NotificationExtension;
 import com.damn.anotherglass.logging.ALog;
-import com.damn.anotherglass.shared.RPCMessage;
-import com.damn.anotherglass.shared.RPCMessageListener;
+import com.damn.anotherglass.shared.rpc.IRPCHost;
+import com.damn.anotherglass.shared.rpc.RPCMessage;
+import com.damn.anotherglass.shared.rpc.RPCMessageListener;
 import com.damn.anotherglass.ui.MainActivity;
 
 import java.util.List;
@@ -43,7 +43,7 @@ public class GlassService
 
     private final IBinder mBinder = new LocalBinder();
 
-    private BluetoothHost mClient;
+    private IRPCHost mHost;
 
     private NotificationManager mNM;
 
@@ -68,7 +68,7 @@ public class GlassService
         startForeground(NOTIFICATION_ID, buildNotification());
 
         // todo: update notification and UI on changes
-        mClient = new BluetoothHost(this, new RPCMessageListener() {
+        RPCMessageListener rpcMessageListener = new RPCMessageListener() {
             @Override
             public void onWaiting() {
                 log.i(TAG, "Waiting for connection");
@@ -79,9 +79,9 @@ public class GlassService
             public void onConnectionStarted(@NonNull String device) {
                 log.i(TAG, "Connected to " + device);
                 Toast.makeText(GlassService.this, "Connected to " + device, Toast.LENGTH_SHORT).show();
-                if(mSettings.isGPSEnabled())
+                if (mSettings.isGPSEnabled())
                     mGPS.start();
-                if(mSettings.isNotificationsEnabled())
+                if (mSettings.isNotificationsEnabled())
                     mNotifications.start();
             }
 
@@ -92,7 +92,7 @@ public class GlassService
 
             @Override
             public void onConnectionLost(@Nullable String error) {
-                if(null != error)
+                if (null != error)
                     log.e(TAG, "Disconnected with error: " + error);
                 else
                     log.i(TAG, "Disconnected");
@@ -100,23 +100,25 @@ public class GlassService
                 mGPS.stop();
                 mNotifications.stop();
             }
-        }) {
+
             @Override
-            public void onStopped() {
-                super.onStopped();
-                log.i(TAG, "BluetoothClient has stopped, terminating GlassService");
-                Toast.makeText(GlassService.this, "BluetoothClient has stopped, terminating GlassService", Toast.LENGTH_SHORT).show();
+            public void onShutdown() {
+                log.i(TAG, "BluetoothHost has stopped, terminating GlassService");
+                Toast.makeText(GlassService.this, "BluetoothHost has stopped, terminating GlassService", Toast.LENGTH_SHORT).show();
                 stopSelf();
             }
         };
 
+        mSettings = new Settings(this);
         mNotifications = new NotificationExtension(this);
         mGPS = new GPSExtension(this);
 
-        mSettings = new Settings(this);
+        final boolean useWifi = Settings.HostMode.WiFi == mSettings.getHostMode();
+        mHost = useWifi ? new WiFiHost(rpcMessageListener) : new BluetoothHost(rpcMessageListener);
+
         mSettings.registerListener(this);
 
-        mClient.start();
+        mHost.start(this);
     }
 
     @Override
@@ -141,12 +143,12 @@ public class GlassService
         mSettings.unregisterListener(this);
         mGPS.stop();
         mNotifications.stop();
-        mClient.stop();
+        mHost.stop();
         super.onDestroy();
     }
 
     public void send(@NonNull RPCMessage message) {
-        mClient.send(message);
+        mHost.send(message);
     }
 
     public Settings getSettings() {
@@ -159,7 +161,7 @@ public class GlassService
         NotificationChannel defaultChannel = new NotificationChannel(
                 sCHANNEL_DEFAULT,
                 getString(R.string.notification_channel_state),
-                NotificationManager.IMPORTANCE_HIGH);
+                NotificationManager.IMPORTANCE_DEFAULT);
         defaultChannel.setShowBadge(false);
         defaultChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         mNM.createNotificationChannel(defaultChannel);

@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 
+apply from: file('../gradle/signing.gradle')
+
 android {
     compileSdkVersion "Google Inc.:Glass Development Kit Preview:19"
     defaultConfig {
@@ -10,12 +12,24 @@ android {
         versionCode 1
         versionName "1.0"
     }
+
+    signingConfigs {
+        if (null != project.ext.signingConfig) {
+            config project.ext.signingConfig
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig null != project.ext.signingConfig ? signingConfigs.config : signingConfigs.debug
+        }
+        debug {
+            signingConfig null != project.ext.signingConfig ? signingConfigs.config : signingConfigs.debug
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -34,4 +48,5 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation project(':shared')
+    implementation project(':glass-shared')
 }

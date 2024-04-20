@@ -1,4 +1,4 @@
-include ':mobile', ':glass', ':shared'
+include ':mobile', ':glass', ':glass-ee', ':shared',  ':glass-shared'
 
 def xray = [
         ':xray-core',

@@ -1,9 +1,12 @@
-package com.damn.anotherglass.shared;
+package com.damn.anotherglass.shared.rpc;
 
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 
 public class RPCHandler extends Handler implements RPCMessageListener {
@@ -13,9 +16,9 @@ public class RPCHandler extends Handler implements RPCMessageListener {
     private static final int STATE_CONNECTION_LOST = 1;
     private static final int STATE_WAITING_FOR_CONNECT = 2;
     private static final int MSG_DATA_RECEIVED = 3;
+    private static final int MSG_ON_SHUTDOWN = 4;
 
     private static final String TAG = "RPCHandler";
-
 
     public RPCHandler(RPCMessageListener listener) {
         super(Looper.getMainLooper());
@@ -38,6 +41,8 @@ public class RPCHandler extends Handler implements RPCMessageListener {
             listener.onConnectionLost(error);
         } else if (STATE_WAITING_FOR_CONNECT == msg.what) {
             listener.onWaiting();
+        } else if (MSG_ON_SHUTDOWN == msg.what) {
+            listener.onShutdown();
         }
     }
 
@@ -47,17 +52,22 @@ public class RPCHandler extends Handler implements RPCMessageListener {
     }
 
     @Override
-    public void onConnectionStarted(/*@NonNull*/ String device) {
+    public void onConnectionStarted(@NonNull String device) {
         obtainMessage(RPCHandler.STATE_CONNECTION_STARTED, device).sendToTarget();
     }
 
     @Override
-    public void onDataReceived(/*@NonNull*/ RPCMessage data) {
+    public void onDataReceived(@NonNull RPCMessage data) {
         obtainMessage(RPCHandler.MSG_DATA_RECEIVED, data).sendToTarget();
     }
 
     @Override
-    public void onConnectionLost(/*@Nullable*/ String error) {
+    public void onConnectionLost(@Nullable String error) {
         obtainMessage(RPCHandler.STATE_CONNECTION_LOST, error).sendToTarget();
+    }
+
+    @Override
+    public void onShutdown() {
+        obtainMessage(RPCHandler.MSG_ON_SHUTDOWN).sendToTarget();
     }
 }

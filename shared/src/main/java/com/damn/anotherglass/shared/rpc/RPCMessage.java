@@ -1,4 +1,4 @@
-package com.damn.anotherglass.shared;
+package com.damn.anotherglass.shared.rpc;
 
 import java.io.Serializable;
 

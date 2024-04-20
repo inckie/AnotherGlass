@@ -1,0 +1,25 @@
+
+def loadConfig = {
+    def propFile = project.rootProject.file('local.properties')
+    if (propFile.canRead()) {
+        def properties = new Properties()
+        properties.load(propFile.newDataInputStream())
+        if (properties.containsKey('keystore_path') &&
+                properties.containsKey('keystore_password') &&
+                properties.containsKey('key_alias') &&
+                properties.containsKey('key_password')) {
+
+            return {
+                keyAlias properties["key_alias"]
+                keyPassword properties["key_password"]
+                storeFile file(properties["keystore_path"].toString())
+                storePassword properties["keystore_password"]
+            }
+        }
+    }
+    return null
+}
+
+project.ext {
+    signingConfig = loadConfig()
+}

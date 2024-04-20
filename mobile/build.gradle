@@ -1,6 +1,8 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
+apply from: file('../gradle/signing.gradle')
+
 android {
     compileSdk 34
     defaultConfig {
@@ -10,15 +12,30 @@ android {
         versionCode 1
         versionName "1.0"
     }
+
+    signingConfigs {
+        if (null != project.ext.signingConfig) {
+            config project.ext.signingConfig
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig null != project.ext.signingConfig ? signingConfigs.config : signingConfigs.debug
+        }
+        debug {
+            signingConfig null != project.ext.signingConfig ? signingConfigs.config : signingConfigs.debug
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
     buildFeatures {
         viewBinding true
@@ -27,14 +44,20 @@ android {
 }
 
 dependencies {
+
+    implementation project(':shared')
+
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'androidx.activity:activity:1.6.0'
-    implementation 'androidx.activity:activity-ktx:1.6.0'
+
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.activity:activity:1.8.2'
+    implementation 'androidx.activity:activity-ktx:1.8.2'
+    implementation 'com.google.android.material:material:1.11.0'
+
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'org.greenrobot:eventbus:3.3.1'
-    implementation project(path: ':shared')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    implementation 'org.greenrobot:eventbus:3.3.1'
 
     // Logging
     gradle.ext.xray.forEach { implementation project(it) }
