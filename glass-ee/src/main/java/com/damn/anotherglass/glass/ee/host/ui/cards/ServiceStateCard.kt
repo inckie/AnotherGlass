@@ -7,7 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.annotation.StringRes
 import com.damn.anotherglass.glass.ee.host.R
+import com.damn.anotherglass.glass.ee.host.core.IService
 import com.damn.anotherglass.glass.ee.host.ui.MainActivity
 
 class ServiceStateCard : BaseFragment() {
@@ -27,8 +29,7 @@ class ServiceStateCard : BaseFragment() {
             bodyLayout.addView(this)
             mainActivity()?.let {
                 it.getServiceState().observe(viewLifecycleOwner) { state ->
-                    // todo: map status enum to text
-                    text = state?.toString() ?: "Service is not running. Tap to start."
+                    text = getString(serviceState(state))
                 }
             }
         }
@@ -50,5 +51,14 @@ class ServiceStateCard : BaseFragment() {
         private const val BODY_TEXT_SIZE = 40
         @JvmStatic
         fun newInstance(): ServiceStateCard = ServiceStateCard()
+
+        @StringRes
+        private fun serviceState(state: IService.ServiceState?): Int = when (state) {
+            null -> R.string.msg_service_not_running
+            IService.ServiceState.INITIALIZING -> R.string.msg_service_initializing
+            IService.ServiceState.WAITING -> R.string.msg_service_waiting
+            IService.ServiceState.CONNECTED -> R.string.msg_service_connected
+            IService.ServiceState.DISCONNECTED -> R.string.msg_service_disconnected
+        }
     }
 }

@@ -27,7 +27,6 @@ import com.google.android.material.tabs.TabLayout
 //  - add zoom levels to map card
 //  - add controls cards: slider, Gyro lists
 //  - add notifications card
-//  - extract string constants
 
 class MainActivity : BaseActivity() {
 
