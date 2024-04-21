@@ -10,6 +10,7 @@ import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.rpc.RPCMessageListener
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
+import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.SocketException
 import java.util.concurrent.BlockingQueue
@@ -60,7 +61,8 @@ class WiFiClient : IRPCClient {
         override fun run() {
             mHandler.onWaiting()
             try {
-                Socket(ip, Constants.defaultPort).use { socket ->
+                Socket().use { socket ->
+                    socket.connect(InetSocketAddress(ip, Constants.defaultPort), 5000)
                     mHandler.onConnectionStarted(socket.inetAddress.toString())
                     runLoop(socket)
                 }
