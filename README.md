@@ -75,8 +75,6 @@ Uses Java object stream to send data to Google Glass, since I don't want to mess
 ### Glass Enterprise Edition
 
 * Improve initial connect experience on the Glass Enterprise Edition:
-   * add service start/stop menu on Home card
-   * move GPS permissions handling to the Map card and make the permissions optional to start the service
    * handle permissions and MockGPS status changes without restarting the service.
 * Add option to run service without mobile application connection to simulate Explorer Edition features:
     * Add Tilt to Wake feature

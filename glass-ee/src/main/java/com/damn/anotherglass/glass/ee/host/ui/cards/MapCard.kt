@@ -1,8 +1,11 @@
 package com.damn.anotherglass.glass.ee.host.ui.cards
 
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -21,13 +24,43 @@ import com.damn.anotherglass.glass.ee.host.utility.hasPermission
 import com.damn.anotherglass.glass.ee.host.utility.locationManager
 import java.util.Locale
 
-class MapCard : BaseFragment(), LocationListener {
 
+class MapCard : BaseFragment() {
+
+    private lateinit var locationManager: LocationManager
     private var root: LayoutCardMapBinding? = null
     private var lastMapUrl: String? = null
 
+    private val statusReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (LocationManager.PROVIDERS_CHANGED_ACTION == intent.action) {
+                updateState()
+            }
+        }
+    }
+
+    private val locationListener: LocationListener = object : LocationListener {
+        override fun onLocationChanged(location: Location) = updateMap(location)
+        override fun onProviderEnabled(provider: String) = Unit
+        override fun onProviderDisabled(provider: String) = Unit
+        @Deprecated("Deprecated in Java", ReplaceWith("Unit"))
+        override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) = Unit
+    }
+
     // todo: write "integrated" location provider, that can also work on broadcasts
     // todo: add zoom in/out menu commands
+
+    private enum class State {
+        MissingGeoPermissions,
+        MissingMockLocationPermissions,
+        MockNotRunning,
+        Active,
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        locationManager = context.locationManager()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,49 +77,66 @@ class MapCard : BaseFragment(), LocationListener {
 
     override fun onSingleTapUp() {
         super.onSingleTapUp()
-
-        val context = requireContext()
-        val locationManager = context.locationManager()
-        if (!locationManager.allProviders.contains(LocationManager.GPS_PROVIDER)) {
-            startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
+        val state = getState()
+        @Suppress("DEPRECATION")
+        when (state) {
+            State.MissingGeoPermissions -> requestPermissions(gpsPermissions, PERMISSIONS_REQUEST_LOCATION)
+            State.MissingMockLocationPermissions -> startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
+            State.MockNotRunning -> {} // todo: try to notify service to start mock (if service is running)
+            State.Active -> {} // todo: show zoom in/out overlay
         }
     }
 
-    @SuppressLint("MissingPermission", "SetTextI18n")
+    @Deprecated("Deprecated in Java")
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) = when (requestCode) {
+        PERMISSIONS_REQUEST_LOCATION -> updateState()
+        else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onResume() {
         super.onResume()
-
-        val context = requireContext()
-
-        if (!hasLocationPermissions(context)) {
-            root?.lblGpsStatus?.text = "GPS permissions not granted"
-            return
+        updateState()
+        IntentFilter().let {
+            it.addAction(LocationManager.PROVIDERS_CHANGED_ACTION)
+            requireContext().registerReceiver(statusReceiver, it)
         }
-
-        val locationManager = context.locationManager()
-
-        if (!locationManager.allProviders.contains(LocationManager.GPS_PROVIDER)) {
-            // usually means MockGPS is not available
-            root?.lblGpsStatus?.text = "GPS provider not available. Tap to open developer settings and select GPS mock application provider."
-            // todo: also ask service to re-init mock GPS
-            return
-        }
-
-        // rate and distance are managed by mobile app, so we can use 0, 0
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
-        root?.lblGpsStatus?.text = "Waiting for GPS signal…"
     }
 
     override fun onPause() {
         super.onPause()
         val context = requireContext()
         if (hasLocationPermissions(context)) {
-            val locationManager = context.locationManager()
-            locationManager.removeUpdates(this)
+            locationManager.removeUpdates(locationListener)
+        }
+        context.unregisterReceiver(statusReceiver)
+    }
+
+    @SuppressLint("MissingPermission", "SetTextI18n")
+    private fun updateState() {
+        val state = getState()
+        root?.lblGpsStatus?.text = when (state) {
+            State.MissingGeoPermissions -> "GPS permissions not granted"
+            State.MissingMockLocationPermissions -> "GPS provider not available. Tap to open developer settings and select GPS mock application provider."
+            State.MockNotRunning -> "Mock GPS not running. Tap to start."
+            State.Active -> {
+                // rate and minimal distance are managed by mobile app, so we can use 0, 0
+                locationManager.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER,
+                    0,
+                    0f,
+                    locationListener
+                )
+                "Waiting for GPS signal…"
+            }
         }
     }
 
-    override fun onLocationChanged(location: Location) {
+    private fun updateMap(location: Location) {
         root?.apply {
             @SuppressLint("SetTextI18n")
             lblGpsStatus.text = "${location.latitude}, ${location.longitude}"
@@ -105,13 +155,40 @@ class MapCard : BaseFragment(), LocationListener {
         }
     }
 
+    private fun getState(): State = requireContext().let {
+        when {
+            !hasLocationPermissions(it) -> State.MissingGeoPermissions
+            // order is important. Maybe device has a real provider, which is good enough (we should check its active though…)
+            locationManager.allProviders.contains(LocationManager.GPS_PROVIDER) -> State.Active
+            !hasMockPermission(it) -> State.MissingMockLocationPermissions
+            else -> State.MockNotRunning
+        }
+    }
+
+
     companion object {
 
         private const val TAG = "MapCard"
+        private const val PERMISSIONS_REQUEST_LOCATION = 1
 
         // We need at least one
         private fun hasLocationPermissions(context: Context) =
             gpsPermissions.any { context.hasPermission(it) }
+
+        private fun hasMockPermission(context: Context): Boolean {
+            return try {
+                val packageInfo = context.packageManager.getPackageInfo(
+                    context.packageName,
+                    PackageManager.GET_PERMISSIONS
+                )
+                packageInfo.requestedPermissions?.any { it == "android.permission.ACCESS_MOCK_LOCATION" }
+                    ?: false
+            } catch (e: Exception) {
+                Log.e(TAG, "checkForAllowMockLocationsApps failed: " + e.message)
+                // todo:try to install and remove mock provider to check if permission is granted
+                false
+            }
+        }
 
         // todo: copypasted from Explorer app
         private fun getMapUrl(location: Location): String {
