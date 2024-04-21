@@ -18,6 +18,7 @@ import android.view.ViewGroup
 import coil.load
 import coil.request.CachePolicy
 import coil.transition.CrossfadeTransition
+import com.damn.anotherglass.glass.ee.host.R
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutCardMapBinding
 import com.damn.anotherglass.glass.ee.host.gpsPermissions
 import com.damn.anotherglass.glass.ee.host.utility.hasPermission
@@ -116,13 +117,13 @@ class MapCard : BaseFragment() {
         context.unregisterReceiver(statusReceiver)
     }
 
-    @SuppressLint("MissingPermission", "SetTextI18n")
+    @SuppressLint("MissingPermission")
     private fun updateState() {
         val state = getState()
         root?.lblGpsStatus?.text = when (state) {
-            State.MissingGeoPermissions -> "GPS permissions not granted"
-            State.MissingMockLocationPermissions -> "GPS provider not available. Tap to open developer settings and select GPS mock application provider."
-            State.MockNotRunning -> "Mock GPS not running. Tap to start."
+            State.MissingGeoPermissions -> getString(R.string.msg_gps_permissions_not_granted)
+            State.MissingMockLocationPermissions -> getString(R.string.msg_gps_provider_not_available)
+            State.MockNotRunning -> getString(R.string.msg_gps_mock_not_running)
             State.Active -> {
                 // rate and minimal distance are managed by mobile app, so we can use 0, 0
                 locationManager.requestLocationUpdates(
@@ -131,7 +132,7 @@ class MapCard : BaseFragment() {
                     0f,
                     locationListener
                 )
-                "Waiting for GPS signal…"
+                getString(R.string.msg_waiting_for_gps_signal)
             }
         }
     }
