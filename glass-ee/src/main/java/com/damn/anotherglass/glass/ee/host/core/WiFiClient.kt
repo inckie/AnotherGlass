@@ -2,6 +2,8 @@ package com.damn.anotherglass.glass.ee.host.core
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
+import com.damn.anotherglass.glass.ee.host.R
 import com.damn.anotherglass.glass.ee.host.core.ConnectionUtils.getHostIPAddress
 import com.damn.anotherglass.shared.Constants
 import com.damn.anotherglass.shared.rpc.IRPCClient
@@ -27,13 +29,15 @@ class WiFiClient : IRPCClient {
             Log.e(TAG, "Already started")
             return
         }
-        // todo: this part should not be there
+        // todo: this part should not be there (Service should provide IP)
         val ip = getHostIPAddress(context)
         if (null == ip) {
             Log.e(TAG, "No host IP address")
+            Toast.makeText(context, R.string.msg_no_server_ip, Toast.LENGTH_SHORT).show()
             listener.onShutdown()
             return
         }
+        Toast.makeText(context, context.getString(R.string.msg_connecting_to_ip_s, ip), Toast.LENGTH_SHORT).show()
         mWorkerThread = WorkerThread(listener, ip)
         mWorkerThread!!.start()
     }

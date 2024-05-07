@@ -16,6 +16,9 @@
   <string name="msg_service_connected">Connected</string>
   <string name="msg_service_disconnected">Disconnected</string>
 
+  <string name="msg_connecting_to_ip_s">Connecting to %1$s</string>
+  <string name="msg_no_server_ip">Failed to determine host IP</string>
+
   <!-- Map Card -->
   <string name="msg_gps_permissions_not_granted">GPS permissions not granted</string>
   <string name="msg_gps_provider_not_available">GPS provider not available. Tap to open developer settings and select GPS mock application provider.</string>

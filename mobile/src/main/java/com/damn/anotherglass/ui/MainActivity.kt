@@ -34,6 +34,8 @@ import com.damn.anotherglass.utility.hasPermission
 
 class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
 
+    // todo: display connected device state
+
     private lateinit var mBinding: ActivityMainBinding
     private lateinit var mSettings: Settings
     private val mConnection = GlassServiceConnection()
