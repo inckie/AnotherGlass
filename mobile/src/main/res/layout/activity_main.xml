@@ -45,7 +45,7 @@
         </com.google.android.material.button.MaterialButtonToggleGroup>
     </LinearLayout>
 
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/toggle_service"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -53,32 +53,72 @@
         android:paddingBottom="16dp"
         android:text="@string/lbl_enable_service" />
 
-    <LinearLayout
+    <ScrollView
         android:id="@+id/cnt_controls"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
-        <Switch
-            android:id="@+id/toggle_gps"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
-            android:text="@string/lbl_enable_gps" />
+            android:orientation="vertical">
 
-        <Switch
-            android:id="@+id/toggle_notifications"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
-            android:text="@string/lbl_enable_notifications" />
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/toggle_gps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:text="@string/lbl_enable_gps" />
 
-        <Button
-            android:id="@+id/btn_connect_wifi"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/btn_connect_wifi" />
-    </LinearLayout>
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/toggle_notifications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:text="@string/lbl_enable_notifications" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_connect_wifi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_connect_wifi" />
+
+            <LinearLayout
+                android:id="@+id/cnt_dbg_notifications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/TextAppearance.Material3.TitleSmall"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:text="@string/btn_dbg_notifications" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_dbg_notification_remove"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    app:backgroundTint="?android:attr/colorButtonNormal"
+                    app:icon="@drawable/ic_baseline_remove_24" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_dbg_notification_post"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    app:backgroundTint="?android:attr/colorButtonNormal"
+                    app:icon="@drawable/ic_baseline_add_24" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

@@ -23,6 +23,7 @@ import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.core.GlassService.LocalBinder
 import com.damn.anotherglass.core.Settings
 import com.damn.anotherglass.databinding.ActivityMainBinding
+import com.damn.anotherglass.debug.DbgNotifications
 import com.damn.anotherglass.extensions.GPSExtension
 import com.damn.anotherglass.extensions.notifications.NotificationService
 import com.damn.anotherglass.logging.LogActivity
@@ -118,6 +119,21 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
 
         // WiFi
         mBinding.btnConnectWifi.setOnClickListener { connectWiFi() }
+
+        // Debug
+
+        // Notifications
+        mBinding.btnDbgNotificationPost.setOnClickListener {
+            DbgNotifications.postNotification(this)
+            mBinding.btnDbgNotificationRemove.isEnabled = true
+        }
+
+        mBinding.btnDbgNotificationRemove.setOnClickListener {
+            if(!DbgNotifications.removeNotification(this))
+                mBinding.btnDbgNotificationRemove.isEnabled = false
+        }
+        mBinding.btnDbgNotificationRemove.isEnabled = DbgNotifications.notificationId > 0
+
         updateUI()
     }
 
