@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
 import android.view.KeyEvent
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentStatePagerAdapter
@@ -14,14 +13,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
 import com.damn.anotherglass.glass.ee.host.BuildConfig
 import com.damn.anotherglass.glass.ee.host.R
-import com.damn.anotherglass.glass.ee.host.core.DebugManager
+import com.damn.anotherglass.glass.ee.host.debug.DebugManager
 import com.damn.anotherglass.glass.ee.host.core.HostService
 import com.damn.anotherglass.glass.ee.host.core.IService
-import com.damn.anotherglass.glass.ee.host.core.NotificationController
 import com.damn.anotherglass.glass.ee.host.ui.MainActivityEx.addNotificationsModule
 import com.damn.anotherglass.glass.ee.host.ui.cards.BaseFragment
 import com.damn.anotherglass.glass.ee.host.ui.cards.MapCard
-import com.damn.anotherglass.glass.ee.host.ui.cards.NotificationsCard
 import com.damn.anotherglass.glass.ee.host.ui.cards.ServiceStateCard
 import com.damn.anotherglass.glass.ee.host.utility.isRunning
 import com.example.glass.ui.GlassGestureDetector

@@ -1,4 +1,4 @@
-package com.damn.anotherglass.glass.ee.host.core
+package com.damn.anotherglass.glass.ee.host.debug
 
 class DebugManager {
 

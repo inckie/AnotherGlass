@@ -1,7 +1,8 @@
-package com.damn.anotherglass.glass.ee.host.core
+package com.damn.anotherglass.glass.ee.host.debug
 
 import android.os.Build
 import android.text.format.DateUtils
+import com.damn.anotherglass.glass.ee.host.core.NotificationController
 import com.damn.anotherglass.shared.notifications.NotificationData
 
 class DebugManager {
