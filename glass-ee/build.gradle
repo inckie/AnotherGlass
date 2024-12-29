@@ -21,7 +21,7 @@ apply from: file('../gradle/signing.gradle')
 
 android {
     defaultConfig {
-        compileSdk 34
+        compileSdk 35
         applicationId "com.damn.anotherglass.glass.ee"
         minSdkVersion 27
         //noinspection ExpiredTargetSdkVersion
@@ -67,9 +67,9 @@ dependencies {
     implementation project(':glass-shared')
     implementation project(':glass-ee-gestures')
     implementation 'androidx.recyclerview:recyclerview:1.3.2'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
     implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.core:core-ktx:1.15.0'
 
     implementation 'io.coil-kt:coil:2.6.0'
 }

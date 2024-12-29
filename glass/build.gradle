@@ -30,6 +30,7 @@ android {
         }
     }
 
+    // Later Java versions are not compatible with Glass GDK
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8

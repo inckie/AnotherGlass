@@ -1,8 +1,9 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 29
+
     defaultConfig {
+        compileSdk 35
         minSdkVersion 19
         //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 29
@@ -18,5 +19,5 @@ android {
 }
 
 dependencies {
-    implementation "androidx.annotation:annotation:1.7.1"
+    implementation "androidx.annotation:annotation:1.9.1"
 }
