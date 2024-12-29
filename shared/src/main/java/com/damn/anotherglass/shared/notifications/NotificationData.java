@@ -1,5 +1,7 @@
 package com.damn.anotherglass.shared.notifications;
 
+import androidx.annotation.NonNull;
+
 import java.io.Serializable;
 
 public class NotificationData implements Serializable {
@@ -8,6 +10,7 @@ public class NotificationData implements Serializable {
         Posted, Removed
     }
 
+    @NonNull
     public Action action;
     public int id;
     public String packageName;

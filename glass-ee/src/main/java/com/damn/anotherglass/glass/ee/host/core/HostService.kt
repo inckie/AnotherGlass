@@ -8,6 +8,8 @@ import android.util.Log
 import android.widget.Toast
 import com.damn.anotherglass.shared.gps.GPSServiceAPI
 import com.damn.anotherglass.shared.gps.Location
+import com.damn.anotherglass.shared.notifications.NotificationData
+import com.damn.anotherglass.shared.notifications.NotificationsAPI
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.rpc.RPCMessageListener
 import com.damn.glass.shared.gps.MockGPS
@@ -80,6 +82,11 @@ class HostService() : Service(), IService {
                         Log.d(TAG, "GPS data received")
                         if (data.type.equals(Location::class.java.getName()))
                             gps.publish(data.payload as Location)
+                    }
+
+                    NotificationsAPI.ID -> {
+                        Log.d(TAG, "Notification data received")
+                        NotificationController.instance.onNotificationUpdate(data.payload as NotificationData)
                     }
 
                     else -> Log.e(TAG, "Unknown service: ${data.service}")
