@@ -89,7 +89,7 @@ public class NotificationsCardController extends BroadcastReceiver {
         // todo: logic there is a bit flawed, since NotificationsActivity can't clear stack or remove card right now
         PendingIntent pendingIntent =
                 hasMore
-                        ? getNotificationsPedningListIntent()
+                        ? getNotificationsPendingListIntent()
                         : getCardDismissPendingIntent(CARD_ID_STACK);
         mStackedCard.setAction(pendingIntent);
 
@@ -99,7 +99,7 @@ public class NotificationsCardController extends BroadcastReceiver {
             mStackedCard.navigate();
     }
 
-    private PendingIntent getNotificationsPedningListIntent() {
+    private PendingIntent getNotificationsPendingListIntent() {
         Intent menuIntent = new Intent(service, NotificationsActivity.class);
         return PendingIntent.getActivity(service, (int) System.currentTimeMillis(), menuIntent, 0);
     }
