@@ -74,6 +74,7 @@ class HostService() : Service(), IService {
             override fun onConnectionStarted(device: String) {
                 Log.d(TAG, "Connected to $device")
                 state = IService.ServiceState.CONNECTED
+                NotificationController.instance.onServiceConnected()
             }
 
             override fun onDataReceived(data: RPCMessage) {

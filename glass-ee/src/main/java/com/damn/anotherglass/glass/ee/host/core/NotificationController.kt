@@ -30,6 +30,11 @@ class NotificationController {
         }
     }
 
+    fun onServiceConnected() {
+        // Clear all notifications on service reconnection to avoid stale ones
+        notifications.postValue(emptyList())
+    }
+
     companion object {
         private val TAG = "NotificationController"
         val instance: NotificationController by lazy { NotificationController() }
