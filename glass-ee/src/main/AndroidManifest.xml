@@ -75,6 +75,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.NotificationsActivity"
+            android:exported="false"
+            android:theme="@style/MenuTheme" />
+
         <service
             android:name=".core.HostService"
             android:enabled="true"
