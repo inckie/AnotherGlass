@@ -30,6 +30,7 @@ import com.google.android.material.tabs.TabLayout
 //  - add Bluetooth connection support (and WiFi for xe)?
 //  - add zoom levels to map card
 //  - add controls cards: slider, Gyro lists
+//  - migrate to ViewPagers2
 
 class MainActivity : BaseActivity() {
 

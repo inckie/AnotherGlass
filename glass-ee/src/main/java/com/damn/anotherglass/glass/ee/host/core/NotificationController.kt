@@ -35,6 +35,13 @@ class NotificationController {
         notifications.postValue(emptyList())
     }
 
+    fun dismissNotification(id: Int) {
+        val current = notifications.value!!.toMutableList()
+        if (current.removeIf { it.id == id }) {
+            notifications.postValue(current)
+        }
+    }
+
     companion object {
         private val TAG = "NotificationController"
         val instance: NotificationController by lazy { NotificationController() }

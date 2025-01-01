@@ -4,67 +4,83 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.LiveData
-import androidx.viewpager.widget.PagerAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.damn.anotherglass.glass.ee.host.core.NotificationController
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutNotificationsStackBinding
-import com.damn.anotherglass.glass.ee.host.databinding.ViewPagerLayoutBinding
+import com.damn.anotherglass.glass.ee.host.databinding.ViewPager2LayoutBinding
 import com.damn.anotherglass.glass.ee.host.ui.extensions.LayoutNotificationsStackBindingEx.bindData
 import com.damn.anotherglass.shared.notifications.NotificationData
+import com.example.glass.ui.GlassGestureDetector
+import com.google.android.material.tabs.TabLayoutMediator
 
 class NotificationsActivity : BaseActivity() {
+
+    // some glue to redirect gesture to the adapter subclass
+    // for now we just dismiss the notification on tap
+    private lateinit var onTapListener: () -> Boolean
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        ViewPagerLayoutBinding.inflate(layoutInflater).apply {
+        ViewPager2LayoutBinding.inflate(layoutInflater).apply {
             setContentView(root)
             root.background = ColorDrawable(Color.BLACK)
-            viewPager.adapter = NotificationsPagerAdapter(
+            val adapter = NotificationsPagerAdapter(
                 NotificationController.instance.getNotifications(),
-                this@NotificationsActivity,
-                layoutInflater
+                this@NotificationsActivity
             )
-            pageIndicator.setupWithViewPager(viewPager, true)
+            viewPager.adapter = adapter
+            TabLayoutMediator(pageIndicator, viewPager) { _, _ ->}.attach()
+            onTapListener = {
+                val notification = adapter.getData(viewPager.currentItem)
+                NotificationController.instance.dismissNotification(notification.id)
+                true
+            }
         }
+    }
+
+    override fun onGesture(gesture: GlassGestureDetector.Gesture) = when (gesture) {
+        GlassGestureDetector.Gesture.TAP -> onTapListener()
+        else -> super.onGesture(gesture)
     }
 
     class NotificationsPagerAdapter(
         notificationsLiveData: LiveData<List<NotificationData>>,
-        notificationsActivity: NotificationsActivity,
-        private val layoutInflater: LayoutInflater
-    ) : PagerAdapter() {
+        activity: NotificationsActivity
+    ) : RecyclerView.Adapter<NotificationsPagerAdapter.NotificationViewHolder>() {
 
         private var notifications: List<NotificationData> = notificationsLiveData.value!!
-            set(value) {
-                field = value
-                notifyDataSetChanged()
-            }
 
         init {
-            notificationsLiveData.observe(notificationsActivity) {
+            notificationsLiveData.observeForever {
                 if (it.isEmpty()) {
-                    notificationsActivity.finish()  // if no notifications, finish activity to avoid unnecessary resource consumption
+                    activity.finish() // close activity if no notifications
                 } else {
                     notifications = it
+                    notifyDataSetChanged()
                 }
             }
         }
 
-        override fun instantiateItem(container: ViewGroup, position: Int): Any =
-            LayoutNotificationsStackBinding.inflate(layoutInflater).apply {
-                container.addView(root)
-                val data = notifications[position]
-                bindData(data, layoutInflater.context)
-            }.root
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+            NotificationViewHolder(LayoutNotificationsStackBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            ))
 
-        override fun destroyItem(container: ViewGroup, position: Int, obj: Any) =
-            container.removeView(obj as View)
+        override fun onBindViewHolder(holder: NotificationViewHolder, position: Int) {
+            val notification = notifications[position]
+            holder.binding.bindData(notification, holder.itemView.context)
+        }
 
-        override fun getCount(): Int = notifications.size
+        override fun getItemCount(): Int = notifications.size
 
-        override fun isViewFromObject(view: View, obj: Any): Boolean = view == obj
+        fun getData(currentItem: Int) = notifications[currentItem]
+
+        class NotificationViewHolder(val binding: LayoutNotificationsStackBinding) :
+            RecyclerView.ViewHolder(binding.root)
     }
 }

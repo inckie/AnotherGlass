@@ -7,7 +7,7 @@ Companion application to handle **Google Glass Explorer Edition** and **Google G
 
 Currently, the application can:
  * pass GPS data from the phone to the Glass
- * forwarding ongoing and one-shot notifications to the Glass (Explorer Edition only)
+ * forwarding ongoing and one-shot notifications to the Glass
  * pass WiFi network information (SSID and password) from the phone to the Glass (Explorer Edition only)
 
 ## Building
@@ -82,7 +82,6 @@ Uses Java object stream to send data to Google Glass, since I don't want to mess
     * Implement WidgetHost to simulate Explorer Edition Timeline LiveCards
     * Add Notifications "Tail" to simulate Explorer Edition
     * Probably replace Launcher (need to add shortcut to Glass Settings then)
-* Add Notifications mirroring support.
 * Add Bluetooth connection mode.
 
 ### Glass Explorer Edition

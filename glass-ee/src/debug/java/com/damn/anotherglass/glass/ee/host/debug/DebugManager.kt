@@ -14,6 +14,7 @@ class DebugManager {
     }
 
     fun removeNotification() {
+        // note: this will only work if notifications are not dismissed by user
         if (notificationsCount != 0) {
             NotificationController.instance.onNotificationUpdate(makeDebugNotification(false))
         }
