@@ -4,15 +4,12 @@ import android.content.Context
 import android.content.SharedPreferences
 
 class Settings(context: Context) {
-    private val mPreferences: SharedPreferences
+
+    private val mPreferences = context.getSharedPreferences(sPreferencesName, Context.MODE_PRIVATE)
 
     enum class HostMode(val value: String) {
         Bluetooth("bluetooth"),
         WiFi("wifi")
-    }
-
-    init {
-        mPreferences = context.getSharedPreferences(sPreferencesName, Context.MODE_PRIVATE)
     }
 
     fun registerListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {

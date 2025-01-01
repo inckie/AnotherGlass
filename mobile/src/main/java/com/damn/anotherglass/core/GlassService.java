@@ -36,7 +36,8 @@ public class GlassService
 
     private static final int NOTIFICATION_ID = 10101;
 
-    private static final String sCHANNEL_DEFAULT = "CHANNEL_DEFAULT";
+    public static final String sCHANNEL_DEFAULT = "CHANNEL_DEFAULT";
+
     private static final String CMD_NAME = "CMD_NAME";
     private static final String CMD_STOP = "CMD_STOP";
     private static final String TAG = "GlassService";

@@ -5,14 +5,18 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.view.KeyEvent
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
+import com.damn.anotherglass.glass.ee.host.BuildConfig
 import com.damn.anotherglass.glass.ee.host.R
+import com.damn.anotherglass.glass.ee.host.debug.DebugManager
 import com.damn.anotherglass.glass.ee.host.core.HostService
 import com.damn.anotherglass.glass.ee.host.core.IService
+import com.damn.anotherglass.glass.ee.host.ui.MainActivityEx.addNotificationsModule
 import com.damn.anotherglass.glass.ee.host.ui.cards.BaseFragment
 import com.damn.anotherglass.glass.ee.host.ui.cards.MapCard
 import com.damn.anotherglass.glass.ee.host.ui.cards.ServiceStateCard
@@ -26,17 +30,45 @@ import com.google.android.material.tabs.TabLayout
 //  - add Bluetooth connection support (and WiFi for xe)?
 //  - add zoom levels to map card
 //  - add controls cards: slider, Gyro lists
-//  - add notifications card
+//  - migrate to ViewPagers2
 
 class MainActivity : BaseActivity() {
 
     private val connection = GlassServiceConnection()
-
     private val fragments: MutableList<BaseFragment> = ArrayList()
     private lateinit var viewPager: ViewPager
 
     // todo: observe service actual state
     private val serviceState = MutableLiveData<IService.ServiceState?>()
+
+    private val timeLine = object : ITimeline {
+        override fun addFragment(fragment: BaseFragment, priority: Int, scrollTo: Boolean) {
+            // todo: implement priority
+            fragments.add(0, fragment)
+            viewPager.adapter?.notifyDataSetChanged()
+            if(scrollTo) viewPager.setCurrentItem(0, false)
+        }
+
+        override fun removeFragment(tag: String) {
+            if(fragments.removeIf { it.tag == tag }) {
+                viewPager.adapter?.notifyDataSetChanged()
+            }
+        }
+
+        override fun <T : BaseFragment> removeByType(cls: Class<T>) {
+            if(fragments.removeIf { it.javaClass == cls }) {
+                viewPager.adapter?.notifyDataSetChanged()
+            }
+        }
+
+        override fun <T : BaseFragment> indexOfFirst(java: Class<T>): Int =
+            fragments.indexOfFirst { it.javaClass == java }
+
+        override fun setCurrent(index: Int, smoothScroll: Boolean) =
+            viewPager.setCurrentItem(index, smoothScroll)
+    }
+
+    private val debugManager: DebugManager by lazy { DebugManager() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +86,8 @@ class MainActivity : BaseActivity() {
 
         val tabLayout = findViewById<TabLayout>(R.id.page_indicator)
         tabLayout.setupWithViewPager(viewPager, true)
+
+        addNotificationsModule(timeLine)
 
         tryStartService()
     }
@@ -94,6 +128,21 @@ class MainActivity : BaseActivity() {
         }
 
     fun getServiceState(): LiveData<IService.ServiceState?> = serviceState
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+        if(BuildConfig.DEBUG) {
+            when(keyCode) {
+                KeyEvent.KEYCODE_N -> {
+                    if (event.isShiftPressed)
+                        debugManager.removeNotification()
+                    else
+                        debugManager.postNotification()
+                    return true
+                }
+            }
+        }
+        return super.onKeyUp(keyCode, event)
+    }
 
     private inner class GlassServiceConnection : ServiceConnection {
         var service: IService? = null
