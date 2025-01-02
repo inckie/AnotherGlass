@@ -25,7 +25,9 @@ import com.damn.anotherglass.glass.ee.host.ui.menu.MenuActivity
 /**
  * Base class for each fragment. Provides functionality to start new activity with a menu.
  */
-abstract class BaseFragment : Fragment(), OnSingleTapUpListener {
+abstract class BaseFragment : Fragment(),
+    GestureListener {
+
     override fun onSingleTapUp() {
         if (arguments != null) {
             val args = requireArguments()
@@ -37,6 +39,8 @@ abstract class BaseFragment : Fragment(), OnSingleTapUpListener {
             }
         }
     }
+
+    override fun onTapAndHold() = Unit
 
     /**
      * Code for a response to selected menu item should be placed inside of this method.

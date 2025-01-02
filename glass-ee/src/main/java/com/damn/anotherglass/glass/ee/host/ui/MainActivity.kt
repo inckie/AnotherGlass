@@ -30,7 +30,8 @@ import com.google.android.material.tabs.TabLayout
 //  - add Bluetooth connection support (and WiFi for xe)?
 //  - add zoom levels to map card
 //  - add controls cards: slider, Gyro lists
-//  - migrate to ViewPagers2
+//  - migrate to ViewPagers2 (with current ViewPagers2 version will need a few hacks
+//      for current fragment gesture routing and some other issues)
 
 class MainActivity : BaseActivity() {
 
@@ -111,19 +112,20 @@ class MainActivity : BaseActivity() {
         connection.bindGlassService()
     }
 
+    fun stopService() {
+        stopService(Intent(this, HostService::class.java))
+    }
+
     override fun onGesture(gesture: GlassGestureDetector.Gesture): Boolean =
         when (gesture) {
             GlassGestureDetector.Gesture.TAP -> {
                 fragments[viewPager.currentItem].onSingleTapUp()
                 true
             }
-
-            GlassGestureDetector.Gesture.SWIPE_UP, // for emulator
-            GlassGestureDetector.Gesture.TWO_FINGER_SWIPE_DOWN -> {
-                stopService(Intent(this, HostService::class.java))
+            GlassGestureDetector.Gesture.TAP_AND_HOLD -> {
+                fragments[viewPager.currentItem].onTapAndHold()
                 true
             }
-
             else -> super.onGesture(gesture)
         }
 

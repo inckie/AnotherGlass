@@ -45,6 +45,11 @@ class ServiceStateCard : BaseFragment() {
         }
     }
 
+    override fun onTapAndHold() {
+        super.onTapAndHold()
+        mainActivity()?.stopService()
+    }
+
     private fun mainActivity() = (context as? MainActivity)
 
     companion object {

@@ -16,13 +16,8 @@
 
 package com.damn.anotherglass.glass.ee.host.ui.cards;
 
-/**
- * Listener for the singleTapUp gesture.
- */
-public interface OnSingleTapUpListener {
 
-  /**
-   * Should be used to notify about the occurrence of the singleTapUp gesture.
-   */
+public interface GestureListener {
   void onSingleTapUp();
+  void onTapAndHold();
 }
