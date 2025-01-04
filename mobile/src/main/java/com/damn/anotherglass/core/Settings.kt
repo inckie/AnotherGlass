@@ -8,7 +8,7 @@ import androidx.lifecycle.LifecycleOwner
 
 class Settings(context: Context) {
 
-    private val mPreferences = context.getSharedPreferences(sPreferencesName, Context.MODE_PRIVATE)
+    private val preferences = context.getSharedPreferences(sPreferencesName, Context.MODE_PRIVATE)
 
     enum class HostMode(val value: String) {
         Bluetooth("bluetooth"),
@@ -16,11 +16,11 @@ class Settings(context: Context) {
     }
 
     fun registerListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
-        mPreferences.registerOnSharedPreferenceChangeListener(listener)
+        preferences.registerOnSharedPreferenceChangeListener(listener)
     }
 
     fun unregisterListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
-        mPreferences.unregisterOnSharedPreferenceChangeListener(listener)
+        preferences.unregisterOnSharedPreferenceChangeListener(listener)
     }
 
     fun registerListener(
@@ -30,29 +30,29 @@ class Settings(context: Context) {
         lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onResume(owner: LifecycleOwner) {
                 super.onResume(owner)
-                mPreferences.registerOnSharedPreferenceChangeListener(listener)
+                preferences.registerOnSharedPreferenceChangeListener(listener)
             }
 
             override fun onPause(owner: LifecycleOwner) {
                 super.onPause(owner)
-                mPreferences.unregisterOnSharedPreferenceChangeListener(listener)
+                preferences.unregisterOnSharedPreferenceChangeListener(listener)
             }
         })
     }
 
     var isGPSEnabled: Boolean
-        get() = mPreferences.getBoolean(GPS_ENABLED, false)
-        set(enabled) = mPreferences.edit().putBoolean(GPS_ENABLED, enabled).apply()
+        get() = preferences.getBoolean(GPS_ENABLED, false)
+        set(enabled) = preferences.edit().putBoolean(GPS_ENABLED, enabled).apply()
 
     var isNotificationsEnabled: Boolean
-        get() = mPreferences.getBoolean(NOTIFICATIONS_ENABLED, false)
-        set(enabled) = mPreferences.edit().putBoolean(NOTIFICATIONS_ENABLED, enabled).apply()
+        get() = preferences.getBoolean(NOTIFICATIONS_ENABLED, false)
+        set(enabled) = preferences.edit().putBoolean(NOTIFICATIONS_ENABLED, enabled).apply()
 
     var hostMode: HostMode
-        get() = mPreferences.getString(HOST_MODE, HostMode.WiFi.value)?.let { mode ->
+        get() = preferences.getString(HOST_MODE, HostMode.WiFi.value)?.let { mode ->
             HostMode.entries.firstOrNull { mode == it.value }
         } ?: HostMode.WiFi
-        set(mode) = mPreferences.edit().putString(HOST_MODE, mode.value).apply()
+        set(mode) = preferences.edit().putString(HOST_MODE, mode.value).apply()
 
     companion object {
         private const val sPreferencesName = "anotherglass"

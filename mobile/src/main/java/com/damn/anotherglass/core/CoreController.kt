@@ -22,15 +22,15 @@ import kotlinx.coroutines.launch
 
 class CoreController(private val activity: MainActivity) : SettingsController() {
 
-    private var gpsPermissionLauncher: ActivityResultLauncher<String>
-    private var servicePermissionLauncher: ActivityResultLauncher<Array<String>>
+    private val gpsPermissionLauncher: ActivityResultLauncher<String>
+    private val servicePermissionLauncher: ActivityResultLauncher<Array<String>>
 
-    private val mSettings: Settings = Settings(activity)
+    private val settings = Settings(activity)
 
-    private val _serviceState: MutableLiveData<Boolean> = MutableLiveData(GlassService.isRunning(activity))
-    private var _hostMode = MutableLiveData(mSettings.hostMode)
-    private var _isNotificationsEnabled = MutableLiveData(mSettings.isNotificationsEnabled && NotificationService.isEnabled(activity))
-    private var _isGPSEnabled = MutableLiveData(mSettings.isGPSEnabled)
+    private val _serviceState = MutableLiveData(GlassService.isRunning(activity))
+    private val _hostMode = MutableLiveData(settings.hostMode)
+    private val _isNotificationsEnabled = MutableLiveData(settings.isNotificationsEnabled && NotificationService.isEnabled(activity))
+    private val _isGPSEnabled = MutableLiveData(settings.isGPSEnabled)
 
     override val isServiceRunning: LiveData<Boolean> = _serviceState
     override val hostMode: LiveData<Settings.HostMode> = _hostMode
@@ -39,7 +39,7 @@ class CoreController(private val activity: MainActivity) : SettingsController() 
 
     init {
         gpsPermissionLauncher = activity.createGPSPermissionLauncher {
-            mSettings.isGPSEnabled = it // will trigger update of GPS extension
+            settings.isGPSEnabled = it // will trigger update of GPS extension
         }
 
         servicePermissionLauncher = activity.registerForActivityResult(
@@ -54,9 +54,9 @@ class CoreController(private val activity: MainActivity) : SettingsController() 
             }
         }
 
-        mSettings.registerListener({ _, key ->
+        settings.registerListener({ _, key ->
             when (key) {
-                Settings.GPS_ENABLED -> _isGPSEnabled.postValue(mSettings.isGPSEnabled)
+                Settings.GPS_ENABLED -> _isGPSEnabled.postValue(settings.isGPSEnabled)
                 Settings.NOTIFICATIONS_ENABLED -> syncNotificationsState()
             }
         }, activity.lifecycle)
@@ -69,7 +69,7 @@ class CoreController(private val activity: MainActivity) : SettingsController() 
 
     private fun syncNotificationsState() {
         _isNotificationsEnabled.postValue(
-            mSettings.isNotificationsEnabled
+            settings.isNotificationsEnabled
                     && NotificationService.isEnabled(activity)
         )
     }
@@ -109,7 +109,7 @@ class CoreController(private val activity: MainActivity) : SettingsController() 
             gpsPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             return
         }
-        mSettings.isGPSEnabled = enabled
+        settings.isGPSEnabled = enabled
     }
 
     override fun setNotificationsEnabled(enabled: Boolean) {
@@ -117,7 +117,7 @@ class CoreController(private val activity: MainActivity) : SettingsController() 
             askEnableNotificationService()
             return
         }
-        mSettings.isNotificationsEnabled = enabled
+        settings.isNotificationsEnabled = enabled
     }
 
     override fun setServiceRunning(checked: Boolean) {
@@ -128,7 +128,7 @@ class CoreController(private val activity: MainActivity) : SettingsController() 
     }
 
     override fun setHostMode(mode: Settings.HostMode) {
-        mSettings.hostMode = mode
+        settings.hostMode = mode
         _hostMode.postValue(mode)
     }
 

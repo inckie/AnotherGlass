@@ -17,6 +17,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.lifecycle.LifecycleService;
 
 import com.applicaster.xray.core.Logger;
 import com.damn.anotherglass.R;
@@ -31,7 +32,7 @@ import com.damn.anotherglass.ui.mainscreen.MainActivity;
 import java.util.List;
 
 public class GlassService
-        extends Service
+        extends LifecycleService
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final int NOTIFICATION_ID = 10101;
@@ -117,7 +118,7 @@ public class GlassService
         final boolean useWifi = Settings.HostMode.WiFi == mSettings.getHostMode();
         mHost = useWifi ? new WiFiHost(rpcMessageListener) : new BluetoothHost(rpcMessageListener);
 
-        mSettings.registerListener(this);
+        mSettings.registerListener(this, this.getLifecycle());
 
         mHost.start(this);
     }
@@ -141,7 +142,6 @@ public class GlassService
 
     @Override
     public void onDestroy() {
-        mSettings.unregisterListener(this);
         mGPS.stop();
         mNotifications.stop();
         mHost.stop();
@@ -202,7 +202,8 @@ public class GlassService
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
+    public IBinder onBind(@NonNull Intent intent) {
+        super.onBind(intent);
         return mBinder;
     }
 
