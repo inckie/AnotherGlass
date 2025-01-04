@@ -13,7 +13,7 @@ Currently, the application can:
 ## Building
 
 Project consist of 5 modules:
-* **glass** - Google Glass Explorer Edition application, containing Client Service
+* **glass-xe** - Google Glass Explorer Edition application, containing Client Service
 * **glass-ee** - Google Glass Enterprise Edition application, containing Client Service
 * **mobile** - companion application for mobile device, containing Host Service
 * **shared** - a shared module with shared classes and constants
