@@ -26,7 +26,7 @@ import com.damn.anotherglass.logging.ALog;
 import com.damn.anotherglass.shared.rpc.IRPCHost;
 import com.damn.anotherglass.shared.rpc.RPCMessage;
 import com.damn.anotherglass.shared.rpc.RPCMessageListener;
-import com.damn.anotherglass.ui.MainActivity;
+import com.damn.anotherglass.ui.mainscreen.MainActivity;
 
 import java.util.List;
 
@@ -172,7 +172,7 @@ public class GlassService
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, sCHANNEL_DEFAULT)
                 .setOngoing(true)
                 .setContentTitle(getString(R.string.app_name))
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setOnlyAlertOnce(true);
 
