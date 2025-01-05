@@ -33,7 +33,6 @@ class NotificationsCard : BaseFragment() {
         NotificationController.instance.getNotifications().observe(this) {
             if (it.isEmpty()) return@observe  // we are about to be removed
             binding?.apply {
-                it.last()
                 bindData(it.last(), context)
                 // todo: add another place for counter
                 if (it.size > 1) footer.text = "" + it.size
