@@ -27,10 +27,10 @@ class ServiceStateCard : BaseFragment() {
             setTypeface(Typeface.create(getString(R.string.thin_font), Typeface.NORMAL))
             val bodyLayout = view.findViewById<FrameLayout>(R.id.body_layout)
             bodyLayout.addView(this)
-            mainActivity()?.let {
-                it.getServiceState().observe(viewLifecycleOwner) { state ->
-                    text = getString(serviceState(state))
-                }
+            val state = mainActivity().getServiceState()
+            setText(serviceState(state.value))
+            state.observe(viewLifecycleOwner) {
+                setText(serviceState(it))
             }
         }
         return view
@@ -38,8 +38,8 @@ class ServiceStateCard : BaseFragment() {
 
     override fun onSingleTapUp() {
         super.onSingleTapUp()
-        mainActivity()?.let {
-            if(null == it.getServiceState().value) {
+        mainActivity().let {
+            if (null == it.getServiceState().value) {
                 it.tryStartService()
             }
         }
@@ -47,13 +47,14 @@ class ServiceStateCard : BaseFragment() {
 
     override fun onTapAndHold() {
         super.onTapAndHold()
-        mainActivity()?.stopService()
+        mainActivity().stopService()
     }
 
-    private fun mainActivity() = (context as? MainActivity)
+    private fun mainActivity() = requireActivity() as MainActivity
 
     companion object {
         private const val BODY_TEXT_SIZE = 40
+
         @JvmStatic
         fun newInstance(): ServiceStateCard = ServiceStateCard()
 

@@ -13,6 +13,7 @@ import com.damn.anotherglass.shared.notifications.NotificationsAPI
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.rpc.RPCMessageListener
 import com.damn.glass.shared.gps.MockGPS
+import org.greenrobot.eventbus.EventBus
 
 
 interface IService {
@@ -27,7 +28,7 @@ interface IService {
     val state: ServiceState // todo: LiveData
 }
 
-class HostService() : Service(), IService {
+class HostService : Service(), IService {
 
     private val client = WiFiClient()
 
@@ -40,7 +41,10 @@ class HostService() : Service(), IService {
     private val _binder = LocalBinder()
 
     override var state: IService.ServiceState = IService.ServiceState.INITIALIZING
-        private set
+        private set(value) {
+            field = value
+            EventBus.getDefault().post(value)
+        }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)

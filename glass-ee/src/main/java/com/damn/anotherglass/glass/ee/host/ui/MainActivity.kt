@@ -23,6 +23,9 @@ import com.damn.anotherglass.glass.ee.host.ui.cards.ServiceStateCard
 import com.damn.anotherglass.glass.ee.host.utility.isRunning
 import com.example.glass.ui.GlassGestureDetector
 import com.google.android.material.tabs.TabLayout
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 
 // TODO:
@@ -98,11 +101,13 @@ class MainActivity : BaseActivity() {
         // do not bind if service is not running to avoid starting it
         if(isRunning<HostService>())
             connection.bindGlassService()
+        EventBus.getDefault().register(this)
     }
 
     override fun onPause() {
         super.onPause()
         connection.unbindGlassService()
+        EventBus.getDefault().unregister(this)
     }
 
     fun tryStartService() {
@@ -144,6 +149,11 @@ class MainActivity : BaseActivity() {
             }
         }
         return super.onKeyUp(keyCode, event)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onServiceState(state: IService.ServiceState) {
+        serviceState.postValue(state)
     }
 
     private inner class GlassServiceConnection : ServiceConnection {
