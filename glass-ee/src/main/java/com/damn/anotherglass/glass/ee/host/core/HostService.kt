@@ -99,7 +99,7 @@ class HostService : Service(), IService {
             }
 
             override fun onConnectionLost(error: String?) {
-                Log.e(TAG, "onConnectionLost: $error");
+                Log.e(TAG, "onConnectionLost: $error")
                 state = IService.ServiceState.DISCONNECTED
             }
 

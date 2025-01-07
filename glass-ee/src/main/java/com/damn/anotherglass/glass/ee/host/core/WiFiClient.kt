@@ -103,7 +103,7 @@ class WiFiClient : IRPCClient {
                     if (null == message.service) {
                         return
                     }
-                    mHandler.onDataReceived(message);
+                    mHandler.onDataReceived(message)
                 }
                 sleep(100)
             }

@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.core.app.NotificationCompat
 import com.damn.anotherglass.R
 import com.damn.anotherglass.core.GlassService
+import com.damn.anotherglass.utility.getService
 
 object DbgNotifications {
 
@@ -32,7 +33,7 @@ object DbgNotifications {
         private set
 
     private fun notificationManager(context: Context) =
-        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        context.getService<NotificationManager>(Context.NOTIFICATION_SERVICE)
 
     private const val NOTIFICATION_BASE_ID: Int = 10101 + 100
 }

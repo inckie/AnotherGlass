@@ -15,12 +15,13 @@ import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.logging.ALog
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.gps.GPSServiceAPI
+import com.damn.anotherglass.utility.getService
 import com.damn.anotherglass.utility.hasPermission
 
 @SuppressLint("MissingPermission")
 class GPSExtension(private val service: GlassService) : LocationListener {
-    private val locationManager: LocationManager =
-        service.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    private val locationManager =
+        service.getService<LocationManager>(Context.LOCATION_SERVICE)
 
     private val log = ALog(Logger.get(TAG))
 
