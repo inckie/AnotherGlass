@@ -7,7 +7,7 @@ android {
     namespace 'com.damn.glass.shared'
 
     defaultConfig {
-        compileSdk 35
+        compileSdk 36
         minSdk 19
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
