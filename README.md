@@ -8,6 +8,7 @@ Companion application to handle **Google Glass Explorer Edition** and **Google G
 Currently, the application can:
  * pass GPS data from the phone to the Glass
  * forwarding ongoing and one-shot notifications to the Glass
+ * perform tilt to wake up on Enterprise Edition like on Explorer Edition (be aware of battery usage)
  * pass WiFi network information (SSID and password) from the phone to the Glass (Explorer Edition only)
 
 ## Building

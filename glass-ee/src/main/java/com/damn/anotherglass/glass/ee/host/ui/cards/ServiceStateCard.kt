@@ -16,6 +16,7 @@ import com.damn.anotherglass.glass.ee.host.ui.MainActivity
 class ServiceStateCard : BaseFragment() {
 
     private var statusLabel: TextView? = null
+    // todo: replace with tile (text is too small)
     private var batteryLabel: TextView? = null
 
     private val batteryStatus: BatteryStatus by lazy { BatteryStatus(requireContext()) }
@@ -28,7 +29,7 @@ class ServiceStateCard : BaseFragment() {
         val view = inflater.inflate(R.layout.main_layout, container, false)
         statusLabel = TextView(context).apply {
             textSize = BODY_TEXT_SIZE.toFloat()
-            setTypeface(Typeface.create(getString(R.string.thin_font), Typeface.NORMAL))
+            typeface = Typeface.create(getString(R.string.thin_font), Typeface.NORMAL)
             val bodyLayout = view.findViewById<FrameLayout>(R.id.body_layout)
             bodyLayout.addView(this)
             val state = mainActivity().getServiceState()

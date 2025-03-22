@@ -15,6 +15,10 @@ import com.damn.anotherglass.glass.ee.host.utility.isRunning
 
 class TiltToWakeCard : BaseFragment() {
 
+    // TODO:
+    //  - test screen
+    //  - angle setting
+
     private lateinit var textView: TextView
     private lateinit var settings: Settings
 
