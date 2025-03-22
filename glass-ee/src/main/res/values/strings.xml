@@ -1,27 +1,31 @@
 <resources>
-  <string name="app_name">AnotherGlass EE</string>
+    <string name="app_name">AnotherGlass EE</string>
 
-  <string name="empty_string"/>
-  <string name="thin_font">sans-serif-thin</string>
-  <string name="add">Add</string>
-  <string name="save">Save</string>
-  <string name="delete">Delete</string>
-  <string name="menu_font">sans-serif-thin</string>
-  <string name="menu_item">Menu item</string>
+    <string name="empty_string" />
+    <string name="thin_font">sans-serif-thin</string>
+    <string name="add">Add</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="menu_font">sans-serif-thin</string>
+    <string name="menu_item">Menu item</string>
 
-  <!-- Service state card -->
-  <string name="msg_service_not_running">Service is not running. Tap to start.</string>
-  <string name="msg_service_initializing">Initializing…</string>
-  <string name="msg_service_waiting">Waiting…</string>
-  <string name="msg_service_connected">Connected. Long press to stop.</string>
-  <string name="msg_service_disconnected">Disconnected</string>
+    <!-- Service state card -->
+    <string name="msg_service_not_running">Service is not running. Tap to start.</string>
+    <string name="msg_service_initializing">Initializing…</string>
+    <string name="msg_service_waiting">Waiting…</string>
+    <string name="msg_service_connected">Connected. Long press to stop.</string>
+    <string name="msg_service_disconnected">Disconnected</string>
 
-  <string name="msg_connecting_to_ip_s">Connecting to %1$s</string>
-  <string name="msg_no_server_ip">Failed to determine host IP</string>
+    <string name="msg_connecting_to_ip_s">Connecting to %1$s</string>
+    <string name="msg_no_server_ip">Failed to determine host IP</string>
 
-  <!-- Map Card -->
-  <string name="msg_gps_permissions_not_granted">GPS permissions not granted</string>
-  <string name="msg_gps_provider_not_available">GPS provider not available. Tap to open developer settings and select GPS mock application provider.</string>
-  <string name="msg_gps_mock_not_running">Mock GPS not running. Tap to start.</string>
-  <string name="msg_waiting_for_gps_signal">Waiting for GPS signal…</string>
+    <!-- Map Card -->
+    <string name="msg_gps_permissions_not_granted">GPS permissions not granted</string>
+    <string name="msg_gps_provider_not_available">GPS provider not available. Tap to open developer settings and select GPS mock application provider.</string>
+    <string name="msg_gps_mock_not_running">Mock GPS not running. Tap to start.</string>
+    <string name="msg_waiting_for_gps_signal">Waiting for GPS signal…</string>
+
+    <!-- Tilt to Wake Service -->
+    <string name="lbl_wake_service_tap_to_stop">Tap and hold to stop Tilt to Wake Service</string>
+    <string name="wake_service_tap_to_start">Tap and hold to start Tilt to Wake Service</string>
 </resources>

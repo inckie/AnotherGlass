@@ -77,7 +77,6 @@ Uses Java object stream to send data to Google Glass, since I don't want to mess
 * Improve initial connect experience on the Glass Enterprise Edition:
    * handle permissions and MockGPS status changes without restarting the service.
 * Add option to run service without mobile application connection to simulate Explorer Edition features:
-    * Add Tilt to Wake feature
     * Add Voice Commands
     * Implement WidgetHost to simulate Explorer Edition Timeline LiveCards
     * Add Notifications "Tail" to simulate Explorer Edition

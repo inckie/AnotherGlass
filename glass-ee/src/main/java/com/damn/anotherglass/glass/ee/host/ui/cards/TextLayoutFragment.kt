@@ -56,7 +56,8 @@ class TextLayoutFragment : BaseFragment() {
         private const val TEXT_KEY = "text_key"
         private const val FOOTER_KEY = "footer_key"
         private const val TIMESTAMP_KEY = "timestamp_key"
-        private const val BODY_TEXT_SIZE = 40
+
+        const val BODY_TEXT_SIZE = 40
 
         /**
          * Returns new instance of [TextLayoutFragment].

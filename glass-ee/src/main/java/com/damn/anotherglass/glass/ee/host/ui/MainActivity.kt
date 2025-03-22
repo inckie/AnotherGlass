@@ -20,6 +20,7 @@ import com.damn.anotherglass.glass.ee.host.ui.MainActivityEx.addNotificationsMod
 import com.damn.anotherglass.glass.ee.host.ui.cards.BaseFragment
 import com.damn.anotherglass.glass.ee.host.ui.cards.MapCard
 import com.damn.anotherglass.glass.ee.host.ui.cards.ServiceStateCard
+import com.damn.anotherglass.glass.ee.host.ui.cards.TiltToWakeCard
 import com.damn.anotherglass.glass.ee.host.utility.isRunning
 import com.example.glass.ui.GlassGestureDetector
 import com.google.android.material.tabs.TabLayout
@@ -77,7 +78,8 @@ class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.view_pager_layout)
-        fragments.add(ServiceStateCard.newInstance())
+        fragments.add(TiltToWakeCard.newInstance()) // -1 fragment (settings)
+        fragments.add(ServiceStateCard.newInstance()) // default fragment
         fragments.add(MapCard.newInstance())
 
         viewPager = findViewById(R.id.viewPager)
@@ -92,6 +94,8 @@ class MainActivity : BaseActivity() {
         tabLayout.setupWithViewPager(viewPager, true)
 
         addNotificationsModule(timeLine)
+
+        timeLine.setCurrent(1, false)
 
         tryStartService()
     }
