@@ -13,9 +13,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
 import com.damn.anotherglass.glass.ee.host.BuildConfig
 import com.damn.anotherglass.glass.ee.host.R
-import com.damn.anotherglass.glass.ee.host.debug.DebugManager
 import com.damn.anotherglass.glass.ee.host.core.HostService
 import com.damn.anotherglass.glass.ee.host.core.IService
+import com.damn.anotherglass.glass.ee.host.core.Settings
+import com.damn.anotherglass.glass.ee.host.core.tiltawake.TiltToWakeService
+import com.damn.anotherglass.glass.ee.host.debug.DebugManager
 import com.damn.anotherglass.glass.ee.host.ui.MainActivityEx.addNotificationsModule
 import com.damn.anotherglass.glass.ee.host.ui.cards.BaseFragment
 import com.damn.anotherglass.glass.ee.host.ui.cards.MapCard
@@ -96,6 +98,9 @@ class MainActivity : BaseActivity() {
         addNotificationsModule(timeLine)
 
         timeLine.setCurrent(1, false)
+
+        if(Settings(this).tiltToWake)
+            TiltToWakeService.startService(this)
 
         tryStartService()
     }

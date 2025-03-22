@@ -9,12 +9,16 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.annotation.StringRes
 import com.damn.anotherglass.glass.ee.host.R
+import com.damn.anotherglass.glass.ee.host.core.BatteryStatus
 import com.damn.anotherglass.glass.ee.host.core.IService
 import com.damn.anotherglass.glass.ee.host.ui.MainActivity
 
 class ServiceStateCard : BaseFragment() {
 
     private var statusLabel: TextView? = null
+    private var batteryLabel: TextView? = null
+
+    private val batteryStatus: BatteryStatus by lazy { BatteryStatus(requireContext()) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,6 +37,7 @@ class ServiceStateCard : BaseFragment() {
                 setText(serviceState(it))
             }
         }
+        batteryLabel = view.findViewById(R.id.footer)
         return view
     }
 
@@ -42,6 +47,15 @@ class ServiceStateCard : BaseFragment() {
             if (null == it.getServiceState().value) {
                 it.tryStartService()
             }
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        batteryStatus.observe(viewLifecycleOwner) {
+            // todo: use drawables for battery icon
+            val icon = "\uD83D\uDD0B" // glass does not support low battery icon
+            batteryLabel?.text = "$icon ${it.level}%${if (it.isCharging) "⚡" else ""}"
         }
     }
 
