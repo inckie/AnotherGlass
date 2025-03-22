@@ -8,7 +8,6 @@ import android.hardware.SensorManager
 import android.os.PowerManager
 import android.util.Log
 import kotlin.math.abs
-import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -66,10 +65,11 @@ class TiltToWake(context: Context): SensorEventListener {
             }
 
             val norm = sqrt(magnitudeSq)
+            val yzNorm = sqrt(it.values[1] * it.values[1] + it.values[2] * it.values[2])
+
             // if is looking up, but not too tilted sideways
             if (abs(it.values[0] / norm) > X_THRESHOLD
-                || it.values[1] / norm < Y_POSITIVE_THRESHOLD
-                || it.values[2] / norm > Z_NEGATIVE_THRESHOLD) {
+                || it.values[1] / yzNorm < Y_POSITIVE_THRESHOLD) {
                 resetTimer()
                 return
             }
@@ -97,12 +97,11 @@ class TiltToWake(context: Context): SensorEventListener {
 
         private const val MOTION_THRESHOLD = 2.0 // just magic number from real device
 
-        private const val ANGLE_THRESHOLD = 20.0 / 180.0 * Math.PI
+        private const val ANGLE_THRESHOLD = 15.0 / 180.0 * Math.PI
         private const val X_THRESHOLD = 0.36 // just magic number (~20 degree sideways tilt)
         private val Y_POSITIVE_THRESHOLD = sin(ANGLE_THRESHOLD)
-        private val Z_NEGATIVE_THRESHOLD = cos(ANGLE_THRESHOLD)
 
-        private const val DELAY = 500L
+        private const val DELAY = 300L
         private const val COOLDOWN_TIME = 2000L
     }
 }
