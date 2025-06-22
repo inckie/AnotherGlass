@@ -15,9 +15,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import coil.load
-import coil.request.CachePolicy
-import coil.transition.CrossfadeTransition
+import coil3.load
+import coil3.request.CachePolicy
+import coil3.request.lifecycle
+import coil3.request.transitionFactory
+import coil3.transition.CrossfadeTransition
 import com.damn.anotherglass.glass.ee.host.R
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutCardMapBinding
 import com.damn.anotherglass.glass.ee.host.gpsPermissions
@@ -106,6 +108,14 @@ class MapCard : BaseFragment() {
             it.addAction(LocationManager.PROVIDERS_CHANGED_ACTION)
             requireContext().registerReceiver(statusReceiver, it)
         }
+        val context = requireContext()
+        lastMapUrl = null // we lost image, force reload
+        @SuppressLint("MissingPermission")
+        if (hasLocationPermissions(context)) {
+            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)?.let {
+                updateMap(it)
+            }
+        }
     }
 
     override fun onPause() {
@@ -117,9 +127,9 @@ class MapCard : BaseFragment() {
         context.unregisterReceiver(statusReceiver)
     }
 
-    @SuppressLint("MissingPermission")
     private fun updateState() {
         val state = getState()
+        @SuppressLint("MissingPermission")
         root?.lblGpsStatus?.text = when (state) {
             State.MissingGeoPermissions -> getString(R.string.msg_gps_permissions_not_granted)
             State.MissingMockLocationPermissions -> getString(R.string.msg_gps_provider_not_available)
