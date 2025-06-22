@@ -35,4 +35,6 @@
   <!-- The recommended menu text margin. -->
   <dimen name="menu_text_margin">16dp</dimen>
 
+  <dimen name="title_text_size">32sp</dimen>
+
 </resources>

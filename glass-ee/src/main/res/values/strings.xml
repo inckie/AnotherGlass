@@ -10,10 +10,12 @@
     <string name="menu_item">Menu item</string>
 
     <!-- Service state card -->
-    <string name="msg_service_not_running">Service is not running. Tap to start.</string>
+    <string name="msg_service_not_running">Service is not running</string>
+    <string name="msg_service_not_running_hint">Tap to start. Long tap for options.</string>
     <string name="msg_service_initializing">Initializing…</string>
     <string name="msg_service_waiting">Waiting…</string>
-    <string name="msg_service_connected">Connected. Long press to stop.</string>
+    <string name="msg_service_connected">Connected</string>
+    <string name="msg_service_connected_hint">Long press to stop.</string>
     <string name="msg_service_disconnected">Disconnected</string>
 
     <string name="msg_connecting_to_ip_s">Connecting to %1$s</string>
