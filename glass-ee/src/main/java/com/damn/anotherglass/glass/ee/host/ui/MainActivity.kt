@@ -185,6 +185,7 @@ class MainActivity : BaseActivity() {
             if (!bound) return
             bound = false
             service = null
+            serviceState.postValue(null)
             unbindService(connection)
         }
 
