@@ -24,7 +24,7 @@ class DynamicMenuActivity : BaseActivity(), GlassGestureDetector.OnGestureListen
         val id: Int,
         val text: String,
         @DrawableRes val icon: Int = 0,
-        val subtext: String? = null, // not used currently
+        val subtext: String? = null,
         val tag: String? = null
     ) : Parcelable
 
@@ -41,6 +41,7 @@ class DynamicMenuActivity : BaseActivity(), GlassGestureDetector.OnGestureListen
                     id = it.id,
                     text = it.text,
                     icon = if (it.icon != 0) getDrawable(this, it.icon) else null,
+                    subtext = it.subtext,
                     tag = it.tag,
                 )
             }
@@ -63,7 +64,6 @@ class DynamicMenuActivity : BaseActivity(), GlassGestureDetector.OnGestureListen
                 }
             })
         }
-
     }
 
     override fun onGesture(gesture: GlassGestureDetector.Gesture): Boolean = when (gesture) {

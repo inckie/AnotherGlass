@@ -32,6 +32,8 @@
   <!-- The recommended size for the menu text size. -->
   <dimen name="menu_text_size">64sp</dimen>
 
+  <dimen name="menu_subtext_size">32sp</dimen>
+
   <!-- The recommended menu text margin. -->
   <dimen name="menu_text_margin">16dp</dimen>
 

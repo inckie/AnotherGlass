@@ -2,6 +2,7 @@ package com.damn.anotherglass.glass.ee.host.ui.cards
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.os.Bundle
 import android.content.Intent
 import android.content.res.Resources
@@ -13,6 +14,7 @@ import android.widget.Toast
 import androidx.annotation.StringRes
 import com.damn.anotherglass.glass.ee.host.R
 import com.damn.anotherglass.glass.ee.host.core.BatteryStatus
+import com.damn.anotherglass.glass.ee.host.core.ConnectionUtils.getHostIPAddress
 import com.damn.anotherglass.glass.ee.host.core.IService
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutCardServiceBinding
 import com.damn.anotherglass.glass.ee.host.ui.MainActivity
@@ -109,7 +111,7 @@ class ServiceStateCard : BaseFragment() {
     }
 
     private fun showIPPicker(activity: MainActivity) {
-        DynamicMenuActivity.createIntent(activity, ipMenuItems()).also {
+        DynamicMenuActivity.createIntent(activity, ipMenuItems(activity)).also {
             startActivityForResult(it, REQUEST_CODE_PICK_IP)
         }
     }
@@ -141,12 +143,13 @@ class ServiceStateCard : BaseFragment() {
             IService.ServiceState.DISCONNECTED -> ""
         }
 
-        private fun ipMenuItems() = arrayListOf(
+        private fun ipMenuItems(context: Context) = arrayListOf(
             DynamicMenuActivity.DynamicMenuItem(
                 id = 0,
                 text = "Gateway IP",
                 icon = R.drawable.ic_wifi_tethering,
-                tag = "gateway_ip"
+                tag = "gateway_ip",
+                subtext = getHostIPAddress(context)
             ),
             // barcode format: `xxx.xxx.xxx.xxx[|User readable name]`
             DynamicMenuActivity.DynamicMenuItem(

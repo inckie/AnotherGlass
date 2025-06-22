@@ -29,27 +29,37 @@
         android:layout_height="match_parent">
 
         <ImageView
-            android:id="@+id/imageView"
+            android:id="@+id/img_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="@string/menu_item"
             android:src="@{item.icon}"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/textView"
+            app:layout_constraintEnd_toStartOf="@+id/lbl_text"
             app:layout_constraintHorizontal_chainStyle="packed"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@drawable/ic_save" />
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/lbl_text"
             style="@style/MenuTextViewStyle"
             android:text="@{item.text}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/imageView"
+            app:layout_constraintStart_toEndOf="@+id/img_icon"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Menu Item"
-            />
+            tools:text="Menu Item" />
+
+        <TextView
+            android:id="@+id/lbl_subtext"
+            style="@style/MenuSubTextViewStyle"
+            android:text="@{item.subtext}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lbl_text"
+            tools:text="Details" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

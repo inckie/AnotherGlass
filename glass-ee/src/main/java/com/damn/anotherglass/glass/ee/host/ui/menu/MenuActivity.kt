@@ -68,7 +68,7 @@ class MenuActivity : BaseActivity(), GlassGestureDetector.OnGestureListener {
                     GlassMenuItem(
                         id = menuItem.itemId,
                         text = menuItem.title.toString(),
-                        icon = menuItem.icon!!
+                        icon = menuItem.icon
                     )
                 )
                 adapter?.notifyDataSetChanged()
