@@ -41,4 +41,13 @@ class BatteryStatus(private val context: Context) : MutableLiveData<BatteryStatu
         super.onInactive()
         context.unregisterReceiver(receiver)
     }
+
+    companion object {
+        @JvmStatic
+        fun batteryStatusString(data: BatteryStatusData): String {
+            // todo: use drawables for battery icon
+            val icon = "\uD83D\uDD0B" // glass does not support low battery icon
+            return "$icon ${data.level}%${if (data.isCharging) "⚡" else ""}"
+        }
+    }
 }

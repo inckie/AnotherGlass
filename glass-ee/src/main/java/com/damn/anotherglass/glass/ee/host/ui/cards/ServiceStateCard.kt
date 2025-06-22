@@ -58,9 +58,7 @@ class ServiceStateCard : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         batteryStatus.observe(viewLifecycleOwner) {
-            // todo: use drawables for battery icon
-            val icon = "\uD83D\uDD0B" // glass does not support low battery icon
-            batteryLabel?.text = "$icon ${it.level}%${if (it.isCharging) "⚡" else ""}"
+            batteryLabel?.text = BatteryStatus.batteryStatusString(it)
         }
     }
 
