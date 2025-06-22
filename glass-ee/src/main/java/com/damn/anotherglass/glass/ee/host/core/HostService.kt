@@ -1,6 +1,7 @@
 package com.damn.anotherglass.glass.ee.host.core
 
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
@@ -25,16 +26,16 @@ interface IService {
         DISCONNECTED
     }
 
-    val state: ServiceState // todo: LiveData
+    val state: ServiceState // todo: global LiveData?
 }
 
 class HostService : Service(), IService {
 
     // todo: move to proper place (maybe global in Application class?)
     private lateinit var sounds: SoundController
-    private val client = WiFiClient()
-
     private lateinit var gps: MockGPS
+
+    private var client: WiFiClient? = null
 
     inner class LocalBinder : Binder() {
         fun getService(): IService = this@HostService
@@ -50,6 +51,11 @@ class HostService : Service(), IService {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+        // do not allow restart for now
+        if(null == client) {
+            client = WiFiClient(intent?.getStringExtra(EXTRA_IP))
+            start()
+        }
         return START_STICKY
     }
 
@@ -58,7 +64,6 @@ class HostService : Service(), IService {
         super.onCreate()
         gps = MockGPS(this)
         sounds = SoundController(this)
-        start()
     }
 
     @Override
@@ -66,7 +71,7 @@ class HostService : Service(), IService {
         super.onDestroy()
         Log.i(TAG, "HostService stopped")
         gps.remove()
-        client.stop()
+        client?.stop()
         sounds.release()
     }
 
@@ -128,12 +133,22 @@ class HostService : Service(), IService {
                 Toast.LENGTH_LONG
             ).show()
         }
-        client.start(this, listener)
+        client?.start(this, listener)
     }
 
     override fun onBind(intent: Intent?): IBinder? = _binder
 
     companion object {
         private const val TAG = "HostService"
+
+        private const val EXTRA_IP = "ip"
+
+        fun startService(context: Context, ip: String? = null) {
+            Intent(context, HostService::class.java).apply {
+                ip?.let { putExtra(EXTRA_IP, ip) }
+            }.also {
+                context.startService(it)
+            }
+        }
     }
 }

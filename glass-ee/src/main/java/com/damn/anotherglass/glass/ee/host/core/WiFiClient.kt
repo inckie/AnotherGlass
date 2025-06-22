@@ -18,7 +18,7 @@ import java.net.SocketException
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingDeque
 
-class WiFiClient : IRPCClient {
+class WiFiClient(private val hostIP: String? = null) : IRPCClient {
 
     @Volatile
     private var mWorkerThread: WorkerThread? = null
@@ -29,8 +29,7 @@ class WiFiClient : IRPCClient {
             Log.e(TAG, "Already started")
             return
         }
-        // todo: this part should not be there (Service should provide IP)
-        val ip = getHostIPAddress(context)
+        val ip = hostIP ?: getHostIPAddress(context)
         if (null == ip) {
             Log.e(TAG, "No host IP address")
             Toast.makeText(context, R.string.msg_no_server_ip, Toast.LENGTH_SHORT).show()

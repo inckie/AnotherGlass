@@ -119,10 +119,9 @@ class MainActivity : BaseActivity() {
         EventBus.getDefault().unregister(this)
     }
 
-    fun tryStartService() {
-        // todo: check if we have wifi connection, and it looks like tethering one
-        // todo: pass address to service
-        startService(Intent(this, HostService::class.java))
+    fun tryStartService(ip: String? = null) {
+
+        HostService.startService(this, ip)
         connection.bindGlassService()
     }
 
