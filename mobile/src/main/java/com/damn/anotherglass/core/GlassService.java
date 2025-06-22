@@ -1,6 +1,5 @@
 package com.damn.anotherglass.core;
 
-import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -28,8 +27,7 @@ import com.damn.anotherglass.shared.rpc.IRPCHost;
 import com.damn.anotherglass.shared.rpc.RPCMessage;
 import com.damn.anotherglass.shared.rpc.RPCMessageListener;
 import com.damn.anotherglass.ui.mainscreen.MainActivity;
-
-import java.util.List;
+import com.damn.anotherglass.utility.ContextExKt;
 
 public class GlassService
         extends LifecycleService
@@ -208,20 +206,7 @@ public class GlassService
     }
 
     public static boolean isRunning(Context context) {
-        final ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        final List<ActivityManager.RunningServiceInfo> services = activityManager.getRunningServices(Integer.MAX_VALUE);
-
-        final String pkgname = context.getPackageName();
-        final String srvname = GlassService.class.getName();
-
-        for (ActivityManager.RunningServiceInfo info : services) {
-            if (pkgname.equals(info.service.getPackageName()))
-                if (srvname.equals(info.service.getClassName()))
-                    if (info.started)
-                        return true;
-        }
-
-        return false;
+        return ContextExKt.isServiceRunning(context, GlassService.class);
     }
 
     @Override

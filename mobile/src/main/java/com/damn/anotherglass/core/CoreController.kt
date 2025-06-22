@@ -16,7 +16,7 @@ import com.damn.anotherglass.extensions.GPSExtension
 import com.damn.anotherglass.extensions.notifications.NotificationService
 import com.damn.anotherglass.ui.mainscreen.MainActivity
 import com.damn.anotherglass.ui.mainscreen.SettingsController
-import com.damn.anotherglass.ui.createGPSPermissionLauncher
+import com.damn.anotherglass.utility.createGPSPermissionLauncher
 import com.damn.anotherglass.utility.hasPermission
 import kotlinx.coroutines.launch
 

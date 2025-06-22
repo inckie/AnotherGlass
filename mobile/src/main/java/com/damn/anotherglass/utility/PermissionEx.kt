@@ -1,4 +1,4 @@
-package com.damn.anotherglass.ui
+package com.damn.anotherglass.utility
 
 import android.Manifest
 import android.annotation.SuppressLint

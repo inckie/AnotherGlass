@@ -25,7 +25,8 @@ object DbgNotifications {
     }
 
     fun removeNotification(context: Context): Boolean {
-        notificationManager(context).cancel(NOTIFICATION_BASE_ID + notificationId--)
+        if (notificationId > 0)
+            notificationManager(context).cancel(NOTIFICATION_BASE_ID + notificationId--)
         return notificationId > 0
     }
 

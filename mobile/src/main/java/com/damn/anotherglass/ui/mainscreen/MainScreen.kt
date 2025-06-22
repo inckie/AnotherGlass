@@ -20,7 +20,6 @@ import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
@@ -39,13 +38,16 @@ import com.damn.anotherglass.R
 import com.damn.anotherglass.core.Settings
 import com.damn.anotherglass.debug.DbgNotifications
 import com.damn.anotherglass.logging.LogActivity
+import com.damn.anotherglass.ui.mainscreen.widgets.DropDownMenuItem
+import com.damn.anotherglass.ui.mainscreen.widgets.SwitchRow
+import com.damn.anotherglass.ui.mainscreen.widgets.TopAppBarDropdownMenu
 import com.damn.anotherglass.ui.theme.AnotherGlassTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(settings: SettingsController) {
     val context = LocalContext.current
-    val isServiceRunning by settings.isServiceRunning.observeAsState()
+    val isServiceRunning by settings.isServiceRunning.observeAsState(false)
     val hostMode by settings.hostMode.observeAsState()
 
     // Use function to make sure it won't build if enum is updated
@@ -92,41 +94,22 @@ fun MainScreen(settings: SettingsController) {
                 MultiChoiceSegmentedButtonRow {
                     Settings.HostMode.entries.forEachIndexed { index, option ->
                         SegmentedButton(
-                            enabled = !isServiceRunning!!,
-                            shape = SegmentedButtonDefaults.itemShape(
-                                index = index,
-                                count = Settings.HostMode.entries.size
-                            ),
+                            enabled = !isServiceRunning,
+                            shape = SegmentedButtonDefaults.itemShape(index = index, count = Settings.HostMode.entries.size),
                             checked = hostMode == option,
                             onCheckedChange = { settings.setHostMode(option) },
                             label = { Text("") },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(id = resolveIcon(option)),
-                                    contentDescription = option.name
-                                )
-                            }
-                        )
-                    }
+                            icon = { Icon(painter = painterResource(id = resolveIcon(option)), contentDescription = option.name) }) }
                 }
             }
 
             // Service Toggle
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween, // Distribute space between items
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(id = R.string.lbl_enable_service))
-                Switch(
-                    checked = isServiceRunning!!,
-                    onCheckedChange = { isChecked ->
-                        settings.setServiceRunning(isChecked)
-                    }
-                )
-            }
+            SwitchRow(
+                label = stringResource(id = R.string.lbl_enable_service),
+                checked = isServiceRunning,
+                onCheckedChange = { settings.setServiceRunning(it) })
 
-            if (isServiceRunning!!) {
+            if (isServiceRunning) {
                 Column(
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())
@@ -145,40 +128,24 @@ private fun OptionToggles(
 ) {
     val context = LocalContext.current
 
-    val isGPSEnabled by settings.isGPSEnabled.observeAsState()
-    val isNotificationsEnabled by settings.notificationsEnabled.observeAsState()
+    val isGPSEnabled by settings.isGPSEnabled.observeAsState(false)
+    val isNotificationsEnabled by settings.notificationsEnabled.observeAsState(false)
 
-    val removedNotificationEnabled =
+    val removeNotificationEnabled =
         remember { mutableStateOf(DbgNotifications.notificationId > 0) }
 
     // GPS Toggle
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(stringResource(id = R.string.lbl_enable_gps))
-        Switch(
-            checked = isGPSEnabled!!,
-            onCheckedChange = {
-                settings.setGPSEnabled(it)
-            }
-        )
-    }
+    SwitchRow(
+        label = stringResource(id = R.string.lbl_enable_gps),
+        checked = isGPSEnabled,
+        onCheckedChange = { settings.setGPSEnabled(it) })
 
     // Notifications Toggle
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(id = R.string.lbl_enable_notifications))
-            Switch(
-                checked = isNotificationsEnabled!!,
-                onCheckedChange = { settings.setNotificationsEnabled(it) }
-            )
-        }
+        SwitchRow(
+            label = stringResource(id = R.string.lbl_enable_notifications),
+            checked = isNotificationsEnabled,
+            onCheckedChange = { settings.setNotificationsEnabled(it) })
     }
 
     // WiFi Connect Button
@@ -199,9 +166,9 @@ private fun OptionToggles(
         )
         IconButton(
             onClick = {
-                removedNotificationEnabled.value = DbgNotifications.removeNotification(context)
+                removeNotificationEnabled.value = DbgNotifications.removeNotification(context)
             },
-            enabled = removedNotificationEnabled.value,
+            enabled = removeNotificationEnabled.value,
             content = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_baseline_remove_24),
@@ -212,7 +179,7 @@ private fun OptionToggles(
         IconButton(
             onClick = {
                 DbgNotifications.postNotification(context)
-                removedNotificationEnabled.value = true
+                removeNotificationEnabled.value = true
             },
             content = {
                 Icon(

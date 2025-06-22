@@ -6,17 +6,16 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import android.text.TextUtils
-import android.widget.EditText
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.damn.anotherglass.R
 import com.damn.anotherglass.core.CoreController
 import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.core.GlassService.LocalBinder
 import com.damn.anotherglass.core.Settings
+import com.damn.anotherglass.databinding.ViewWifiDialogBinding
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.wifi.WiFiAPI
 import com.damn.anotherglass.shared.wifi.WiFiConfiguration
@@ -95,19 +94,17 @@ class MainActivity : ComponentActivity() {
     }
 
     fun connectWiFi() {
-        val view = layoutInflater.inflate(R.layout.view_wifi_dialog, null)
-        val ssid = view.findViewById<EditText>(R.id.ed_ssid)
-        val pass = view.findViewById<EditText>(R.id.ed_password)
+        val binding = ViewWifiDialogBinding.inflate(layoutInflater)
         AlertDialog.Builder(this)
             .setPositiveButton(android.R.string.ok) { _, _ ->
-                if (TextUtils.isEmpty(ssid.text)) return@setPositiveButton
+                if (TextUtils.isEmpty(binding.edSsid.text)) return@setPositiveButton
                 // pass can be empty
                 glassServiceConnection.service?.send(
-                    RPCMessage(WiFiAPI.ID, WiFiConfiguration(ssid.toString(), pass.toString()))
+                    RPCMessage(WiFiAPI.ID, WiFiConfiguration(binding.edSsid.toString(), binding.edPassword.toString()))
                 )
             }
             .setNegativeButton(android.R.string.cancel, null)
-            .setView(view)
+            .setView(binding.root)
             .show()
     }
 

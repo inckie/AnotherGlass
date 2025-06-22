@@ -1,4 +1,4 @@
-package com.damn.anotherglass.ui.mainscreen
+package com.damn.anotherglass.ui.mainscreen.widgets
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.wrapContentSize

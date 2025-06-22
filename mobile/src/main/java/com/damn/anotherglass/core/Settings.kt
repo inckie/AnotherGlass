@@ -2,6 +2,7 @@ package com.damn.anotherglass.core
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -42,17 +43,17 @@ class Settings(context: Context) {
 
     var isGPSEnabled: Boolean
         get() = preferences.getBoolean(GPS_ENABLED, false)
-        set(enabled) = preferences.edit().putBoolean(GPS_ENABLED, enabled).apply()
+        set(enabled) = preferences.edit { putBoolean(GPS_ENABLED, enabled) }
 
     var isNotificationsEnabled: Boolean
         get() = preferences.getBoolean(NOTIFICATIONS_ENABLED, false)
-        set(enabled) = preferences.edit().putBoolean(NOTIFICATIONS_ENABLED, enabled).apply()
+        set(enabled) = preferences.edit { putBoolean(NOTIFICATIONS_ENABLED, enabled) }
 
     var hostMode: HostMode
         get() = preferences.getString(HOST_MODE, HostMode.WiFi.value)?.let { mode ->
             HostMode.entries.firstOrNull { mode == it.value }
         } ?: HostMode.WiFi
-        set(mode) = preferences.edit().putString(HOST_MODE, mode.value).apply()
+        set(mode) = preferences.edit { putString(HOST_MODE, mode.value) }
 
     companion object {
         private const val sPreferencesName = "anotherglass"
