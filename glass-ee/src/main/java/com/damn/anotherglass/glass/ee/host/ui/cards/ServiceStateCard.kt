@@ -15,6 +15,10 @@ import com.damn.anotherglass.glass.ee.host.ui.MainActivity
 
 class ServiceStateCard : BaseFragment() {
 
+    // todo:
+    //  - voice commands (only for some time interval, e.g. 5 seconds, to conserve battery)
+    //  - connect to current gateway IP/scan IP barcode/last IPs menu
+
     private var statusLabel: TextView? = null
     // todo: replace with tile (text is too small)
     private var batteryLabel: TextView? = null

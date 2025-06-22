@@ -97,7 +97,8 @@ class HostService : Service(), IService {
                         Log.d(TAG, "Notification data received")
                         val notificationData = data.payload as NotificationData
                         NotificationController.instance.onNotificationUpdate(notificationData)
-                        // TODO: temporary hack to play sound on notification posted
+                        // TODO: temporary hack to play sound on notification posted.
+                        //  Will also play even if it's just an update.
                         if(notificationData.action == NotificationData.Action.Posted)
                             sounds.playSound(SoundController.SoundEffect.NotificationPosted)
                     }

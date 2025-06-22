@@ -17,6 +17,10 @@ import com.google.android.material.tabs.TabLayoutMediator
 
 class NotificationsActivity : BaseActivity() {
 
+    // todo:
+    //  - voice commands
+    //  - awake and present on new notifications (optional)
+
     // some glue to redirect gesture to the adapter subclass
     // for now we just dismiss the notification on tap
     private lateinit var onTapListener: () -> Boolean
