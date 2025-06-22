@@ -25,6 +25,8 @@ import androidx.recyclerview.widget.SnapHelper
 import com.damn.anotherglass.glass.ee.host.ui.BaseActivity
 import com.damn.anotherglass.glass.ee.host.R
 import com.example.glass.ui.GlassGestureDetector
+import androidx.core.view.get
+import androidx.core.view.size
 
 /**
  * Activity which provides the menu functionality. It creates the horizontal recycler view to move
@@ -60,16 +62,16 @@ class MenuActivity : BaseActivity(), GlassGestureDetector.OnGestureListener {
         val menuResource = intent.getIntExtra(EXTRA_MENU_KEY, EXTRA_MENU_ITEM_DEFAULT_VALUE)
         if (menuResource != EXTRA_MENU_ITEM_DEFAULT_VALUE) {
             menuInflater.inflate(menuResource, menu)
-            for (i in 0 until menu.size()) {
-                val menuItem = menu.getItem(i)
+            for (i in 0 until menu.size) {
+                val menuItem = menu[i]
                 menuItems.add(
                     GlassMenuItem(
-                        menuItem.itemId,
-                        menuItem.icon!!,
-                        menuItem.title.toString()
+                        id = menuItem.itemId,
+                        text = menuItem.title.toString(),
+                        icon = menuItem.icon!!
                     )
                 )
-                adapter!!.notifyDataSetChanged()
+                adapter?.notifyDataSetChanged()
             }
         }
         return super.onCreateOptionsMenu(menu)

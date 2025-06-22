@@ -64,6 +64,11 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ui.menu.DynamicMenuActivity"
+            android:exported="false"
+            android:theme="@style/MenuTheme" >
+        </activity>
+        <activity
             android:name=".ui.NotificationsActivity"
             android:exported="false"
             android:theme="@style/MenuTheme" />

@@ -16,6 +16,7 @@
  
 apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'kotlin-parcelize'
 
 apply from: file('../gradle/signing.gradle')
 

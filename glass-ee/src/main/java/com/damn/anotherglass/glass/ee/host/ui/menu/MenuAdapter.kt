@@ -36,7 +36,7 @@ class MenuAdapter internal constructor(private val menuItems: List<GlassMenuItem
 
     class MenuViewHolder(private val binding: MenuItemBinding)
         : RecyclerView.ViewHolder(binding.root) {
-        fun bind(glassMenuItem: GlassMenuItem?) {
+        fun bind(glassMenuItem: GlassMenuItem) {
             binding.setItem(glassMenuItem)
             binding.executePendingBindings()
         }
