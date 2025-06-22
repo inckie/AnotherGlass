@@ -30,6 +30,8 @@ interface IService {
 
 class HostService : Service(), IService {
 
+    // todo: move to proper place (maybe global in Application class?)
+    private lateinit var sounds: SoundController
     private val client = WiFiClient()
 
     private lateinit var gps: MockGPS
@@ -55,6 +57,7 @@ class HostService : Service(), IService {
     override fun onCreate() {
         super.onCreate()
         gps = MockGPS(this)
+        sounds = SoundController(this)
         start()
     }
 
@@ -64,6 +67,7 @@ class HostService : Service(), IService {
         Log.i(TAG, "HostService stopped")
         gps.remove()
         client.stop()
+        sounds.release()
     }
 
     private fun start() {
@@ -85,13 +89,17 @@ class HostService : Service(), IService {
                 when (data.service) {
                     GPSServiceAPI.ID -> {
                         Log.d(TAG, "GPS data received")
-                        if (data.type.equals(Location::class.java.getName()))
+                        if (data.type.equals(Location::class.java.name))
                             gps.publish(data.payload as Location)
                     }
 
                     NotificationsAPI.ID -> {
                         Log.d(TAG, "Notification data received")
-                        NotificationController.instance.onNotificationUpdate(data.payload as NotificationData)
+                        val notificationData = data.payload as NotificationData
+                        NotificationController.instance.onNotificationUpdate(notificationData)
+                        // TODO: temporary hack to play sound on notification posted
+                        if(notificationData.action == NotificationData.Action.Posted)
+                            sounds.playSound(SoundController.SoundEffect.NotificationPosted)
                     }
 
                     else -> Log.e(TAG, "Unknown service: ${data.service}")
@@ -101,6 +109,7 @@ class HostService : Service(), IService {
             override fun onConnectionLost(error: String?) {
                 Log.e(TAG, "onConnectionLost: $error")
                 state = IService.ServiceState.DISCONNECTED
+                sounds.playSound(SoundController.SoundEffect.ConnectionLost)
             }
 
             override fun onShutdown() {
