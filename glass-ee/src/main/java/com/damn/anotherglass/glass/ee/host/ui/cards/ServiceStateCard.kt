@@ -3,20 +3,20 @@ package com.damn.anotherglass.glass.ee.host.ui.cards
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
-import android.os.Bundle
 import android.content.Intent
 import android.content.res.Resources
+import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.annotation.StringRes
 import com.damn.anotherglass.glass.ee.host.R
 import com.damn.anotherglass.glass.ee.host.core.BatteryStatus
 import com.damn.anotherglass.glass.ee.host.core.ConnectionUtils.getHostIPAddress
 import com.damn.anotherglass.glass.ee.host.core.IService
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutCardServiceBinding
+import com.damn.anotherglass.glass.ee.host.ui.qr2.CameraActivity
 import com.damn.anotherglass.glass.ee.host.ui.MainActivity
 import com.damn.anotherglass.glass.ee.host.ui.menu.DynamicMenuActivity
 
@@ -25,7 +25,7 @@ class ServiceStateCard : BaseFragment() {
     // todo:
     //  - voice commands (only for some time interval, e.g. 5 seconds, to conserve battery)
     // todo WIP:
-    //  - connect to current gateway IP/scan IP barcode/last IPs menu
+    //  - persist last used IPs, maybe also remember WiFi name (will require location permission)
 
     private lateinit var binding: LayoutCardServiceBinding
     private val batteryStatus: BatteryStatus by lazy { BatteryStatus(requireContext()) }
@@ -70,7 +70,7 @@ class ServiceStateCard : BaseFragment() {
                     else -> mainActivity().tryStartService(tag) // recent IP
                 }
             }
-            REQUEST_CODE_SCAN_BARCODE -> data?.getStringExtra("SCAN_RESULT")?.let {
+            REQUEST_CODE_SCAN_BARCODE -> data?.getStringExtra(CameraActivity.SCAN_RESULT)?.let {
                 it.substringBefore("|").also { ip ->
                     Log.d("BarcodeScanner", "Scanned IP: $ip")
                     mainActivity().tryStartService(ip)
@@ -80,15 +80,11 @@ class ServiceStateCard : BaseFragment() {
     }
 
     private fun ServiceStateCard.scanBarcode() {
-        // todo: add build-in scanner
         try {
-            val intent = Intent("com.google.zxing.client.android.SCAN")
-            intent.putExtra("SCAN_MODE", "QR_CODE_MODE")
+            val intent = Intent(requireActivity(), CameraActivity::class.java)
             startActivityForResult(intent, REQUEST_CODE_SCAN_BARCODE)
         } catch (e: ActivityNotFoundException) {
-            // ZXing app is not installed
             Log.e("ServiceStateCard", "Error starting barcode scanner", e)
-            Toast.makeText(requireContext(), "ZXing app not found", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -155,10 +151,10 @@ class ServiceStateCard : BaseFragment() {
             DynamicMenuActivity.DynamicMenuItem(
                 id = 1,
                 text = "Barcode",
-                icon = R.drawable.ic_add,
+                icon = R.drawable.ic_qr_code_scanner,
                 tag = "barcode_scanner"
             ),
-            // todo: last used IPs, maybe also remember WiFi name (will require location permission)
+            // todo: last used IPs
             DynamicMenuActivity.DynamicMenuItem(
                 id = 2,
                 text = "192.168.1.241",
