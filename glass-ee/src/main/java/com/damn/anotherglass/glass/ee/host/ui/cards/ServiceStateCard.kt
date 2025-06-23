@@ -142,7 +142,7 @@ class ServiceStateCard : BaseFragment() {
         private fun ipMenuItems(context: Context) = arrayListOf(
             DynamicMenuActivity.DynamicMenuItem(
                 id = 0,
-                text = "Gateway IP",
+                text = context.getString(R.string.lbl_gateway_ip),
                 icon = R.drawable.ic_wifi_tethering,
                 tag = "gateway_ip",
                 subtext = getHostIPAddress(context)
@@ -150,7 +150,7 @@ class ServiceStateCard : BaseFragment() {
             // barcode format: `xxx.xxx.xxx.xxx[|User readable name]`
             DynamicMenuActivity.DynamicMenuItem(
                 id = 1,
-                text = "Barcode",
+                text = context.getString(R.string.lbl_barcode),
                 icon = R.drawable.ic_qr_code_scanner,
                 tag = "barcode_scanner"
             ),

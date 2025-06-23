@@ -18,6 +18,10 @@
     <string name="msg_service_connected_hint">Long press to stop.</string>
     <string name="msg_service_disconnected">Disconnected</string>
 
+    <!-- Service state card connection menu -->
+    <string name="lbl_gateway_ip">Gateway IP</string>
+    <string name="lbl_barcode">Barcode</string>
+
     <string name="msg_connecting_to_ip_s">Connecting to %1$s</string>
     <string name="msg_no_server_ip">Failed to determine host IP</string>
 
