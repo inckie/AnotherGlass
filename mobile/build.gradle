@@ -71,6 +71,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     implementation 'org.greenrobot:eventbus:3.3.1'
+    implementation 'com.google.zxing:core:3.4.1'
 
     implementation 'androidx.activity:activity-compose:1.10.1'
 

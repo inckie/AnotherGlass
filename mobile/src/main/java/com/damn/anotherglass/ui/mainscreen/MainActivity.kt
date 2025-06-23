@@ -1,11 +1,16 @@
 package com.damn.anotherglass.ui.mainscreen
 
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.os.IBinder
 import android.text.TextUtils
+import android.text.format.Formatter
+import android.util.Log
+import android.widget.ImageView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AlertDialog
@@ -20,6 +25,8 @@ import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.wifi.WiFiAPI
 import com.damn.anotherglass.shared.wifi.WiFiConfiguration
 import com.damn.anotherglass.ui.theme.AnotherGlassTheme
+import com.damn.anotherglass.utility.QR2
+import com.google.zxing.WriterException
 
 
 class MainActivity : ComponentActivity() {
@@ -108,6 +115,30 @@ class MainActivity : ComponentActivity() {
             .show()
     }
 
+    fun showIPAddressDialog() {
+        val wm = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        @Suppress("DEPRECATION")
+        val ipAddress = Formatter.formatIpAddress(wm.connectionInfo.ipAddress)
+        try {
+            // todo: add device name to QR code data, in format "xxx.xxx.xxx.xxx|Device Name"
+            val bitmap = QR2.generateBitmap(ipAddress, 400)
+            val imageView = ImageView(this).apply {
+                setImageBitmap(bitmap)
+                drawable.isFilterBitmap = false
+            }
+            AlertDialog.Builder(this)
+                .setTitle(ipAddress)
+                .setView(imageView)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+        } catch (e: WriterException) {
+            Log.e(TAG, "showIPAddressDialog: ", e)
+        }
+    }
+
+    companion object {
+        private val TAG = "MainActivity"
+    }
 }
 
 abstract class SettingsController {

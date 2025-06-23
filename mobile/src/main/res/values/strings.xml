@@ -5,6 +5,8 @@
     <string name="notification_channel_state">AnotherGlass Service</string>
     <string name="lbl_connection_type">Connection type</string>
     <string name="lbl_enable_gps">Enable GPS</string>
+    <string name="lbl_show_ip_address">Local IP address QR code</string>
+    <string name="btn_show_ip_address">Generate</string>
     <string name="btn_connect_wifi">Setup WiFi connection</string>
     <string name="lbl_ssid">SSID</string>
     <string name="lbl_password">Password</string>

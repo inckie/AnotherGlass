@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -109,6 +110,8 @@ fun MainScreen(settings: SettingsController) {
                 checked = isServiceRunning,
                 onCheckedChange = { settings.setServiceRunning(it) })
 
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
             if (isServiceRunning) {
                 Column(
                     modifier = Modifier
@@ -148,12 +151,32 @@ private fun OptionToggles(
             onCheckedChange = { settings.setNotificationsEnabled(it) })
     }
 
+    if (settings.hostMode.value == Settings.HostMode.WiFi) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                stringResource(id = R.string.lbl_show_ip_address),
+                modifier = Modifier.weight(1f)
+            )
+            Button(
+                onClick = { (context as MainActivity).showIPAddressDialog() }
+            ) {
+                Text(stringResource(id = R.string.btn_show_ip_address))
+            }
+        }
+    }
+
     // WiFi Connect Button
     Button(
         onClick = { (context as MainActivity).connectWiFi() }
     ) {
         Text(stringResource(id = R.string.btn_connect_wifi))
     }
+
+    // Divider
+    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
     // Debug Buttons
     Row(

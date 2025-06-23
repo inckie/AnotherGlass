@@ -53,13 +53,15 @@ Uses WiFi to connect to the phone. Bluetooth is not supported (it has issues con
 5. Toggle service switch on the phone application to start Host Service. Accept the permissions requests.
 6. Run AnotherGlass application the Glass device from the launcher. Accept the permission requests.
 
-Connection service keeps running in the background even if applicationis closed. Use swipe up or two fingers swipe down gestures to stop the service when in the application.
+Connection service keeps running in the background even if application is closed. Use swipe up or two fingers swipe down gestures to stop the service when in the application.
+
+Without using a hotspot, if both devices are on the same WiFi network, you can generate a QR code with the phone local IP address and scan it on the Glass by long-pressing the Service state card and selecting `Barcode` option.
 
 To enable GPS location passthrough on the Glass you will need to give the applicationMOCK_LOCATION permission. Run ADB command `adb shell appops set com.damn.anotherglass.glass.ee android:mock_location allow`, or tap on the Map card to open Developer settings and set AnotherGlass as GPS mocking application. Restart the service after the change.
 
 ## Details
 
-Originally, Glass application was serving as a host, and mobile was supposed to connect to it when some updates needed to be passed over, like notification status change or URL intent. But it turned out that the primary use case for the service was to serve as a GPS location provider, since most of my glassware is relying directly on web backends through tethered connection, so I switched the roles. In the future, I can add some 'temporary disconnected' state, when the Glass side will disconnect from the mobile application, but will open listening port so mobile applicationcan 'knock' to re-instantiate the connection.
+Originally, Glass application was serving as a host, and mobile was supposed to connect to it when some updates needed to be passed over, like notification status change or URL intent. But it turned out that the primary use case for the service was to serve as a GPS location provider, since most of my glassware is relying directly on web backends through tethered connection, so I switched the roles. In the future, I can add some 'temporary disconnected' state, when the Glass side will disconnect from the mobile application, but will open listening port so mobile application can 'knock' to re-instantiate the connection.
 
 Uses Java object stream to send data to Google Glass, since I don't want to mess with protocol buffers yet.
 
