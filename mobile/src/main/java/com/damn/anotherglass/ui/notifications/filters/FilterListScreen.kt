@@ -1,7 +1,6 @@
 package com.damn.anotherglass.ui.notifications.filters
 
 import android.annotation.SuppressLint
-import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,12 +24,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.damn.anotherglass.extensions.notifications.filter.FilterAction
 import com.damn.anotherglass.ui.notifications.AppRoute
 import com.damn.anotherglass.ui.theme.AnotherGlassTheme
 
@@ -40,7 +38,7 @@ import com.damn.anotherglass.ui.theme.AnotherGlassTheme
 @Composable
 fun FilterListScreen(
     navController: NavController?,
-    viewModel: FilterListViewModel = viewModel(factory = FilterListViewModel.Companion.Factory(LocalContext.current.applicationContext as Application))
+    viewModel: FilterListViewModel
 ) {
     val filters by viewModel.filters.collectAsState()
 
@@ -136,7 +134,7 @@ fun FilterListScreenPreview_WithItems() {
             "Block Social Media",
             true,
             "3 conditions, Matches All (AND)",
-            actionDisplay = "Allow",
+            action = FilterAction.ALLOW_SILENTLY,
             appDetails = null
         ),
         FilterListItemUI(
@@ -144,7 +142,7 @@ fun FilterListScreenPreview_WithItems() {
             "Allow Work Emails",
             true,
             "2 conditions, Matches Any (OR)",
-            actionDisplay = "Allow",
+            action = FilterAction.ALLOW_WITH_NOTIFICATION,
             appDetails = null
         ),
         FilterListItemUI(
@@ -152,7 +150,7 @@ fun FilterListScreenPreview_WithItems() {
             "Silent Gaming Notifications",
             false,
             "1 condition, Matches All (AND)",
-            actionDisplay = "Block",
+            action = FilterAction.BLOCK,
             appDetails = null
         )
     )

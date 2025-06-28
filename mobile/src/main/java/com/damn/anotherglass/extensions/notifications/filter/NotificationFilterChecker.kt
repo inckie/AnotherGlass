@@ -7,11 +7,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
+// todo: provide UserFilterRepository
 class NotificationFilterChecker(private val context: Context) {
     // Cache enabled filters to avoid reading from DataStore on every notification
     // This cache would need to be updated when filters change.
     // For simplicity in this example, we'll read it, but for performance, caching is key.
-    private var activeFilters: List<UserFilter> = emptyList()
+    private var activeFilters: List<NotificationFilter> = emptyList()
 
     init {
         // In a real ViewModel, you'd collect the flow and update activeFilters
@@ -23,28 +24,29 @@ class NotificationFilterChecker(private val context: Context) {
         }
     }
 
-    suspend fun shouldSendToGlass(notification: NotificationData): Boolean {
+    suspend fun filter(notification: NotificationData): FilterAction? {
         if (notification.action != NotificationData.Action.Posted) {
             // Send all non-Posted notifications by default, it won't hurt
             // later we can track if notification was sent or not, and ignore removals
-            return true
+            return null
         }
 
         val currentActiveFilters = UserFilterRepository.getFiltersFlow(context)
             .firstOrNull()?.filter { it.isEnabled } ?: emptyList()
 
         if (currentActiveFilters.isEmpty()) {
-            return true
+            return null
         }
 
-        return !currentActiveFilters.any {
+        return currentActiveFilters.firstOrNull {
             matchesSingleFilter(notification, it)
-        }
+        }?.action
     }
+
 
     private fun matchesSingleFilter(
         notification: NotificationData,
-        filter: UserFilter
+        filter: NotificationFilter
     ): Boolean {
         // If a package name is specified in the filter, it must match.
         if (!filter.packageName.isNullOrBlank()) {
@@ -62,19 +64,19 @@ class NotificationFilterChecker(private val context: Context) {
         for (condition in filter.conditions) {
             val conditionMet: Boolean = when (condition.type) {
                 ConditionType.TITLE_CONTAINS ->
-                    notification.title?.contains(condition.value, ignoreCase = condition.ignoreCase) ?: false
+                    notification.title?.contains(condition.value, ignoreCase = true) ?: false
                 ConditionType.TITLE_EQUALS ->
-                    notification.title?.equals(condition.value, ignoreCase = condition.ignoreCase) ?: (condition.value == null || condition.value.isEmpty())
+                    notification.title?.equals(condition.value, ignoreCase = true) ?: condition.value.isEmpty()
                 ConditionType.TEXT_CONTAINS ->
-                    notification.text?.contains(condition.value, ignoreCase = condition.ignoreCase) ?: false
+                    notification.text?.contains(condition.value, ignoreCase = true) ?: false
                 ConditionType.TEXT_EQUALS ->
-                    notification.text?.equals(condition.value, ignoreCase = condition.ignoreCase) ?: (condition.value == null || condition.value.isEmpty())
+                    notification.text?.equals(condition.value, ignoreCase = true) ?: condition.value.isEmpty()
                 ConditionType.TICKER_TEXT_CONTAINS ->
-                    notification.tickerText?.contains(condition.value, ignoreCase = condition.ignoreCase) ?: false
+                    notification.tickerText?.contains(condition.value, ignoreCase = true) ?: false
                 ConditionType.TICKER_TEXT_EQUALS ->
-                    notification.tickerText?.equals(condition.value, ignoreCase = condition.ignoreCase) ?: (condition.value == null || condition.value.isEmpty())
+                    notification.tickerText?.equals(condition.value, ignoreCase = true) ?: condition.value.isEmpty()
                 ConditionType.IS_ONGOING_EQUALS ->
-                    notification.isOngoing == condition.value.toBoolean() // Value for condition would be "true" or "false"
+                    notification.isOngoing == condition.value.toBoolean()
             }
 
             if (filter.matchAllConditions) { // AND

@@ -1,7 +1,6 @@
 package com.damn.anotherglass.ui.notifications.history
 
 import android.annotation.SuppressLint
-import android.app.Application
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.damn.anotherglass.shared.notifications.NotificationData
 import com.damn.anotherglass.utility.AndroidAppDetailsProvider
@@ -37,7 +35,7 @@ import com.damn.anotherglass.utility.AppDetails
 @Composable
 fun NotificationHistoryScreen(
     navController: NavController?,
-    viewModel: NotificationHistoryViewModel = viewModel(factory = NotificationHistoryViewModel.Companion.Factory(LocalContext.current.applicationContext as Application))
+    viewModel: NotificationHistoryViewModel
 ) {
     val historyItems by viewModel.historyItems.collectAsState()
 
@@ -93,7 +91,7 @@ fun NotificationHistoryScreen(
     }
 }
 
-fun createNotificationData(
+internal fun createNotificationData(
     action: NotificationData.Action,
     id: Int,
     packageName: String, // Nullable to match potential usage

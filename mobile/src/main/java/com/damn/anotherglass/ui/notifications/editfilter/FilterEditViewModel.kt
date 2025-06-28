@@ -5,20 +5,14 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.damn.anotherglass.extensions.notifications.filter.ConditionType
 import com.damn.anotherglass.extensions.notifications.filter.FilterAction
 import com.damn.anotherglass.extensions.notifications.filter.FilterConditionItem
-import com.damn.anotherglass.extensions.notifications.filter.UserFilter
+import com.damn.anotherglass.extensions.notifications.filter.NotificationFilter
 import com.damn.anotherglass.extensions.notifications.filter.UserFilterRepository
-import androidx.lifecycle.ViewModelProvider
 import com.damn.anotherglass.ui.notifications.AppRoute
-import com.damn.anotherglass.utility.AppDetails
-import com.damn.anotherglass.utility.AppDetailsProvider
-import com.damn.anotherglass.utility.AndroidAppDetailsProvider
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.net.URLDecoder
@@ -26,16 +20,13 @@ import java.util.UUID
 
 class FilterEditViewModel(
     application: Application,
-    private val savedStateHandle: SavedStateHandle,
-    private val appDetailsProvider: AppDetailsProvider
+    private val savedStateHandle: SavedStateHandle
 ) : AndroidViewModel(application) {
 
     // --- State for the filter being edited ---
     val filterId = mutableStateOf<String?>(null)
     val filterName = mutableStateOf("")
     val packageName = mutableStateOf("")
-    private val _appDetails = MutableStateFlow<AppDetails?>(null)
-    val appDetails: StateFlow<AppDetails?> = _appDetails.asStateFlow()
     val isFilterEnabled = mutableStateOf(true)
     val matchAllConditions = mutableStateOf(true) // true for AND, false for OR
     val conditions = mutableStateListOf<FilterConditionItem>()
@@ -96,12 +87,6 @@ class FilterEditViewModel(
                 }
                 filterAction.value = FilterAction.BLOCK // Or UserFilter().action
             }
-
-            _appDetails.value = if (packageName.value.isNotBlank()) {
-                appDetailsProvider.getAppDetails(packageName.value)
-            } else {
-                null
-            }
         }
     }
 
@@ -144,12 +129,13 @@ class FilterEditViewModel(
 
     fun saveFilter(onSaved: () -> Unit) {
         viewModelScope.launch {
-            val filterToSave = UserFilter( // Assuming UserFilter is available
+            val filterToSave = NotificationFilter( // Assuming UserFilter is available
                 id = filterId.value ?: UUID.randomUUID().toString(),
                 name = filterName.value.ifBlank { "Untitled Filter" },
                 packageName = packageName.value.ifBlank { null },
                 isEnabled = isFilterEnabled.value,
                 matchAllConditions = matchAllConditions.value,
+                // todo: filter empty conditions
                 conditions = ArrayList(conditions),
                 action = filterAction.value
             )
@@ -178,7 +164,7 @@ class FilterEditViewModel(
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(FilterEditViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
-                    return FilterEditViewModel(application, savedStateHandle, AndroidAppDetailsProvider(application)) as T
+                    return FilterEditViewModel(application, savedStateHandle) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
             }

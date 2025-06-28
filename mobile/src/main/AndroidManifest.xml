@@ -2,12 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Service -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> <!-- WiFi host -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- WiFi host -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- Local IP barcode generation -->
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> <!-- Bluetooth host -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Local IP barcode generation -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- Bluetooth host -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" /> <!-- GPS extension -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- GPS extension -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />

@@ -5,7 +5,6 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -16,33 +15,30 @@ private val gson = Gson()
 
 object UserFilterRepository {
 
-    suspend fun saveFilters(context: Context, filters: List<UserFilter>) {
-        val jsonString = gson.toJson(filters)
+    suspend fun saveFilters(context: Context, filters: List<NotificationFilter>) {
+        val jsonString = gson.toJson(Filters(filters))
         context.filterDataStore.edit { preferences ->
             preferences[FILTERS_KEY] = jsonString
         }
     }
 
-    fun getFiltersFlow(context: Context): Flow<List<UserFilter>> {
+    fun getFiltersFlow(context: Context): Flow<List<NotificationFilter>> {
         return context.filterDataStore.data.map { preferences ->
-            val jsonString = preferences[FILTERS_KEY]
-            if (jsonString != null) {
-                val type = object : TypeToken<List<UserFilter>>() {}.type
-                gson.fromJson(jsonString, type) ?: emptyList()
-            } else {
-                emptyList()
-            }
+            preferences[FILTERS_KEY]
+                ?.let { gson.fromJson(it, Filters::class.java) }
+                ?.filters
+                ?: emptyList()
         }
     }
 
     // --- Helper functions to add, update, delete individual filters ---
-    suspend fun addFilter(context: Context, newFilter: UserFilter) {
+    suspend fun addFilter(context: Context, newFilter: NotificationFilter) {
         val currentFilters = getFiltersFlow(context).firstOrNull()?.toMutableList() ?: mutableListOf()
         currentFilters.add(newFilter)
         saveFilters(context, currentFilters)
     }
 
-    suspend fun updateFilter(context: Context, updatedFilter: UserFilter) {
+    suspend fun updateFilter(context: Context, updatedFilter: NotificationFilter) {
         val currentFilters = getFiltersFlow(context).firstOrNull()?.toMutableList() ?: mutableListOf()
         val index = currentFilters.indexOfFirst { it.id == updatedFilter.id }
         if (index != -1) {

@@ -2,14 +2,14 @@ package com.damn.anotherglass.ui.notifications.filters
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.damn.anotherglass.extensions.notifications.filter.FilterAction
-import com.damn.anotherglass.extensions.notifications.filter.UserFilter
+import com.damn.anotherglass.extensions.notifications.filter.NotificationFilter
 import com.damn.anotherglass.extensions.notifications.filter.UserFilterRepository
+import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 import com.damn.anotherglass.utility.AppDetails
 import com.damn.anotherglass.utility.AppDetailsProvider
-import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -22,10 +22,11 @@ data class FilterListItemUI( // A UI-specific model for the list
     val name: String,
     val isEnabled: Boolean,
     val description: String,
-    val actionDisplay: String,
+    val action: FilterAction,
     val appDetails: AppDetails?
 )
 
+// todo: get rid of Application dependency in ViewModel, provide UserFilterRepository directly
 class FilterListViewModel(
     application: Application,
     private val appDetailsProvider: AppDetailsProvider) : AndroidViewModel(application) {
@@ -40,7 +41,7 @@ class FilterListViewModel(
                         name = filter.name,
                         isEnabled = filter.isEnabled,
                         description = formatFilterDescription(filter, appDetails),
-                        actionDisplay = filter.action.toDisplayStringList(), // New helper
+                        action = filter.action, // New helper
                         appDetails = appDetails,
                     )
                 }
@@ -51,7 +52,7 @@ class FilterListViewModel(
                 initialValue = emptyList()
             )
 
-    private fun formatFilterDescription(filter: UserFilter, appDetails: AppDetails?): String {
+    private fun formatFilterDescription(filter: NotificationFilter, appDetails: AppDetails?): String {
         val parts = mutableListOf<String>()
 
         appDetails?.let {
@@ -98,11 +99,4 @@ class FilterListViewModel(
             }
         }
     }
-}
-
-fun FilterAction?.toDisplayStringList(): String = when (this) {
-    null -> "Action: Not Set"
-    FilterAction.BLOCK -> "Action: Block"
-    FilterAction.ALLOW_WITH_NOTIFICATION -> "Action: Allow & Notify"
-    FilterAction.ALLOW_SILENTLY -> "Action: Allow Silently"
 }

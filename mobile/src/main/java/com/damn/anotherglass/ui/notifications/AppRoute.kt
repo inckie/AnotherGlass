@@ -12,7 +12,9 @@ import androidx.navigation.navArgument
 import com.damn.anotherglass.ui.notifications.editfilter.FilterEditScreen
 import com.damn.anotherglass.ui.notifications.editfilter.FilterEditViewModel
 import com.damn.anotherglass.ui.notifications.filters.FilterListScreen
+import com.damn.anotherglass.ui.notifications.filters.FilterListViewModel
 import com.damn.anotherglass.ui.notifications.history.NotificationHistoryScreen
+import com.damn.anotherglass.ui.notifications.history.NotificationHistoryViewModel
 
 sealed class AppRoute(val route: String) {
     data object FilterList : AppRoute("filter_list")
@@ -66,7 +68,9 @@ sealed class AppRoute(val route: String) {
 fun navGraph(builder: NavGraphBuilder, navController: NavHostController) {
     builder.apply {
         composable(AppRoute.NotificationHistory.route) {
-            NotificationHistoryScreen(navController = navController)
+            val viewModel: NotificationHistoryViewModel = viewModel(factory = NotificationHistoryViewModel.Companion.Factory(LocalContext.current.applicationContext as Application))
+
+            NotificationHistoryScreen(navController = navController, viewModel)
         }
         composable(
             route = AppRoute.FilterEditScreen.routeTemplate,
@@ -92,18 +96,21 @@ fun navGraph(builder: NavGraphBuilder, navController: NavHostController) {
                 }
             )
         ) {
+            val viewModel: FilterEditViewModel = viewModel(
+                factory = FilterEditViewModel.Companion.Factory(
+                    application = LocalContext.current.applicationContext as Application,
+                    savedStateHandle = SavedStateHandle()
+                )
+            )
             FilterEditScreen(
                 navController = navController,
-                viewModel(
-                    factory = FilterEditViewModel.Companion.Factory(
-                        application = LocalContext.current.applicationContext as Application,
-                        savedStateHandle = navController.currentBackStackEntry?.savedStateHandle ?: SavedStateHandle()
-                    )
-                )
+                viewModel = viewModel
             )
         }
         composable(AppRoute.FilterList.route) {
-            FilterListScreen(navController = navController)
+            val viewModel: FilterListViewModel = viewModel(
+                factory = FilterListViewModel.Companion.Factory(LocalContext.current.applicationContext as Application))
+            FilterListScreen(navController = navController, viewModel = viewModel)
         }
     }
 }

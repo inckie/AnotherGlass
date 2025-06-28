@@ -8,9 +8,9 @@ import androidx.navigation.NavController
 import com.damn.anotherglass.extensions.notifications.filter.NotificationHistoryRepository
 import com.damn.anotherglass.shared.notifications.NotificationData
 import com.damn.anotherglass.ui.notifications.AppRoute
+import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 import com.damn.anotherglass.utility.AppDetails
 import com.damn.anotherglass.utility.AppDetailsProvider
-import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +23,7 @@ data class NotificationHistoryItem(
     val notification: NotificationData,
     val appDetails: AppDetails?
 )
+
 class NotificationHistoryViewModel(private val appDetailsProvider: AppDetailsProvider) : ViewModel() {
 
     private val _historyItems = MutableStateFlow<List<NotificationHistoryItem>>(emptyList())

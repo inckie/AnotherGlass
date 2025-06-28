@@ -37,25 +37,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.damn.anotherglass.R
 import com.damn.anotherglass.extensions.notifications.filter.ConditionType
 import com.damn.anotherglass.extensions.notifications.filter.FilterAction
 import com.damn.anotherglass.extensions.notifications.filter.FilterConditionItem
 import com.damn.anotherglass.ui.notifications.AppRoute
-import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 
 @OptIn(ExperimentalMaterial3Api::class) // For TopAppBar, etc.
 @Composable
 fun FilterEditScreen(
     navController: NavController?,
-    viewModel: FilterEditViewModel = viewModel(factory = FilterEditViewModel.Companion.Factory(
-        application = LocalContext.current.applicationContext as Application,
-        savedStateHandle = SavedStateHandle()
-    ))
+    viewModel: FilterEditViewModel
 ) {
     LocalContext.current
     val filterName by viewModel.filterName
@@ -252,8 +249,7 @@ fun FilterEditScreenPreview_NewFilter() {
     val app = Application()//LocalContext.current.applicationContext as Application
     val previewViewModel = FilterEditViewModel(
         application = app,
-        savedStateHandle = SavedStateHandle(),
-        appDetailsProvider = AndroidAppDetailsProvider(app)
+        savedStateHandle = SavedStateHandle()
     )
     // Simulate pre-fill from notification
     previewViewModel.conditions.add(
@@ -288,8 +284,7 @@ fun FilterEditScreenPreview_ExistingFilter() {
                     AppRoute.FilterEditScreen.FILTER_EDIT_ARG_FILTER_ID,
                     "some-existing-id"
                 ) // Simulate loading existing
-            },
-            appDetailsProvider = AndroidAppDetailsProvider(app)
+            }
         )
     // Manually set some state as if loaded
     previewViewModel.filterId.value = "some-existing-id"
@@ -314,9 +309,9 @@ fun FilterEditScreenPreview_ExistingFilter() {
     }
 }
 
-// Helper extension function for display names (optional, but good for UI)
+@Composable
 fun FilterAction.toDisplayString(): String = when (this) {
-    FilterAction.BLOCK -> "Block Notification"
-    FilterAction.ALLOW_WITH_NOTIFICATION -> "Allow & Notify Me"
-    FilterAction.ALLOW_SILENTLY -> "Allow Silently"
+    FilterAction.BLOCK -> stringResource(R.string.filter_action_block)
+    FilterAction.ALLOW_WITH_NOTIFICATION -> stringResource(R.string.filter_action_allow_with_notification)
+    FilterAction.ALLOW_SILENTLY -> stringResource(R.string.filter_action_allow_silently)
 }

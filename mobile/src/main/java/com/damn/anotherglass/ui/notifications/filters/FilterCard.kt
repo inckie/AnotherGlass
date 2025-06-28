@@ -31,10 +31,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.damn.anotherglass.R
+import com.damn.anotherglass.extensions.notifications.filter.FilterAction
 import com.damn.anotherglass.ui.theme.AnotherGlassTheme
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
@@ -45,6 +48,7 @@ fun FilterCard(
     onDelete: () -> Unit,
     onToggleEnabled: () -> Unit
 ) {
+    // todo: move to parent non composable controller
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     Card(
@@ -81,7 +85,7 @@ fun FilterCard(
                     }
                     Spacer(modifier = Modifier.height(2.dp)) // Added spacer
                     Text( // Display the action
-                        text = filterItem.actionDisplay,
+                        text = filterItem.action.toDisplayStringList(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant // Slightly different color
                     )
@@ -148,6 +152,14 @@ fun FilterCard(
     }
 }
 
+@Composable
+fun FilterAction?.toDisplayStringList(): String = when (this) {
+    null -> "Not Set"
+    FilterAction.BLOCK -> stringResource(R.string.filter_action_block)
+    FilterAction.ALLOW_WITH_NOTIFICATION -> stringResource(R.string.filter_action_allow_with_notification)
+    FilterAction.ALLOW_SILENTLY -> stringResource(R.string.filter_action_allow_silently)
+}
+
 @Preview
 @Composable
 fun FilterCardPreview() {
@@ -157,7 +169,7 @@ fun FilterCardPreview() {
             "Block Gmail",
             true,
             "App: Gmail",
-            actionDisplay = "Block",
+            action = FilterAction.ALLOW_WITH_NOTIFICATION,
             appDetails = null
         )
     AnotherGlassTheme {
