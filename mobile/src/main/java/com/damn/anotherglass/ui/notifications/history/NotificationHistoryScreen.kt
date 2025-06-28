@@ -1,6 +1,7 @@
 package com.damn.anotherglass.ui.notifications.history
 
 import android.annotation.SuppressLint
+import android.app.Application
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.damn.anotherglass.shared.notifications.NotificationData
+import com.damn.anotherglass.utility.AppDetails
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,13 +62,14 @@ fun NotificationHistoryScreen(
             ) {
                 items(
                     historyItems,
-                    key = { it.id.toString() + it.postedTime }) { notification -> // Key needs to be unique enough
+                    key = { it.notification.id.toString() + it.notification.postedTime }) { item -> // Key needs to be unique enough
                     NotificationHistoryItemView(
-                        notification = notification,
-                        formattedTime = viewModel.formatTimestamp(notification.postedTime),
+                        notification = item.notification,
+                        appDetails = item.appDetails,
+                        formattedTime = viewModel.formatTimestamp(item.notification.postedTime),
                         onCreateFilter = {
                             // Pass the original notification ID (sbn.id)
-                            viewModel.onCreateFilterFromNotification(notification.id, navController)
+                            viewModel.onCreateFilterFromNotification(item.notification.id, navController)
                         }
                     )
                     Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -105,51 +108,36 @@ fun NotificationHistoryScreenPreview() {
 
     // Sample data for previewing
     val sampleNotifications = listOf(
-        createNotificationData(
-            NotificationData.Action.Posted,
-            1,
-            "com.app.chat",
-            System.currentTimeMillis() - 10000,
-            false,
-            "New Message from Alice",
-            "Hey, are you free for dinner tonight? Let me know what you think!",
-            "Alice: Hey there!"
+        NotificationHistoryItem(
+            createNotificationData(
+                NotificationData.Action.Posted,
+                1,
+                "com.app.chat",
+                System.currentTimeMillis() - 10000,
+                false,
+                "New Message from Alice",
+                "Hey, are you free for dinner tonight? Let me know what you think!",
+                "Alice: Hey there!"
+            ),
+            AppDetails("Chat App", null)
         ),
-        createNotificationData(
-            NotificationData.Action.Posted,
-            2,
-            "com.app.work",
-            System.currentTimeMillis() - 60000,
-            true,
-            "Project Update: Task Overdue",
-            "Task 'Finalize Report' is now overdue. Please update its status or complete it as soon as possible.",
-            "Work: Task Overdue"
-        ),
-        createNotificationData(
-            NotificationData.Action.Posted,
-            3,
-            "com.app.news",
-            System.currentTimeMillis() - 300000,
-            false,
-            "Breaking News: Local Festival Announced",
-            "The annual city festival will take place next weekend. Check out the schedule and events.",
-            "The annual city festival will take place next weekend."
-        ),
-        createNotificationData(
-            NotificationData.Action.Posted,
-            4,
-            "com.app.generic",
-            System.currentTimeMillis() - 500000,
-            false,
-            "Summary",
-            "Your weekly summary is ready.",
-            "Your weekly summary is ready."
+        NotificationHistoryItem(
+            createNotificationData(
+                NotificationData.Action.Posted,
+                2,
+                "com.app.work",
+                System.currentTimeMillis() - 60000,
+                true,
+                "Project Update: Task Overdue",
+                "Task 'Finalize Report' is now overdue. Please update its status or complete it as soon as possible.",
+                "Work: Task Overdue"
+            ),
+            AppDetails("Work App", null)
         )
     )
 
     // A Preview ViewModel or direct data for the preview
-    val previewViewModel =
-        NotificationHistoryViewModel() // In a real preview, you might mock its state
+    val previewViewModel = NotificationHistoryViewModel(Application()) // In a real preview, you might mock its state
     previewViewModel.setHistoryItems(sampleNotifications) // Directly set for preview
 
     MaterialTheme { // Replace with your app's theme

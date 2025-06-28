@@ -1,5 +1,6 @@
 package com.damn.anotherglass.ui.notifications.history
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,10 +28,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.damn.anotherglass.shared.notifications.NotificationData
+import com.damn.anotherglass.utility.AppDetails
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @Composable
 fun NotificationHistoryItemView(
     notification: NotificationData,
+    appDetails: AppDetails?,
     formattedTime: String,
     onCreateFilter: () -> Unit
 ) {
@@ -48,12 +52,24 @@ fun NotificationHistoryItemView(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = notification.packageName ?: "Unknown App",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f) // Allow package name to take space
-                )
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                    appDetails?.icon?.let {
+                        Image(
+                            painter = rememberDrawablePainter(drawable = it),
+                            contentDescription = "App Icon",
+                            modifier = Modifier
+                                .size(24.dp)
+                                .padding(end = 8.dp)
+                        )
+                    }
+                    Text(
+                        text = appDetails?.appName ?: notification.packageName ?: "Unknown App",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
                 Text(
                     text = formattedTime,
                     style = MaterialTheme.typography.labelSmall,
@@ -141,6 +157,7 @@ fun NotificationHistoryItemPreview() {
     MaterialTheme {
         NotificationHistoryItemView(
             notification = sampleNotification,
+            appDetails = AppDetails("Sample App", null),
             formattedTime = "Jan 01, 12:00:00",
             onCreateFilter = {}
         )

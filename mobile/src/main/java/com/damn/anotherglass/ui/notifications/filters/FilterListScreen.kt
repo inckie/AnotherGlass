@@ -129,14 +129,29 @@ fun FilterListScreenPreview_WithItems() {
     // default/empty state or you'd mock UserFilterRepository.getFiltersFlow.
     // For a more robust preview, you'd directly provide state to the Composable.
     val sampleFilters = listOf(
-        FilterListItemUI("1", "Block Social Media", true, "3 conditions, Matches All (AND)", actionDisplay = "Allow"),
-        FilterListItemUI("2", "Allow Work Emails", true, "2 conditions, Matches Any (OR)", actionDisplay = "Allow"),
+        FilterListItemUI(
+            "1",
+            "Block Social Media",
+            true,
+            "3 conditions, Matches All (AND)",
+            actionDisplay = "Allow",
+            appDetails = null
+        ),
+        FilterListItemUI(
+            "2",
+            "Allow Work Emails",
+            true,
+            "2 conditions, Matches Any (OR)",
+            actionDisplay = "Allow",
+            appDetails = null
+        ),
         FilterListItemUI(
             "3",
             "Silent Gaming Notifications",
             false,
             "1 condition, Matches All (AND)",
-            actionDisplay = "Block"
+            actionDisplay = "Block",
+            appDetails = null
         )
     )
 

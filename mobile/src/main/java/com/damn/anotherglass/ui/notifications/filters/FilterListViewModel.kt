@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.damn.anotherglass.extensions.notifications.filter.FilterAction
 import com.damn.anotherglass.extensions.notifications.filter.UserFilter
 import com.damn.anotherglass.extensions.notifications.filter.UserFilterRepository
+import com.damn.anotherglass.utility.AppDetails
+import com.damn.anotherglass.utility.getAppDetails
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -18,7 +20,8 @@ data class FilterListItemUI( // A UI-specific model for the list
     val name: String,
     val isEnabled: Boolean,
     val description: String,
-    val actionDisplay: String
+    val actionDisplay: String,
+    val appDetails: AppDetails?
 )
 
 class FilterListViewModel(application: Application) : AndroidViewModel(application) {
@@ -27,12 +30,14 @@ class FilterListViewModel(application: Application) : AndroidViewModel(applicati
         UserFilterRepository.getFiltersFlow(application)
             .map { userFilters ->
                 userFilters.map { filter ->
+                    val appDetails = filter.packageName?.let { getAppDetails(application, it) }
                     FilterListItemUI(
                         id = filter.id,
                         name = filter.name,
                         isEnabled = filter.isEnabled,
-                        description = formatFilterDescription(filter),
-                        actionDisplay = filter.action.toDisplayStringList() // New helper
+                        description = formatFilterDescription(filter, appDetails),
+                        actionDisplay = filter.action.toDisplayStringList(), // New helper
+                        appDetails = appDetails
                     )
                 }
             }
@@ -42,13 +47,11 @@ class FilterListViewModel(application: Application) : AndroidViewModel(applicati
                 initialValue = emptyList()
             )
 
-    private fun formatFilterDescription(filter: UserFilter): String {
+    private fun formatFilterDescription(filter: UserFilter, appDetails: AppDetails?): String {
         val parts = mutableListOf<String>()
 
-        filter.packageName?.let {
-            if (it.isNotEmpty()) {
-                parts.add("App: $it")
-            }
+        appDetails?.let {
+            parts.add("App: ${it.appName}")
         }
 
         val conditionCount = filter.conditions.size
@@ -56,7 +59,7 @@ class FilterListViewModel(application: Application) : AndroidViewModel(applicati
             val matchType = if (filter.matchAllConditions) "All" else "Any"
             val plural = if (conditionCount == 1) "condition" else "conditions"
             parts.add("$conditionCount $plural ($matchType)")
-        } else {
+        } else if (null == appDetails) {
             parts.add("No conditions")
         }
 

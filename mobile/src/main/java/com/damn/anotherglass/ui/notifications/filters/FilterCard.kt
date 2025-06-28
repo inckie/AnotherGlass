@@ -1,5 +1,6 @@
 package com.damn.anotherglass.ui.notifications.filters
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.damn.anotherglass.ui.theme.AnotherGlassTheme
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @Composable
 fun FilterCard(
@@ -54,18 +56,29 @@ fun FilterCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                filterItem.appDetails?.icon?.let {
+                    Image(
+                        painter = rememberDrawablePainter(drawable = it),
+                        contentDescription = "App Icon",
+                        modifier = Modifier
+                            .size(40.dp)
+                            .padding(end = 16.dp)
+                    )
+                }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = filterItem.name,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = filterItem.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontStyle = FontStyle.Italic
-                    )
+                    if(filterItem.description.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = filterItem.description,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontStyle = FontStyle.Italic
+                        )
+                    }
                     Spacer(modifier = Modifier.height(2.dp)) // Added spacer
                     Text( // Display the action
                         text = filterItem.actionDisplay,
@@ -143,8 +156,10 @@ fun FilterCardPreview() {
             "prev1",
             "Block Gmail",
             true,
-            "App: com.google.android.gm",
-            actionDisplay = "Block")
+            "App: Gmail",
+            actionDisplay = "Block",
+            appDetails = null
+        )
     AnotherGlassTheme {
         FilterCard(filterItem = sampleItem, onEdit = {}, onDelete = {}, onToggleEnabled = {})
     }
