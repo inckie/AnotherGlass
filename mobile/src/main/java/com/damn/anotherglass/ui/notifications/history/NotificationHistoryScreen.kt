@@ -2,22 +2,34 @@ package com.damn.anotherglass.ui.notifications.history
 
 import android.annotation.SuppressLint
 import android.app.Application
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.*
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.damn.anotherglass.shared.notifications.NotificationData
+import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 import com.damn.anotherglass.utility.AppDetails
 
 
@@ -25,7 +37,7 @@ import com.damn.anotherglass.utility.AppDetails
 @Composable
 fun NotificationHistoryScreen(
     navController: NavController?,
-    viewModel: NotificationHistoryViewModel = viewModel()
+    viewModel: NotificationHistoryViewModel = viewModel(factory = NotificationHistoryViewModel.Companion.Factory(LocalContext.current.applicationContext as Application))
 ) {
     val historyItems by viewModel.historyItems.collectAsState()
 
@@ -137,7 +149,7 @@ fun NotificationHistoryScreenPreview() {
     )
 
     // A Preview ViewModel or direct data for the preview
-    val previewViewModel = NotificationHistoryViewModel(Application()) // In a real preview, you might mock its state
+    val previewViewModel = NotificationHistoryViewModel(AndroidAppDetailsProvider(LocalContext.current)) // In a real preview, you might mock its state
     previewViewModel.setHistoryItems(sampleNotifications) // Directly set for preview
 
     MaterialTheme { // Replace with your app's theme

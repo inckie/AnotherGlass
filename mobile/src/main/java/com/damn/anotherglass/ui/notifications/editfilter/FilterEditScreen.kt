@@ -46,6 +46,7 @@ import com.damn.anotherglass.extensions.notifications.filter.ConditionType
 import com.damn.anotherglass.extensions.notifications.filter.FilterAction
 import com.damn.anotherglass.extensions.notifications.filter.FilterConditionItem
 import com.damn.anotherglass.ui.notifications.AppRoute
+import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 
 @OptIn(ExperimentalMaterial3Api::class) // For TopAppBar, etc.
 @Composable
@@ -248,7 +249,9 @@ fun FilterEditScreenPreview_NewFilter() {
     val app = Application()//LocalContext.current.applicationContext as Application
     val previewViewModel = FilterEditViewModel(
         application = app,
-        savedStateHandle = SavedStateHandle())
+        savedStateHandle = SavedStateHandle(),
+        appDetailsProvider = AndroidAppDetailsProvider(app)
+    )
     // Simulate pre-fill from notification
     previewViewModel.conditions.add(
         FilterConditionItem(
@@ -275,12 +278,16 @@ fun FilterEditScreenPreview_NewFilter() {
 fun FilterEditScreenPreview_ExistingFilter() {
     val app = Application()
     val previewViewModel =
-        FilterEditViewModel(application = app, savedStateHandle = SavedStateHandle().apply {
-            set(
-                AppRoute.FilterEditScreen.FILTER_EDIT_ARG_FILTER_ID,
-                "some-existing-id"
-            ) // Simulate loading existing
-        })
+        FilterEditViewModel(
+            application = app,
+            savedStateHandle = SavedStateHandle().apply {
+                set(
+                    AppRoute.FilterEditScreen.FILTER_EDIT_ARG_FILTER_ID,
+                    "some-existing-id"
+                ) // Simulate loading existing
+            },
+            appDetailsProvider = AndroidAppDetailsProvider(app)
+        )
     // Manually set some state as if loaded
     previewViewModel.filterId.value = "some-existing-id"
     previewViewModel.filterName.value = "My Old Important Filter"

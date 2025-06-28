@@ -3,11 +3,13 @@ package com.damn.anotherglass.ui.notifications.filters
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.ViewModelProvider
 import com.damn.anotherglass.extensions.notifications.filter.FilterAction
 import com.damn.anotherglass.extensions.notifications.filter.UserFilter
 import com.damn.anotherglass.extensions.notifications.filter.UserFilterRepository
 import com.damn.anotherglass.utility.AppDetails
-import com.damn.anotherglass.utility.getAppDetails
+import com.damn.anotherglass.utility.AppDetailsProvider
+import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -24,13 +26,15 @@ data class FilterListItemUI( // A UI-specific model for the list
     val appDetails: AppDetails?
 )
 
-class FilterListViewModel(application: Application) : AndroidViewModel(application) {
+class FilterListViewModel(
+    application: Application,
+    private val appDetailsProvider: AppDetailsProvider) : AndroidViewModel(application) {
 
     val filters: StateFlow<List<FilterListItemUI>> =
         UserFilterRepository.getFiltersFlow(application)
             .map { userFilters ->
                 userFilters.map { filter ->
-                    val appDetails = filter.packageName?.let { getAppDetails(application, it) }
+                    val appDetails = filter.packageName?.let { appDetailsProvider.getAppDetails(it) }
                     FilterListItemUI(
                         id = filter.id,
                         name = filter.name,
@@ -79,6 +83,18 @@ class FilterListViewModel(application: Application) : AndroidViewModel(applicati
             filtersList?.find { it.id == filterId }?.let { filterToUpdate ->
                 val updatedFilter = filterToUpdate.copy(isEnabled = !currentEnabledState)
                 UserFilterRepository.updateFilter(getApplication(), updatedFilter)
+            }
+        }
+    }
+
+    companion object {
+        class Factory(private val application: Application) : ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                if (modelClass.isAssignableFrom(FilterListViewModel::class.java)) {
+                    @Suppress("UNCHECKED_CAST")
+                    return FilterListViewModel(application, AndroidAppDetailsProvider(application)) as T
+                }
+                throw IllegalArgumentException("Unknown ViewModel class")
             }
         }
     }

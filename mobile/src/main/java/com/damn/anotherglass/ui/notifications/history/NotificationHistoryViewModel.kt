@@ -1,15 +1,16 @@
 package com.damn.anotherglass.ui.notifications.history
 
 import android.app.Application
-import android.content.Context
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.damn.anotherglass.extensions.notifications.filter.NotificationHistoryRepository
 import com.damn.anotherglass.shared.notifications.NotificationData
 import com.damn.anotherglass.ui.notifications.AppRoute
 import com.damn.anotherglass.utility.AppDetails
-import com.damn.anotherglass.utility.getAppDetails
+import com.damn.anotherglass.utility.AppDetailsProvider
+import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,7 +23,7 @@ data class NotificationHistoryItem(
     val notification: NotificationData,
     val appDetails: AppDetails?
 )
-class NotificationHistoryViewModel(private val context: Context) : ViewModel() {
+class NotificationHistoryViewModel(private val appDetailsProvider: AppDetailsProvider) : ViewModel() {
 
     private val _historyItems = MutableStateFlow<List<NotificationHistoryItem>>(emptyList())
 
@@ -44,7 +45,7 @@ class NotificationHistoryViewModel(private val context: Context) : ViewModel() {
                 .filter { it.action == NotificationData.Action.Posted }
                 .sortedByDescending { it.postedTime } // Show newest first
                 .map { notification ->
-                    val appDetails = notification.packageName?.let { getAppDetails(context, it) }
+                    val appDetails = notification.packageName?.let { appDetailsProvider.getAppDetails(it) }
                     NotificationHistoryItem(notification, appDetails)
                 }
         }
@@ -63,6 +64,18 @@ class NotificationHistoryViewModel(private val context: Context) : ViewModel() {
                 isOngoing = it.isOngoing
             )
             navController?.navigate(route)
+        }
+    }
+
+    companion object {
+        class Factory(private val application: Application) : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                if (modelClass.isAssignableFrom(NotificationHistoryViewModel::class.java)) {
+                    @Suppress("UNCHECKED_CAST")
+                    return NotificationHistoryViewModel(AndroidAppDetailsProvider(application)) as T
+                }
+                throw IllegalArgumentException("Unknown ViewModel class")
+            }
         }
     }
 }

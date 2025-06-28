@@ -1,6 +1,7 @@
 package com.damn.anotherglass.ui.notifications.filters
 
 import android.annotation.SuppressLint
+import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,7 +40,7 @@ import com.damn.anotherglass.ui.theme.AnotherGlassTheme
 @Composable
 fun FilterListScreen(
     navController: NavController?,
-    viewModel: FilterListViewModel = viewModel()
+    viewModel: FilterListViewModel = viewModel(factory = FilterListViewModel.Companion.Factory(LocalContext.current.applicationContext as Application))
 ) {
     val filters by viewModel.filters.collectAsState()
 
