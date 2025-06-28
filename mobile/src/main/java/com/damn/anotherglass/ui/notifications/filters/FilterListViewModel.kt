@@ -103,7 +103,6 @@ class FilterListViewModel(
 fun FilterAction?.toDisplayStringList(): String = when (this) {
     null -> "Action: Not Set"
     FilterAction.BLOCK -> "Action: Block"
-    FilterAction.ALLOW -> "Action: Allow"
     FilterAction.ALLOW_WITH_NOTIFICATION -> "Action: Allow & Notify"
     FilterAction.ALLOW_SILENTLY -> "Action: Allow Silently"
 }

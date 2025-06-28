@@ -317,7 +317,6 @@ fun FilterEditScreenPreview_ExistingFilter() {
 // Helper extension function for display names (optional, but good for UI)
 fun FilterAction.toDisplayString(): String = when (this) {
     FilterAction.BLOCK -> "Block Notification"
-    FilterAction.ALLOW -> "Allow Notification"
     FilterAction.ALLOW_WITH_NOTIFICATION -> "Allow & Notify Me"
     FilterAction.ALLOW_SILENTLY -> "Allow Silently"
 }
