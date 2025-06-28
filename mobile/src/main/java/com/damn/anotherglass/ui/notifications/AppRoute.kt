@@ -32,12 +32,12 @@ sealed class AppRoute(val route: String) {
 
         // Construct route with optional and required arguments
         val routeTemplate: String = "${super.route}?" +
-                    "${FILTER_EDIT_ARG_TITLE}={${FILTER_EDIT_ARG_TITLE}}&" +
-                    "${FILTER_EDIT_ARG_TEXT}={${FILTER_EDIT_ARG_TEXT}}&" +
-                    "${FILTER_EDIT_ARG_PACKAGE_NAME}={${FILTER_EDIT_ARG_PACKAGE_NAME}}&" +
-                    "${FILTER_EDIT_ARG_TICKER_TEXT}={${FILTER_EDIT_ARG_TICKER_TEXT}}&" +
-                    "${FILTER_EDIT_ARG_IS_ONGOING}={${FILTER_EDIT_ARG_IS_ONGOING}}&" +
-                    "${FILTER_EDIT_ARG_FILTER_ID}={${FILTER_EDIT_ARG_FILTER_ID}}"
+                "${FILTER_EDIT_ARG_TITLE}={${FILTER_EDIT_ARG_TITLE}}&" +
+                "${FILTER_EDIT_ARG_TEXT}={${FILTER_EDIT_ARG_TEXT}}&" +
+                "${FILTER_EDIT_ARG_PACKAGE_NAME}={${FILTER_EDIT_ARG_PACKAGE_NAME}}&" +
+                "${FILTER_EDIT_ARG_TICKER_TEXT}={${FILTER_EDIT_ARG_TICKER_TEXT}}&" +
+                "${FILTER_EDIT_ARG_IS_ONGOING}={${FILTER_EDIT_ARG_IS_ONGOING}}&" +
+                "${FILTER_EDIT_ARG_FILTER_ID}={${FILTER_EDIT_ARG_FILTER_ID}}"
 
         // Helper to navigate to filter edit screen
         fun buildFilterEditRoute(
@@ -62,54 +62,54 @@ sealed class AppRoute(val route: String) {
             }
             return route.toString()
         }
+
+        val arguments = listOf(
+            navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_TITLE) {
+                type = NavType.StringType; nullable = true
+            },
+            navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_TEXT) {
+                type = NavType.StringType; nullable = true
+            },
+            navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_PACKAGE_NAME) {
+                type = NavType.StringType; nullable = true
+            },
+            navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_TICKER_TEXT) {
+                type = NavType.StringType; nullable = true
+            },
+            navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_IS_ONGOING) {
+                type = NavType.BoolType; defaultValue =
+                false // Provide a default if not passed
+            },
+            navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_FILTER_ID) {
+                type = NavType.StringType; nullable = true
+            }
+        )
     }
 }
 
 fun navGraph(builder: NavGraphBuilder, navController: NavHostController) {
     builder.apply {
         composable(AppRoute.NotificationHistory.route) {
-            val viewModel: NotificationHistoryViewModel = viewModel(factory = NotificationHistoryViewModel.Companion.Factory(LocalContext.current.applicationContext as Application))
-
-            NotificationHistoryScreen(navController = navController, viewModel)
+            val viewModel: NotificationHistoryViewModel = viewModel(
+                factory = NotificationHistoryViewModel.Companion.Factory(LocalContext.current.applicationContext as Application)
+            )
+            NotificationHistoryScreen(navController = navController, viewModel = viewModel)
         }
         composable(
             route = AppRoute.FilterEditScreen.routeTemplate,
-            arguments = listOf(
-                navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_TITLE) {
-                    type = NavType.StringType; nullable = true
-                },
-                navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_TEXT) {
-                    type = NavType.StringType; nullable = true
-                },
-                navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_PACKAGE_NAME) {
-                    type = NavType.StringType; nullable = true
-                },
-                navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_TICKER_TEXT) {
-                    type = NavType.StringType; nullable = true
-                },
-                navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_IS_ONGOING) {
-                    type = NavType.BoolType; defaultValue =
-                    false // Provide a default if not passed
-                },
-                navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_FILTER_ID) {
-                    type = NavType.StringType; nullable = true
-                }
-            )
+            arguments = AppRoute.FilterEditScreen.arguments
         ) {
             val viewModel: FilterEditViewModel = viewModel(
                 factory = FilterEditViewModel.Companion.Factory(
                     application = LocalContext.current.applicationContext as Application,
-                    savedStateHandle = SavedStateHandle()
-                )
+                    savedStateHandle = it.savedStateHandle)
             )
-            FilterEditScreen(
-                navController = navController,
-                viewModel = viewModel
-            )
+            FilterEditScreen(navController = navController, viewModel = viewModel)
         }
         composable(AppRoute.FilterList.route) {
             val viewModel: FilterListViewModel = viewModel(
-                factory = FilterListViewModel.Companion.Factory(LocalContext.current.applicationContext as Application))
+                factory = FilterListViewModel.Companion.Factory(LocalContext.current.applicationContext as Application)
+            )
             FilterListScreen(navController = navController, viewModel = viewModel)
         }
     }

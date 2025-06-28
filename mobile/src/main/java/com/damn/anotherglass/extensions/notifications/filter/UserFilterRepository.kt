@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.applicaster.xray.core.Logger
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -15,6 +16,8 @@ private val gson = Gson()
 
 object UserFilterRepository {
 
+    private val logger = Logger.get("UserFilterRepository")
+
     suspend fun saveFilters(context: Context, filters: List<NotificationFilter>) {
         val jsonString = gson.toJson(Filters(filters))
         context.filterDataStore.edit { preferences ->
@@ -25,7 +28,15 @@ object UserFilterRepository {
     fun getFiltersFlow(context: Context): Flow<List<NotificationFilter>> {
         return context.filterDataStore.data.map { preferences ->
             preferences[FILTERS_KEY]
-                ?.let { gson.fromJson(it, Filters::class.java) }
+                ?.let {
+                    try {
+                        gson.fromJson(it, Filters::class.java)
+                    } catch (e: Exception) {
+                        context.filterDataStore.edit { it.clear() }
+                        logger.e("UserFilterRepository").exception(e).message("Error parsing filters, data will be dropped")
+                        return@let null
+                    }
+                }
                 ?.filters
                 ?: emptyList()
         }
