@@ -41,7 +41,7 @@ class FilterListViewModel(
                         isEnabled = filter.isEnabled,
                         description = formatFilterDescription(filter, appDetails),
                         actionDisplay = filter.action.toDisplayStringList(), // New helper
-                        appDetails = appDetails
+                        appDetails = appDetails,
                     )
                 }
             }
@@ -100,7 +100,8 @@ class FilterListViewModel(
     }
 }
 
-fun FilterAction.toDisplayStringList(): String = when (this) {
+fun FilterAction?.toDisplayStringList(): String = when (this) {
+    null -> "Action: Not Set"
     FilterAction.BLOCK -> "Action: Block"
     FilterAction.ALLOW -> "Action: Allow"
     FilterAction.ALLOW_WITH_NOTIFICATION -> "Action: Allow & Notify"

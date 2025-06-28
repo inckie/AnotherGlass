@@ -81,7 +81,9 @@ fun NotificationHistoryScreen(
                         formattedTime = viewModel.formatTimestamp(item.notification.postedTime),
                         onCreateFilter = {
                             // Pass the original notification ID (sbn.id)
-                            viewModel.onCreateFilterFromNotification(item.notification.id, navController)
+                            viewModel.onCreateFilterFromNotification(
+                                item.notification.id,
+                                navController)
                         }
                     )
                     Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

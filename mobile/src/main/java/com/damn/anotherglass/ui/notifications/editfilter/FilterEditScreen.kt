@@ -52,7 +52,10 @@ import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 @Composable
 fun FilterEditScreen(
     navController: NavController?,
-    viewModel: FilterEditViewModel = viewModel() // Hilt/manual injection might pass SavedStateHandle implicitly
+    viewModel: FilterEditViewModel = viewModel(factory = FilterEditViewModel.Companion.Factory(
+        application = LocalContext.current.applicationContext as Application,
+        savedStateHandle = SavedStateHandle()
+    ))
 ) {
     LocalContext.current
     val filterName by viewModel.filterName

@@ -1,11 +1,16 @@
 package com.damn.anotherglass.ui.notifications
 
+import android.app.Application
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.damn.anotherglass.ui.notifications.editfilter.FilterEditScreen
+import com.damn.anotherglass.ui.notifications.editfilter.FilterEditViewModel
 import com.damn.anotherglass.ui.notifications.filters.FilterListScreen
 import com.damn.anotherglass.ui.notifications.history.NotificationHistoryScreen
 
@@ -87,7 +92,15 @@ fun navGraph(builder: NavGraphBuilder, navController: NavHostController) {
                 }
             )
         ) {
-            FilterEditScreen(navController = navController)
+            FilterEditScreen(
+                navController = navController,
+                viewModel(
+                    factory = FilterEditViewModel.Companion.Factory(
+                        application = LocalContext.current.applicationContext as Application,
+                        savedStateHandle = navController.currentBackStackEntry?.savedStateHandle ?: SavedStateHandle()
+                    )
+                )
+            )
         }
         composable(AppRoute.FilterList.route) {
             FilterListScreen(navController = navController)
