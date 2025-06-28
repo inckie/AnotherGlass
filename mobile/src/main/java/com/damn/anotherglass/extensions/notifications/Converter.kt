@@ -13,6 +13,7 @@ import com.damn.anotherglass.logging.ALog
 import com.damn.anotherglass.shared.notifications.NotificationData
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import androidx.core.graphics.createBitmap
 
 object Converter {
     private const val TAG = "IconConverter"
@@ -95,13 +96,9 @@ object Converter {
         }
         val bitmap: Bitmap = if (drawable.intrinsicWidth <= 0 || drawable.intrinsicHeight <= 0) {
             // Single color bitmap will be created of 1x1 pixel
-            Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+            createBitmap(1, 1)
         } else {
-            Bitmap.createBitmap(
-                drawable.intrinsicWidth,
-                drawable.intrinsicHeight,
-                Bitmap.Config.ARGB_8888
-            )
+            createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
         }
         val canvas = Canvas(bitmap)
         drawable.setBounds(0, 0, canvas.width, canvas.height)

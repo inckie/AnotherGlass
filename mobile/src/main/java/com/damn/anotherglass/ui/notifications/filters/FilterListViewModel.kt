@@ -1,0 +1,89 @@
+package com.damn.anotherglass.ui.notifications.filters
+
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.damn.anotherglass.extensions.notifications.filter.FilterAction
+import com.damn.anotherglass.extensions.notifications.filter.UserFilter
+import com.damn.anotherglass.extensions.notifications.filter.UserFilterRepository
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+
+data class FilterListItemUI( // A UI-specific model for the list
+    val id: String,
+    val name: String,
+    val isEnabled: Boolean,
+    val description: String,
+    val actionDisplay: String
+)
+
+class FilterListViewModel(application: Application) : AndroidViewModel(application) {
+
+    val filters: StateFlow<List<FilterListItemUI>> =
+        UserFilterRepository.getFiltersFlow(application)
+            .map { userFilters ->
+                userFilters.map { filter ->
+                    FilterListItemUI(
+                        id = filter.id,
+                        name = filter.name,
+                        isEnabled = filter.isEnabled,
+                        description = formatFilterDescription(filter),
+                        actionDisplay = filter.action.toDisplayStringList() // New helper
+                    )
+                }
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
+
+    private fun formatFilterDescription(filter: UserFilter): String {
+        val parts = mutableListOf<String>()
+
+        filter.packageName?.let {
+            if (it.isNotEmpty()) {
+                parts.add("App: $it")
+            }
+        }
+
+        val conditionCount = filter.conditions.size
+        if (conditionCount > 0) {
+            val matchType = if (filter.matchAllConditions) "All" else "Any"
+            val plural = if (conditionCount == 1) "condition" else "conditions"
+            parts.add("$conditionCount $plural ($matchType)")
+        } else {
+            parts.add("No conditions")
+        }
+
+        return parts.joinToString(", ")
+    }
+
+    fun deleteFilter(filterId: String) {
+        viewModelScope.launch {
+            UserFilterRepository.deleteFilter(getApplication(), filterId)
+        }
+    }
+
+    // Toggle enabled state directly without going to edit screen (optional feature)
+    fun toggleFilterEnabled(filterId: String, currentEnabledState: Boolean) {
+        viewModelScope.launch {
+            val filtersList = UserFilterRepository.getFiltersFlow(getApplication()).firstOrNull()
+            filtersList?.find { it.id == filterId }?.let { filterToUpdate ->
+                val updatedFilter = filterToUpdate.copy(isEnabled = !currentEnabledState)
+                UserFilterRepository.updateFilter(getApplication(), updatedFilter)
+            }
+        }
+    }
+}
+
+fun FilterAction.toDisplayStringList(): String = when (this) {
+    FilterAction.BLOCK -> "Action: Block"
+    FilterAction.ALLOW -> "Action: Allow"
+    FilterAction.ALLOW_WITH_NOTIFICATION -> "Action: Allow & Notify"
+    FilterAction.ALLOW_SILENTLY -> "Action: Allow Silently"
+}

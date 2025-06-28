@@ -1,18 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
     <!-- Service -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <!-- WiFi host -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> <!-- WiFi host -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- Local IP barcode generation -->
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <!-- Bluetooth host -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- Local IP barcode generation -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> <!-- Bluetooth host -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <!-- GPS extension -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" /> <!-- GPS extension -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
@@ -35,7 +30,6 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
-
         <service
             android:name=".core.GlassService"
             android:enabled="true"
@@ -50,11 +44,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <activity
+            android:name=".ui.notifications.NotificationsConfigurationActivity"
+            android:exported="false"
+            android:label="@string/title_activity_notifications_history"
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".logging.LogActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-
     </application>
 
 </manifest>

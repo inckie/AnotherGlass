@@ -2,6 +2,7 @@ package com.damn.anotherglass.extensions.notifications
 
 import com.applicaster.xray.core.Logger
 import com.damn.anotherglass.core.GlassService
+import com.damn.anotherglass.extensions.notifications.filter.NotificationHistoryRepository
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.notifications.NotificationsAPI
 import org.greenrobot.eventbus.EventBus
@@ -16,6 +17,7 @@ class NotificationExtension(private val service: GlassService) {
     fun onMessageEvent(event: NotificationEvent) {
         val notificationData = Converter.convert(service, event.action, event.notification)
         service.send(RPCMessage(NotificationsAPI.ID, notificationData))
+        NotificationHistoryRepository.addNotification(notificationData)
         log.d(TAG).putData(mapOf(
                 "packageName" to notificationData.packageName,
                 "id" to notificationData.id,

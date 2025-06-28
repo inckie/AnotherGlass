@@ -16,4 +16,5 @@
     <string name="lbl_enable_notifications">Enable notifications mirroring</string>
     <string name="msg_no_gps_permission">Permission not granted, cannot start GPS</string>
     <string name="lbl_dbg_notifications">Debug Notification</string>
+    <string name="title_activity_notifications_history">Notifications History</string>
 </resources>
