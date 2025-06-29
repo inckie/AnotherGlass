@@ -42,6 +42,7 @@ import com.damn.anotherglass.logging.LogActivity
 import com.damn.anotherglass.ui.mainscreen.widgets.DropDownMenuItem
 import com.damn.anotherglass.ui.mainscreen.widgets.SwitchRow
 import com.damn.anotherglass.ui.mainscreen.widgets.TopAppBarDropdownMenu
+import com.damn.anotherglass.ui.notifications.NotificationsConfigurationActivity
 import com.damn.anotherglass.ui.theme.AnotherGlassTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,6 +74,9 @@ fun MainScreen(settings: SettingsController) {
                     TopAppBarDropdownMenu(listOf(
                         DropDownMenuItem("X-Ray") {
                             context.startActivity(Intent(context, LogActivity::class.java))
+                        },
+                        DropDownMenuItem("Notification filters") {
+                            context.startActivity(Intent(context, NotificationsConfigurationActivity::class.java))
                         }
                     ))
                 }

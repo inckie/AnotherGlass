@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">AnotherGlass</string>
     <string name="msg_send_failed">Send failed</string>
@@ -16,4 +17,13 @@
     <string name="lbl_enable_notifications">Enable notifications mirroring</string>
     <string name="msg_no_gps_permission">Permission not granted, cannot start GPS</string>
     <string name="lbl_dbg_notifications">Debug Notification</string>
+    <string name="title_activity_notifications_history">Notifications History</string>
+    <string name="filter_action_block">Block Notification</string>
+    <string name="filter_action_allow_with_notification">Allow &amp; Notify Me</string>
+    <string name="filter_action_allow_silently">Allow Silently</string>
+    <string name="btn_create_filter">Create Filter</string>
+    <string name="btn_edit">Edit</string>
+    <string name="btn_delete">Delete</string>
+    <string name="lbl_no_notification_history">No notification history available.</string>
+    <string name="title_notification_history">Notification History</string>
 </resources>
