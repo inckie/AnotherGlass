@@ -26,7 +26,7 @@ class NotificationExtension(private val service: GlassService) {
         val notificationData = Converter.convert(service, event.action, event.notification)
 
         CoroutineScope(Dispatchers.IO).launch {
-            val action = filterChecker.filter(notificationData) ?: return@launch
+            val action = filterChecker.filter(notificationData) ?: FilterAction.ALLOW_WITH_NOTIFICATION
             if (action == FilterAction.BLOCK) {
                 log.d(TAG)
                     .putData(logDetails(notificationData))
