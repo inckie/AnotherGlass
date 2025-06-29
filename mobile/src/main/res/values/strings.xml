@@ -21,4 +21,9 @@
     <string name="filter_action_block">Block Notification</string>
     <string name="filter_action_allow_with_notification">Allow &amp; Notify Me</string>
     <string name="filter_action_allow_silently">Allow Silently</string>
+    <string name="btn_create_filter">Create Filter</string>
+    <string name="btn_edit">Edit</string>
+    <string name="btn_delete">Delete</string>
+    <string name="lbl_no_notification_history">No notification history available.</string>
+    <string name="title_notification_history">Notification History</string>
 </resources>

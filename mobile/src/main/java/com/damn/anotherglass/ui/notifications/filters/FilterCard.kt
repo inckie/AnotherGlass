@@ -109,7 +109,7 @@ fun FilterCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Edit")
+                    Text(stringResource(R.string.btn_edit))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
@@ -122,7 +122,7 @@ fun FilterCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Delete")
+                    Text(stringResource(R.string.btn_delete))
                 }
             }
         }

@@ -23,9 +23,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.damn.anotherglass.R
 import com.damn.anotherglass.shared.notifications.NotificationData
 import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 import com.damn.anotherglass.utility.AppDetails
@@ -42,7 +44,7 @@ fun NotificationHistoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notification History (Last 100)") },
+                title = { Text(stringResource(R.string.title_notification_history)) },
                 actions = {
                     IconButton(onClick = { viewModel.loadHistory() }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Refresh History")
@@ -59,7 +61,7 @@ fun NotificationHistoryScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "No notification history available.",
+                    stringResource(R.string.lbl_no_notification_history),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
