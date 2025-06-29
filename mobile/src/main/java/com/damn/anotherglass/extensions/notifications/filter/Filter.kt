@@ -3,6 +3,9 @@ package com.damn.anotherglass.extensions.notifications.filter
 import com.google.gson.annotations.SerializedName
 import java.util.UUID
 
+// We probably could do better with much simpler fixed fields filter class,
+// since this one can create logical conflicts like having two opposite Ongoing conditions
+
 
 enum class ConditionType {
     @SerializedName("title_contains")

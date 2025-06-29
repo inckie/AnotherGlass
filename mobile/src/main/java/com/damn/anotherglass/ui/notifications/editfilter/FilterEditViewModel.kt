@@ -20,6 +20,12 @@ import java.util.UUID
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
+// wrapper to have stable ID for each condition item to preserve focus
+data class FilterConditionVM(
+    val id: String,
+    val condition: FilterConditionItem,
+)
+
 class FilterEditViewModel(
     private val savedStateHandle: SavedStateHandle,
     private val filterRepository: IFilterRepository
@@ -31,9 +37,8 @@ class FilterEditViewModel(
     val packageName = mutableStateOf("")
     val isFilterEnabled = mutableStateOf(true)
     val matchAllConditions = mutableStateOf(true) // true for AND, false for OR
-    val conditions = mutableStateListOf<FilterConditionItem>()
-    val filterAction =
-        mutableStateOf(FilterAction.BLOCK) // Add state for the action, default to BLOCK
+    val conditions = mutableStateListOf<FilterConditionVM>()
+    val filterAction = mutableStateOf(FilterAction.BLOCK) // Add state for the action, default to BLOCK
 
     val availableConditionTypes: List<ConditionType> = ConditionType.entries
     val availableFilterActions: List<FilterAction> = FilterAction.entries
@@ -64,12 +69,13 @@ class FilterEditViewModel(
                         ?.urlDecode()
                         ?.let { value ->
                             if (value.isNotBlank()) {
-                                conditions.add(
+                                conditions.add(FilterConditionVM(
+                                    id = UUID.randomUUID().toString(),
                                     FilterConditionItem(
                                         type = conditionType,
                                         value = value
                                     )
-                                )
+                                ))
                             }
                         }
                 }
@@ -79,10 +85,12 @@ class FilterEditViewModel(
                         savedStateHandle[AppRoute.FilterEditScreen.FILTER_EDIT_ARG_IS_ONGOING]
                             ?: false
                     conditions.add(
+                        FilterConditionVM(
+                            id = UUID.randomUUID().toString(),
                         FilterConditionItem(
                             type = ConditionType.IS_ONGOING_EQUALS,
                             value = isOngoingFromNav.toString()
-                        )
+                        ))
                     )
                 }
 
@@ -106,31 +114,42 @@ class FilterEditViewModel(
                 isFilterEnabled.value = loadedFilter.isEnabled
                 matchAllConditions.value = loadedFilter.matchAllConditions
                 conditions.clear()
-                conditions.addAll(loadedFilter.conditions)
+                conditions.addAll(loadedFilter.conditions.mapIndexed {
+                    index, condition ->
+                    FilterConditionVM(
+                        id = UUID.randomUUID().toString(),
+                        condition = condition
+                    )
+                })
                 filterAction.value = loadedFilter.action // Load the action
             }
     }
 
     fun addCondition() {
-        conditions.add(FilterConditionItem(type = ConditionType.TITLE_CONTAINS, value = ""))
+        conditions.add(
+            FilterConditionVM(
+                id = UUID.randomUUID().toString(),
+                FilterConditionItem(type = ConditionType.TITLE_CONTAINS, value = "")
+            )
+        )
     }
 
-    fun removeCondition(item: FilterConditionItem) {
+    fun removeCondition(item: FilterConditionVM) {
         conditions.remove(item)
     }
 
     fun updateConditionType(index: Int, newType: ConditionType) {
         if (index in conditions.indices) {
-            val currentItem = conditions[index]
+            val item = conditions[index]
             when {
                 // If changing from IS_ONGOING_EQUALS, reset value to empty string
-                currentItem.type == ConditionType.IS_ONGOING_EQUALS && newType != ConditionType.IS_ONGOING_EQUALS ->
-                    conditions[index] = currentItem.copy(type = newType, value = "")
+                item.condition.type == ConditionType.IS_ONGOING_EQUALS && newType != ConditionType.IS_ONGOING_EQUALS ->
+                    conditions[index] = item.copy(condition = item.condition.copy(type = newType, value = ""))
                 // If changing to IS_ONGOING_EQUALS, reset value to false
-                currentItem.type != ConditionType.IS_ONGOING_EQUALS && newType == ConditionType.IS_ONGOING_EQUALS -> {
-                    conditions[index] = currentItem.copy(type = newType, value = "false")
+                item.condition.type != ConditionType.IS_ONGOING_EQUALS && newType == ConditionType.IS_ONGOING_EQUALS -> {
+                    conditions[index] = item.copy(condition = item.condition.copy(type = newType, value = "false"))
                 }
-                else -> conditions[index] = currentItem.copy(type = newType)
+                else -> conditions[index] = item.copy(condition = item.condition.copy(type = newType))
             }
         }
     }
@@ -138,7 +157,7 @@ class FilterEditViewModel(
     fun updateConditionValue(index: Int, newValue: String) {
         if (index in conditions.indices) {
             val currentItem = conditions[index]
-            conditions[index] = currentItem.copy(value = newValue)
+            conditions[index] = currentItem.copy(condition = currentItem.condition.copy(value = newValue))
         }
     }
 
@@ -151,7 +170,7 @@ class FilterEditViewModel(
                 isEnabled = isFilterEnabled.value,
                 matchAllConditions = matchAllConditions.value,
                 // todo: filter empty conditions
-                conditions = ArrayList(conditions),
+                conditions = conditions.map { it.condition },
                 action = filterAction.value
             )
 

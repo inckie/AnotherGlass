@@ -172,9 +172,11 @@ fun FilterEditScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Match:",
+                    Text(
+                        "Match:",
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1f))
+                        modifier = Modifier.weight(1f)
+                    )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
                             selected = matchAllConditions,
@@ -223,9 +225,9 @@ fun FilterEditScreen(
             } else {
                 itemsIndexed(
                     viewModel.conditions,
-                    key = { _, item -> item.hashCode() /* Assuming FilterConditionItem has a unique ID */ }) { index, conditionItem ->
+                    key = { _, item -> item.id }) { index, conditionItem ->
                     ConditionEditItemView(
-                        conditionItem = conditionItem,
+                        conditionItem = conditionItem.condition,
                         availableTypes = viewModel.availableConditionTypes,
                         onTypeChange = { newType -> viewModel.updateConditionType(index, newType) },
                         onValueChange = { newValue ->
@@ -255,15 +257,22 @@ fun FilterEditScreenPreview_NewFilter() {
     )
     // Simulate pre-fill from notification
     previewViewModel.conditions.add(
-        FilterConditionItem(
-            type = ConditionType.TITLE_CONTAINS,
-            value = "Important News"
+        FilterConditionVM(
+            id = previewViewModel.conditions.size.toString(),
+            FilterConditionItem(
+                type = ConditionType.TITLE_CONTAINS,
+                value = "Important News"
+            )
         )
+
     )
     previewViewModel.conditions.add(
-        FilterConditionItem(
-            type = ConditionType.TEXT_CONTAINS,
-            value = "Order Confirmation"
+        FilterConditionVM(
+            id = previewViewModel.conditions.size.toString(),
+            FilterConditionItem(
+                type = ConditionType.TEXT_CONTAINS,
+                value = "Order Confirmation"
+            )
         )
     )
     previewViewModel.filterName.value = "Filter from News"
@@ -294,15 +303,21 @@ fun FilterEditScreenPreview_ExistingFilter() {
     previewViewModel.isFilterEnabled.value = false
     previewViewModel.matchAllConditions.value = false // OR
     previewViewModel.conditions.add(
-        FilterConditionItem(
-            type = ConditionType.TEXT_CONTAINS,
-            value = "urgent"
+        FilterConditionVM(
+            id = previewViewModel.conditions.size.toString(),
+            FilterConditionItem(
+                type = ConditionType.TEXT_CONTAINS,
+                value = "urgent"
+            )
         )
     )
     previewViewModel.conditions.add(
-        FilterConditionItem(
-            type = ConditionType.IS_ONGOING_EQUALS,
-            value = "true"
+        FilterConditionVM(
+            id = previewViewModel.conditions.size.toString(),
+            FilterConditionItem(
+                type = ConditionType.IS_ONGOING_EQUALS,
+                value = "true"
+            )
         )
     )
 
