@@ -1,8 +1,6 @@
 package com.damn.anotherglass.ui.notifications
 
-import android.app.Application
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -20,7 +18,7 @@ sealed class AppRoute(val route: String) {
     data object FilterList : AppRoute("filter_list")
     data object NotificationHistory : AppRoute("notification_history")
     data object FilterEditScreen : AppRoute("filter_edit_screen") {
-        // For FilterEditScreen, define arguments
+
         const val FILTER_EDIT_ARG_TITLE = "title"
         const val FILTER_EDIT_ARG_TEXT = "text"
         const val FILTER_EDIT_ARG_PACKAGE_NAME = "packageName"
@@ -48,7 +46,6 @@ sealed class AppRoute(val route: String) {
             isOngoing: Boolean? = null,
             filterId: String? = null
         ): String {
-            val route = StringBuilder(route)
             val params = mutableListOf<String>()
             title?.let { params.add("$FILTER_EDIT_ARG_TITLE=${it.urlEncode()}") }
             text?.let { params.add("$FILTER_EDIT_ARG_TEXT=${it.urlEncode()}") }
@@ -56,31 +53,30 @@ sealed class AppRoute(val route: String) {
             tickerText?.let { params.add("$FILTER_EDIT_ARG_TICKER_TEXT=${it.urlEncode()}") }
             isOngoing?.let { params.add("$FILTER_EDIT_ARG_IS_ONGOING=$it") }
             filterId?.let { params.add("$FILTER_EDIT_ARG_FILTER_ID=${it.urlEncode()}") }
-
-            if (params.isNotEmpty()) {
-                route.append("?").append(params.joinToString("&"))
+            return when {
+                params.isEmpty() -> route
+                else -> route + "?" + params.joinToString("&")
             }
-            return route.toString()
         }
 
         val arguments = listOf(
-            navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_TITLE) {
+            navArgument(FILTER_EDIT_ARG_TITLE) {
                 type = NavType.StringType; nullable = true
             },
-            navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_TEXT) {
+            navArgument(FILTER_EDIT_ARG_TEXT) {
                 type = NavType.StringType; nullable = true
             },
-            navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_PACKAGE_NAME) {
+            navArgument(FILTER_EDIT_ARG_PACKAGE_NAME) {
                 type = NavType.StringType; nullable = true
             },
-            navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_TICKER_TEXT) {
+            navArgument(FILTER_EDIT_ARG_TICKER_TEXT) {
                 type = NavType.StringType; nullable = true
             },
-            navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_IS_ONGOING) {
+            navArgument(FILTER_EDIT_ARG_IS_ONGOING) {
                 type = NavType.BoolType; defaultValue =
                 false // Provide a default if not passed
             },
-            navArgument(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_FILTER_ID) {
+            navArgument(FILTER_EDIT_ARG_FILTER_ID) {
                 type = NavType.StringType; nullable = true
             }
         )
@@ -91,7 +87,7 @@ fun navGraph(builder: NavGraphBuilder, navController: NavHostController) {
     builder.apply {
         composable(AppRoute.NotificationHistory.route) {
             val viewModel: NotificationHistoryViewModel = viewModel(
-                factory = NotificationHistoryViewModel.Companion.Factory(LocalContext.current.applicationContext as Application)
+                factory = NotificationHistoryViewModel.Companion.Factory(LocalContext.current)
             )
             NotificationHistoryScreen(navController = navController, viewModel = viewModel)
         }
@@ -101,14 +97,14 @@ fun navGraph(builder: NavGraphBuilder, navController: NavHostController) {
         ) {
             val viewModel: FilterEditViewModel = viewModel(
                 factory = FilterEditViewModel.Companion.Factory(
-                    application = LocalContext.current.applicationContext as Application,
+                    context = LocalContext.current,
                     savedStateHandle = it.savedStateHandle)
             )
             FilterEditScreen(navController = navController, viewModel = viewModel)
         }
         composable(AppRoute.FilterList.route) {
             val viewModel: FilterListViewModel = viewModel(
-                factory = FilterListViewModel.Companion.Factory(LocalContext.current.applicationContext as Application)
+                factory = FilterListViewModel.Companion.Factory(LocalContext.current)
             )
             FilterListScreen(navController = navController, viewModel = viewModel)
         }

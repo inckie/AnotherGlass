@@ -46,6 +46,8 @@ import com.damn.anotherglass.R
 import com.damn.anotherglass.extensions.notifications.filter.ConditionType
 import com.damn.anotherglass.extensions.notifications.filter.FilterAction
 import com.damn.anotherglass.extensions.notifications.filter.FilterConditionItem
+import com.damn.anotherglass.extensions.notifications.filter.IFilterRepository
+import com.damn.anotherglass.extensions.notifications.filter.from
 import com.damn.anotherglass.ui.notifications.AppRoute
 
 @OptIn(ExperimentalMaterial3Api::class) // For TopAppBar, etc.
@@ -248,8 +250,8 @@ fun FilterEditScreenPreview_NewFilter() {
     // In a real preview with ViewModel, you'd use a Hilt preview ViewModel or mock SavedStateHandle
     val app = Application()//LocalContext.current.applicationContext as Application
     val previewViewModel = FilterEditViewModel(
-        application = app,
-        savedStateHandle = SavedStateHandle()
+        savedStateHandle = SavedStateHandle(),
+        filterRepository = IFilterRepository.Companion.from(app)
     )
     // Simulate pre-fill from notification
     previewViewModel.conditions.add(
@@ -278,13 +280,13 @@ fun FilterEditScreenPreview_ExistingFilter() {
     val app = Application()
     val previewViewModel =
         FilterEditViewModel(
-            application = app,
             savedStateHandle = SavedStateHandle().apply {
                 set(
                     AppRoute.FilterEditScreen.FILTER_EDIT_ARG_FILTER_ID,
                     "some-existing-id"
                 ) // Simulate loading existing
-            }
+            },
+            filterRepository = IFilterRepository.Companion.from(app)
         )
     // Manually set some state as if loaded
     previewViewModel.filterId.value = "some-existing-id"

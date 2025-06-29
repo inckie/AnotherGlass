@@ -14,6 +14,34 @@ private val Context.filterDataStore by preferencesDataStore(name = "user_filters
 private val FILTERS_KEY = stringPreferencesKey("notification_filters_list")
 private val gson = Gson()
 
+interface IFilterRepository {
+    fun getFiltersFlow(): Flow<List<NotificationFilter>>
+    suspend fun saveFilters(filters: List<NotificationFilter>)
+    suspend fun addFilter(newFilter: NotificationFilter)
+    suspend fun updateFilter(updatedFilter: NotificationFilter)
+    suspend fun deleteFilter(filterId: String)
+
+    companion object
+}
+
+// some temporary glue
+fun IFilterRepository.Companion.from(context: Context): IFilterRepository = object : IFilterRepository {
+    override fun getFiltersFlow() =
+        UserFilterRepository.getFiltersFlow(context)
+
+    override suspend fun saveFilters(filters: List<NotificationFilter>) =
+        UserFilterRepository.saveFilters(context, filters)
+
+    override suspend fun addFilter(newFilter: NotificationFilter) =
+        UserFilterRepository.addFilter(context, newFilter)
+
+    override suspend fun updateFilter(updatedFilter: NotificationFilter) =
+        UserFilterRepository.updateFilter(context, updatedFilter)
+
+    override suspend fun deleteFilter(filterId: String) =
+        UserFilterRepository.deleteFilter(context, filterId)
+}
+
 object UserFilterRepository {
 
     private val logger = Logger.get("UserFilterRepository")

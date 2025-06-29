@@ -1,6 +1,6 @@
 package com.damn.anotherglass.ui.notifications.history
 
-import android.app.Application
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -24,7 +24,9 @@ data class NotificationHistoryItem(
     val appDetails: AppDetails?
 )
 
-class NotificationHistoryViewModel(private val appDetailsProvider: AppDetailsProvider) : ViewModel() {
+class NotificationHistoryViewModel(
+    private val appDetailsProvider: AppDetailsProvider
+) : ViewModel() {
 
     private val _historyItems = MutableStateFlow<List<NotificationHistoryItem>>(emptyList())
 
@@ -41,21 +43,23 @@ class NotificationHistoryViewModel(private val appDetailsProvider: AppDetailsPro
     }
 
     fun loadHistory() {
-        viewModelScope.launch { // Though getHistory is sync, keeping pattern for potential async
+        viewModelScope.launch {
             _historyItems.value = NotificationHistoryRepository.getHistory()
-                .filter { it.action == NotificationData.Action.Posted }
-                .sortedByDescending { it.postedTime } // Show newest first
+                .sortedByDescending { it.postedTime }
                 .map { notification ->
-                    val appDetails = notification.packageName?.let { appDetailsProvider.getAppDetails(it) }
+                    val appDetails = notification.packageName?.let {
+                        appDetailsProvider.getAppDetails(it)
+                    }
                     NotificationHistoryItem(notification, appDetails)
                 }
         }
     }
 
-    fun formatTimestamp(timestamp: Long) = timeFormat.format(Date(timestamp))
+    fun formatTimestamp(timestamp: Long): String = timeFormat.format(Date(timestamp))
 
     fun onCreateFilterFromNotification(notificationId: Int, navController: NavController?) {
-        val notification = _historyItems.value.find { it.notification.id == notificationId }?.notification
+        val notification =
+            _historyItems.value.find { it.notification.id == notificationId }?.notification
         notification?.let {
             val route = AppRoute.FilterEditScreen.buildFilterEditRoute(
                 title = it.title,
@@ -69,11 +73,11 @@ class NotificationHistoryViewModel(private val appDetailsProvider: AppDetailsPro
     }
 
     companion object {
-        class Factory(private val application: Application) : ViewModelProvider.Factory {
+        class Factory(private val context: Context) : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(NotificationHistoryViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
-                    return NotificationHistoryViewModel(AndroidAppDetailsProvider(application)) as T
+                    return NotificationHistoryViewModel(AndroidAppDetailsProvider(context)) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
             }

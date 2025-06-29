@@ -7,11 +7,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
-// todo: provide UserFilterRepository
+
 class NotificationFilterChecker(private val context: Context) {
-    // Cache enabled filters to avoid reading from DataStore on every notification
-    // This cache would need to be updated when filters change.
-    // For simplicity in this example, we'll read it, but for performance, caching is key.
+
     private var activeFilters: List<NotificationFilter> = emptyList()
 
     init {
@@ -42,7 +40,6 @@ class NotificationFilterChecker(private val context: Context) {
             matchesSingleFilter(notification, it)
         }?.action
     }
-
 
     private fun matchesSingleFilter(
         notification: NotificationData,

@@ -1,17 +1,18 @@
 package com.damn.anotherglass.ui.notifications.editfilter
 
-import android.app.Application
+import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.damn.anotherglass.extensions.notifications.filter.ConditionType
 import com.damn.anotherglass.extensions.notifications.filter.FilterAction
 import com.damn.anotherglass.extensions.notifications.filter.FilterConditionItem
+import com.damn.anotherglass.extensions.notifications.filter.IFilterRepository
 import com.damn.anotherglass.extensions.notifications.filter.NotificationFilter
-import com.damn.anotherglass.extensions.notifications.filter.UserFilterRepository
+import com.damn.anotherglass.extensions.notifications.filter.from
 import com.damn.anotherglass.ui.notifications.AppRoute
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -19,9 +20,9 @@ import java.net.URLDecoder
 import java.util.UUID
 
 class FilterEditViewModel(
-    application: Application,
-    private val savedStateHandle: SavedStateHandle
-) : AndroidViewModel(application) {
+    private val savedStateHandle: SavedStateHandle,
+    private val filterRepository: IFilterRepository
+) : ViewModel() {
 
     // --- State for the filter being edited ---
     val filterId = mutableStateOf<String?>(null)
@@ -30,7 +31,8 @@ class FilterEditViewModel(
     val isFilterEnabled = mutableStateOf(true)
     val matchAllConditions = mutableStateOf(true) // true for AND, false for OR
     val conditions = mutableStateListOf<FilterConditionItem>()
-    val filterAction = mutableStateOf(FilterAction.BLOCK) // Add state for the action, default to BLOCK
+    val filterAction =
+        mutableStateOf(FilterAction.BLOCK) // Add state for the action, default to BLOCK
 
     val availableConditionTypes: List<ConditionType> = ConditionType.entries
     val availableFilterActions: List<FilterAction> = FilterAction.entries
@@ -62,16 +64,20 @@ class FilterEditViewModel(
                         ?.urlDecodeFix()
                         ?.let { value ->
                             if (value.isNotBlank()) {
-                                conditions.add(FilterConditionItem(
+                                conditions.add(
+                                    FilterConditionItem(
                                         type = conditionType,
                                         value = value
-                                    ))
+                                    )
+                                )
                             }
                         }
                 }
 
                 if (savedStateHandle.contains(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_IS_ONGOING)) {
-                    val isOngoingFromNav: Boolean = savedStateHandle[AppRoute.FilterEditScreen.FILTER_EDIT_ARG_IS_ONGOING] ?: false
+                    val isOngoingFromNav: Boolean =
+                        savedStateHandle[AppRoute.FilterEditScreen.FILTER_EDIT_ARG_IS_ONGOING]
+                            ?: false
                     conditions.add(
                         FilterConditionItem(
                             type = ConditionType.IS_ONGOING_EQUALS,
@@ -91,7 +97,7 @@ class FilterEditViewModel(
     }
 
     private suspend fun loadFilter(id: String) {
-        UserFilterRepository.getFiltersFlow(getApplication())
+        filterRepository.getFiltersFlow()
             .firstOrNull()
             ?.find { it.id == id }
             ?.let { loadedFilter ->
@@ -141,9 +147,9 @@ class FilterEditViewModel(
             )
 
             if (isNewFilter) {
-                UserFilterRepository.addFilter(getApplication(), filterToSave)
+                filterRepository.addFilter(filterToSave)
             } else {
-                UserFilterRepository.updateFilter(getApplication(), filterToSave)
+                filterRepository.updateFilter(filterToSave)
             }
             onSaved()
         }
@@ -160,11 +166,17 @@ class FilterEditViewModel(
         private fun String?.urlDecodeFix(): String? =
             this?.let { URLDecoder.decode(it, "UTF-8").replace("+", " ") }
 
-        class Factory(private val application: Application, private val savedStateHandle: SavedStateHandle) : ViewModelProvider.Factory {
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+        class Factory(
+            private val context: Context,
+            private val savedStateHandle: SavedStateHandle
+        ) : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(FilterEditViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
-                    return FilterEditViewModel(application, savedStateHandle) as T
+                    return FilterEditViewModel(
+                        savedStateHandle,
+                        IFilterRepository.from(context)
+                    ) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
             }
