@@ -172,7 +172,9 @@ fun FilterEditScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Condition Matching:", style = MaterialTheme.typography.bodyLarge)
+                    Text("Match:",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.weight(1f))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
                             selected = matchAllConditions,
@@ -182,7 +184,6 @@ fun FilterEditScreen(
                             "All (AND)",
                             Modifier
                                 .clickable { viewModel.matchAllConditions.value = true }
-                                .padding(start = 4.dp, end = 8.dp)
                         )
                         RadioButton(
                             selected = !matchAllConditions,
@@ -192,7 +193,6 @@ fun FilterEditScreen(
                             "Any (OR)",
                             Modifier
                                 .clickable { viewModel.matchAllConditions.value = false }
-                                .padding(start = 4.dp)
                         )
                     }
                 }
