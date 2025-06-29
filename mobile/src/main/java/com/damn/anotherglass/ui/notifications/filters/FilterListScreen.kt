@@ -1,6 +1,7 @@
 package com.damn.anotherglass.ui.notifications.filters
 
 import android.annotation.SuppressLint
+import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -28,11 +29,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.damn.anotherglass.extensions.notifications.filter.ConditionType
 import com.damn.anotherglass.extensions.notifications.filter.FilterAction
+import com.damn.anotherglass.extensions.notifications.filter.FilterConditionItem
+import com.damn.anotherglass.extensions.notifications.filter.IFilterRepository
+import com.damn.anotherglass.extensions.notifications.filter.NotificationFilter
 import com.damn.anotherglass.ui.notifications.AppRoute
 import com.damn.anotherglass.ui.theme.AnotherGlassTheme
+import com.damn.anotherglass.utility.AndroidAppDetailsProvider
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 
-// Assuming AppDestinations and FilterListViewModel are accessible
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -123,94 +130,59 @@ fun FilterListScreen(
 @Preview(showBackground = true)
 @Composable
 fun FilterListScreenPreview_WithItems() {
-    //val previewViewModel = FilterListViewModel(Application()) // Or use a mock Application/Repository
-    // Manually inject preview data into the ViewModel's StateFlow if possible,
-    // or mock the repository it uses. For simplicity here, we assume it might fetch some
-    // default/empty state or you'd mock UserFilterRepository.getFiltersFlow.
-    // For a more robust preview, you'd directly provide state to the Composable.
-    val sampleFilters = listOf(
-        FilterListItemUI(
-            "1",
-            "Block Social Media",
-            true,
-            "3 conditions, Matches All (AND)",
-            action = FilterAction.ALLOW_SILENTLY,
-            appDetails = null
+
+    val sampleFilter = NotificationFilter(
+        id = "1",
+        name = "Sample Filter",
+        isEnabled = true,
+        conditions = listOf(
+            FilterConditionItem(
+                type = ConditionType.IS_ONGOING_EQUALS,
+                value = "false"
+            ),
+            FilterConditionItem(
+                type = ConditionType.TITLE_EQUALS,
+                value = "title"
+            )
         ),
-        FilterListItemUI(
-            "2",
-            "Allow Work Emails",
-            true,
-            "2 conditions, Matches Any (OR)",
-            action = FilterAction.ALLOW_WITH_NOTIFICATION,
-            appDetails = null
-        ),
-        FilterListItemUI(
-            "3",
-            "Silent Gaming Notifications",
-            false,
-            "1 condition, Matches All (AND)",
-            action = FilterAction.BLOCK,
-            appDetails = null
-        )
+        action = FilterAction.ALLOW_SILENTLY
+    )
+
+    val previewViewModel = FilterListViewModel(
+        appDetailsProvider = AndroidAppDetailsProvider(Application()),
+        filterRepository = object : IFilterRepository {
+            override fun getFiltersFlow(): Flow<List<NotificationFilter>> =
+                MutableStateFlow(listOf(sampleFilter)) // Mocking repository response
+            override suspend fun saveFilters(filters: List<NotificationFilter>) = Unit
+            override suspend fun addFilter(newFilter: NotificationFilter) = Unit
+            override suspend fun updateFilter(updatedFilter: NotificationFilter) = Unit
+            override suspend fun deleteFilter(filterId: String) = Unit
+        }
     )
 
     AnotherGlassTheme {
-        //FilterListScreen(navController = null, viewModel = previewViewModel) // Using ViewModel
-        // OR: More direct preview by passing state:
-        Scaffold(
-            topBar = { TopAppBar(title = { Text("Notification Filters (Preview)") }) },
-            floatingActionButton = {
-                FloatingActionButton(onClick = { /* Nav */ }) {
-                    Icon(Icons.Filled.Add, contentDescription = "Add New Filter")
-                }
-            }
-        ) { paddingValues ->
-            LazyColumn(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(sampleFilters, key = { it.id }) { filterItem ->
-                    FilterCard(
-                        filterItem = filterItem,
-                        onEdit = {},
-                        onDelete = {},
-                        onToggleEnabled = {})
-                }
-            }
-        }
+        FilterListScreen(navController = null, viewModel = previewViewModel)
     }
 }
 
+@SuppressLint("ViewModelConstructorInComposable")
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun FilterListScreenPreview_Empty() {
-    AnotherGlassTheme {
-        Scaffold(
-            topBar = { TopAppBar(title = { Text("Notification Filters (Preview)") }) },
-            floatingActionButton = {
-                FloatingActionButton(onClick = { /* Nav */ }) {
-                    Icon(Icons.Filled.Add, contentDescription = "Add New Filter")
-                }
-            }
-        ) { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    "No filters defined yet.\nClick the '+' button to add one.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
+    val previewViewModel = FilterListViewModel(
+        appDetailsProvider = AndroidAppDetailsProvider(Application()),
+        filterRepository = object : IFilterRepository {
+            override fun getFiltersFlow(): Flow<List<NotificationFilter>> =
+                MutableStateFlow(emptyList()) // Mocking repository response
+            override suspend fun saveFilters(filters: List<NotificationFilter>) = Unit
+            override suspend fun addFilter(newFilter: NotificationFilter) = Unit
+            override suspend fun updateFilter(updatedFilter: NotificationFilter) = Unit
+            override suspend fun deleteFilter(filterId: String) = Unit
         }
+    )
+
+    AnotherGlassTheme {
+        FilterListScreen(navController = null, viewModel = previewViewModel)
     }
 }

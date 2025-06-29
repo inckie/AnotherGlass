@@ -27,7 +27,8 @@ data class FilterListItemUI( // A UI-specific model for the list
     val appDetails: AppDetails?
 )
 
-// todo: get rid of Application dependency in ViewModel, provide UserFilterRepository directly
+// todo: reorder, filter by app
+
 class FilterListViewModel(
     private val appDetailsProvider: AppDetailsProvider,
     private val filterRepository: IFilterRepository) : ViewModel() {
