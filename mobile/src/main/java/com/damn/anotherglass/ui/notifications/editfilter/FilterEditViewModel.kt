@@ -16,8 +16,9 @@ import com.damn.anotherglass.extensions.notifications.filter.from
 import com.damn.anotherglass.ui.notifications.AppRoute
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import java.net.URLDecoder
 import java.util.UUID
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 class FilterEditViewModel(
     private val savedStateHandle: SavedStateHandle,
@@ -41,8 +42,7 @@ class FilterEditViewModel(
 
     init {
         viewModelScope.launch {
-            val existingFilterId: String? =
-                savedStateHandle[AppRoute.FilterEditScreen.FILTER_EDIT_ARG_FILTER_ID]
+            val existingFilterId: String? = savedStateHandle.get<String>(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_FILTER_ID)?.urlDecode()
             if (existingFilterId != null) {
                 isNewFilter = false
                 filterId.value = existingFilterId
@@ -52,7 +52,7 @@ class FilterEditViewModel(
 
                 // Set package name from navigation arguments
                 savedStateHandle.get<String>(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_PACKAGE_NAME)
-                    ?.urlDecodeFix()
+                    ?.urlDecode()
                     ?.let { value ->
                         if (value.isNotBlank()) {
                             packageName.value = value
@@ -61,7 +61,7 @@ class FilterEditViewModel(
 
                 ARG_TO_CONDITION_MAP.forEach { (argKey, conditionType) ->
                     savedStateHandle.get<String>(argKey)
-                        ?.urlDecodeFix()
+                        ?.urlDecode()
                         ?.let { value ->
                             if (value.isNotBlank()) {
                                 conditions.add(
@@ -122,7 +122,16 @@ class FilterEditViewModel(
     fun updateConditionType(index: Int, newType: ConditionType) {
         if (index in conditions.indices) {
             val currentItem = conditions[index]
-            conditions[index] = currentItem.copy(type = newType)
+            when {
+                // If changing from IS_ONGOING_EQUALS, reset value to empty string
+                currentItem.type == ConditionType.IS_ONGOING_EQUALS && newType != ConditionType.IS_ONGOING_EQUALS ->
+                    conditions[index] = currentItem.copy(type = newType, value = "")
+                // If changing to IS_ONGOING_EQUALS, reset value to false
+                currentItem.type != ConditionType.IS_ONGOING_EQUALS && newType == ConditionType.IS_ONGOING_EQUALS -> {
+                    conditions[index] = currentItem.copy(type = newType, value = "false")
+                }
+                else -> conditions[index] = currentItem.copy(type = newType)
+            }
         }
     }
 
@@ -156,6 +165,7 @@ class FilterEditViewModel(
     }
 
     companion object {
+
         private val ARG_TO_CONDITION_MAP = mapOf(
             AppRoute.FilterEditScreen.FILTER_EDIT_ARG_TITLE to ConditionType.TITLE_CONTAINS,
             AppRoute.FilterEditScreen.FILTER_EDIT_ARG_TEXT to ConditionType.TEXT_CONTAINS,
@@ -163,8 +173,15 @@ class FilterEditViewModel(
             // AppRoute.FilterEditScreen.FILTER_EDIT_ARG_IS_ONGOING is handled separately due to Boolean type
         )
 
-        private fun String?.urlDecodeFix(): String? =
-            this?.let { URLDecoder.decode(it, "UTF-8").replace("+", " ") }
+        @OptIn(ExperimentalEncodingApi::class)
+        fun String?.urlDecode(): String? =
+            this?.let {
+                Base64.Default.decode(it).decodeToString()
+            }
+
+        // URLEncoder has issues with % (it assumes its already encoded), so we use Base64 for URL encoding
+        @OptIn(ExperimentalEncodingApi::class)
+        fun String.urlEncode(): String = Base64.Default.encode(encodeToByteArray())
 
         class Factory(
             private val context: Context,

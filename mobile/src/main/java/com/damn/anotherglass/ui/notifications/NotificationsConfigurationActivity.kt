@@ -11,9 +11,6 @@ import androidx.navigation.compose.rememberNavController
 import com.damn.anotherglass.extensions.notifications.filter.IImportExportController
 import com.damn.anotherglass.extensions.notifications.filter.fromActivity
 import com.damn.anotherglass.ui.theme.AnotherGlassTheme
-import java.net.URLEncoder
-
-fun String.urlEncode(): String = URLEncoder.encode(this, "UTF-8")
 
 class NotificationsConfigurationActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

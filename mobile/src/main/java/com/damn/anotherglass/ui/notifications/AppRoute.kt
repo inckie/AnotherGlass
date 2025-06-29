@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import com.damn.anotherglass.extensions.notifications.filter.IImportExportController
 import com.damn.anotherglass.ui.notifications.editfilter.FilterEditScreen
 import com.damn.anotherglass.ui.notifications.editfilter.FilterEditViewModel
+import com.damn.anotherglass.ui.notifications.editfilter.FilterEditViewModel.Companion.urlEncode
 import com.damn.anotherglass.ui.notifications.filters.FilterListScreen
 import com.damn.anotherglass.ui.notifications.filters.FilterListViewModel
 import com.damn.anotherglass.ui.notifications.history.NotificationHistoryScreen
