@@ -7,6 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.damn.anotherglass.extensions.notifications.filter.IImportExportController
 import com.damn.anotherglass.ui.notifications.editfilter.FilterEditScreen
 import com.damn.anotherglass.ui.notifications.editfilter.FilterEditViewModel
 import com.damn.anotherglass.ui.notifications.filters.FilterListScreen
@@ -83,7 +84,11 @@ sealed class AppRoute(val route: String) {
     }
 }
 
-fun navGraph(builder: NavGraphBuilder, navController: NavHostController) {
+fun navGraph(
+    builder: NavGraphBuilder,
+    navController: NavHostController,
+    importExportController: IImportExportController
+) {
     builder.apply {
         composable(AppRoute.NotificationHistory.route) {
             val viewModel: NotificationHistoryViewModel = viewModel(
@@ -106,7 +111,11 @@ fun navGraph(builder: NavGraphBuilder, navController: NavHostController) {
             val viewModel: FilterListViewModel = viewModel(
                 factory = FilterListViewModel.Companion.Factory(LocalContext.current)
             )
-            FilterListScreen(navController = navController, viewModel = viewModel)
+            FilterListScreen(
+                navController = navController,
+                viewModel = viewModel,
+                importExportController = importExportController
+            )
         }
     }
 }

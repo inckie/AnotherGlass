@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -35,6 +37,7 @@ import com.damn.anotherglass.extensions.notifications.filter.FilterConditionItem
 import com.damn.anotherglass.extensions.notifications.filter.IFilterRepository
 import com.damn.anotherglass.extensions.notifications.filter.NotificationFilter
 import com.damn.anotherglass.ui.notifications.AppRoute
+import com.damn.anotherglass.extensions.notifications.filter.IImportExportController
 import com.damn.anotherglass.ui.theme.AnotherGlassTheme
 import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 import kotlinx.coroutines.flow.Flow
@@ -45,7 +48,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 @Composable
 fun FilterListScreen(
     navController: NavController?,
-    viewModel: FilterListViewModel
+    viewModel: FilterListViewModel,
+    importExportController: IImportExportController? = null
 ) {
     val filters by viewModel.filters.collectAsState()
 
@@ -56,6 +60,22 @@ fun FilterListScreen(
                 // You could add navigation back if this screen isn't the root
                 actions = {
                     IconButton(onClick = {
+                        importExportController?.export()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Download,
+                            contentDescription = "Export"
+                        )
+                    }
+                    IconButton(onClick = {
+                        importExportController?.import()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Upload,
+                            contentDescription = "Import"
+                        )
+                    }
+                    IconButton(onClick = {
                         navController?.navigate(AppRoute.NotificationHistory.route)
                     }) {
                         Icon(
@@ -63,7 +83,7 @@ fun FilterListScreen(
                             contentDescription = "Notification History"
                         )
                     }
-                }
+                },
             )
         },
         floatingActionButton = {
@@ -153,6 +173,7 @@ fun FilterListScreenPreview_WithItems() {
         filterRepository = object : IFilterRepository {
             override fun getFiltersFlow(): Flow<List<NotificationFilter>> =
                 MutableStateFlow(listOf(sampleFilter)) // Mocking repository response
+
             override suspend fun saveFilters(filters: List<NotificationFilter>) = Unit
             override suspend fun addFilter(newFilter: NotificationFilter) = Unit
             override suspend fun updateFilter(updatedFilter: NotificationFilter) = Unit
@@ -161,7 +182,10 @@ fun FilterListScreenPreview_WithItems() {
     )
 
     AnotherGlassTheme {
-        FilterListScreen(navController = null, viewModel = previewViewModel)
+        FilterListScreen(
+            navController = null,
+            viewModel = previewViewModel
+        )
     }
 }
 
@@ -175,6 +199,7 @@ fun FilterListScreenPreview_Empty() {
         filterRepository = object : IFilterRepository {
             override fun getFiltersFlow(): Flow<List<NotificationFilter>> =
                 MutableStateFlow(emptyList()) // Mocking repository response
+
             override suspend fun saveFilters(filters: List<NotificationFilter>) = Unit
             override suspend fun addFilter(newFilter: NotificationFilter) = Unit
             override suspend fun updateFilter(updatedFilter: NotificationFilter) = Unit
@@ -183,6 +208,9 @@ fun FilterListScreenPreview_Empty() {
     )
 
     AnotherGlassTheme {
-        FilterListScreen(navController = null, viewModel = previewViewModel)
+        FilterListScreen(
+            navController = null,
+            viewModel = previewViewModel
+        )
     }
 }

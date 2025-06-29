@@ -91,4 +91,9 @@ object UserFilterRepository {
         currentFilters.removeAll { it.id == filterId }
         saveFilters(context, currentFilters)
     }
+
+    suspend fun exportFilters(context: Context): String =
+        getFiltersFlow(context).firstOrNull()?.let { filters ->
+            gson.toJson(Filters(filters))
+        } ?: ""
 }
