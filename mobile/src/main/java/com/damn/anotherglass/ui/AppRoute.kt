@@ -1,5 +1,10 @@
 package com.damn.anotherglass.ui
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
@@ -94,6 +99,13 @@ fun navGraph(
     importExportController: IImportExportController,
     coreController: ServiceController
 ) {
+
+    val duration = 300
+    val enterTransition = slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(duration))
+    val exitTransition = fadeOut(animationSpec = tween(duration))
+    val popEnterTransition = fadeIn(animationSpec = tween(duration))
+    val popExitTransition = slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(duration))
+
     builder.apply {
         composable(AppRoute.MainScreen.route) {
             MainScreen(
@@ -102,24 +114,25 @@ fun navGraph(
                 serviceController = coreController
             )
         }
-        composable(AppRoute.NotificationHistory.route) {
+        composable(
+            route = AppRoute.NotificationHistory.route,
+            enterTransition = { enterTransition },
+            exitTransition = { exitTransition },
+            popEnterTransition = { popEnterTransition },
+            popExitTransition = { popExitTransition }
+        ) {
             val viewModel: NotificationHistoryViewModel = viewModel(
                 factory = NotificationHistoryViewModel.Companion.Factory(LocalContext.current)
             )
             NotificationHistoryScreen(navController = navController, viewModel = viewModel)
         }
         composable(
-            route = AppRoute.FilterEditScreen.routeTemplate,
-            arguments = AppRoute.FilterEditScreen.arguments
+            route = AppRoute.FilterList.route,
+            enterTransition = { enterTransition },
+            exitTransition = { exitTransition },
+            popEnterTransition = { popEnterTransition },
+            popExitTransition = { popExitTransition }
         ) {
-            val viewModel: FilterEditViewModel = viewModel(
-                factory = FilterEditViewModel.Companion.Factory(
-                    context = LocalContext.current,
-                    savedStateHandle = it.savedStateHandle)
-            )
-            FilterEditScreen(navController = navController, viewModel = viewModel)
-        }
-        composable(AppRoute.FilterList.route) {
             val viewModel: FilterListViewModel = viewModel(
                 factory = FilterListViewModel.Companion.Factory(LocalContext.current)
             )
@@ -128,6 +141,21 @@ fun navGraph(
                 viewModel = viewModel,
                 importExportController = importExportController
             )
+        }
+        composable(
+            route = AppRoute.FilterEditScreen.routeTemplate,
+            arguments = AppRoute.FilterEditScreen.arguments,
+            enterTransition = { enterTransition },
+            exitTransition = { exitTransition },
+            popEnterTransition = { popEnterTransition },
+            popExitTransition = { popExitTransition }
+        ) {
+            val viewModel: FilterEditViewModel = viewModel(
+                factory = FilterEditViewModel.Companion.Factory(
+                    context = LocalContext.current,
+                    savedStateHandle = it.savedStateHandle)
+            )
+            FilterEditScreen(navController = navController, viewModel = viewModel)
         }
     }
 }
