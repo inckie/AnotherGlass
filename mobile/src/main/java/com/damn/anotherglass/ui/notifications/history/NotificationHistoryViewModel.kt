@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.damn.anotherglass.extensions.notifications.filter.NotificationHistoryRepository
 import com.damn.anotherglass.shared.notifications.NotificationData
-import com.damn.anotherglass.ui.notifications.AppRoute
+import com.damn.anotherglass.ui.AppRoute
 import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 import com.damn.anotherglass.utility.AppDetails
 import com.damn.anotherglass.utility.AppDetailsProvider

@@ -3,6 +3,7 @@ package com.damn.anotherglass.core
 import android.Manifest
 import android.content.Intent
 import android.os.Build
+import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -14,13 +15,16 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.damn.anotherglass.R
 import com.damn.anotherglass.extensions.GPSExtension
 import com.damn.anotherglass.extensions.notifications.NotificationService
-import com.damn.anotherglass.ui.mainscreen.MainActivity
+import com.damn.anotherglass.ui.mainscreen.ServiceController
 import com.damn.anotherglass.ui.mainscreen.SettingsController
 import com.damn.anotherglass.utility.createGPSPermissionLauncher
 import com.damn.anotherglass.utility.hasPermission
 import kotlinx.coroutines.launch
 
-class CoreController(private val activity: MainActivity) : SettingsController() {
+class CoreController(
+    private val activity: ComponentActivity,
+    private val controller: ServiceController
+) : SettingsController() {
 
     private val gpsPermissionLauncher: ActivityResultLauncher<String>
     private val servicePermissionLauncher: ActivityResultLauncher<Array<String>>
@@ -29,7 +33,8 @@ class CoreController(private val activity: MainActivity) : SettingsController() 
 
     private val _serviceState = MutableLiveData(GlassService.isRunning(activity))
     private val _hostMode = MutableLiveData(settings.hostMode)
-    private val _isNotificationsEnabled = MutableLiveData(settings.isNotificationsEnabled && NotificationService.isEnabled(activity))
+    private val _isNotificationsEnabled =
+        MutableLiveData(settings.isNotificationsEnabled && NotificationService.isEnabled(activity))
     private val _isGPSEnabled = MutableLiveData(settings.isGPSEnabled)
 
     override val isServiceRunning: LiveData<Boolean> = _serviceState
@@ -45,7 +50,7 @@ class CoreController(private val activity: MainActivity) : SettingsController() 
         servicePermissionLauncher = activity.registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) {
-            if (it.values.all { it }) activity.startService()
+            if (it.values.all { it }) controller.startService()
         }
 
         activity.lifecycleScope.launch {
@@ -122,8 +127,8 @@ class CoreController(private val activity: MainActivity) : SettingsController() 
 
     override fun setServiceRunning(checked: Boolean) {
         when {
-            checked -> if (checkServicePermissions()) activity.startService()
-            else -> activity.stopService()
+            checked -> if (checkServicePermissions()) controller.startService()
+            else -> controller.stopService()
         }
     }
 

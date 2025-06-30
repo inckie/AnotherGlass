@@ -1,4 +1,4 @@
-package com.damn.anotherglass.ui.notifications
+package com.damn.anotherglass.ui
 
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -8,6 +8,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.damn.anotherglass.extensions.notifications.filter.IImportExportController
+import com.damn.anotherglass.ui.mainscreen.MainScreen
+import com.damn.anotherglass.ui.mainscreen.ServiceController
 import com.damn.anotherglass.ui.notifications.editfilter.FilterEditScreen
 import com.damn.anotherglass.ui.notifications.editfilter.FilterEditViewModel
 import com.damn.anotherglass.ui.notifications.editfilter.FilterEditViewModel.Companion.urlEncode
@@ -17,6 +19,7 @@ import com.damn.anotherglass.ui.notifications.history.NotificationHistoryScreen
 import com.damn.anotherglass.ui.notifications.history.NotificationHistoryViewModel
 
 sealed class AppRoute(val route: String) {
+    data object MainScreen : AppRoute("main_screen")
     data object FilterList : AppRoute("filter_list")
     data object NotificationHistory : AppRoute("notification_history")
     data object FilterEditScreen : AppRoute("filter_edit_screen") {
@@ -88,9 +91,17 @@ sealed class AppRoute(val route: String) {
 fun navGraph(
     builder: NavGraphBuilder,
     navController: NavHostController,
-    importExportController: IImportExportController
+    importExportController: IImportExportController,
+    coreController: ServiceController
 ) {
     builder.apply {
+        composable(AppRoute.MainScreen.route) {
+            MainScreen(
+                navController = navController,
+                settings = coreController.controller,
+                serviceController = coreController
+            )
+        }
         composable(AppRoute.NotificationHistory.route) {
             val viewModel: NotificationHistoryViewModel = viewModel(
                 factory = NotificationHistoryViewModel.Companion.Factory(LocalContext.current)

@@ -49,7 +49,7 @@ import com.damn.anotherglass.extensions.notifications.filter.FilterAction
 import com.damn.anotherglass.extensions.notifications.filter.FilterConditionItem
 import com.damn.anotherglass.extensions.notifications.filter.IFilterRepository
 import com.damn.anotherglass.extensions.notifications.filter.from
-import com.damn.anotherglass.ui.notifications.AppRoute
+import com.damn.anotherglass.ui.AppRoute
 import com.damn.anotherglass.ui.theme.AnotherGlassTheme
 
 @OptIn(ExperimentalMaterial3Api::class) // For TopAppBar, etc.

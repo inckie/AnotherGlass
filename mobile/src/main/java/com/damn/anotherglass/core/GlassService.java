@@ -26,7 +26,7 @@ import com.damn.anotherglass.logging.ALog;
 import com.damn.anotherglass.shared.rpc.IRPCHost;
 import com.damn.anotherglass.shared.rpc.RPCMessage;
 import com.damn.anotherglass.shared.rpc.RPCMessageListener;
-import com.damn.anotherglass.ui.mainscreen.MainActivity;
+import com.damn.anotherglass.ui.MainActivity;
 import com.damn.anotherglass.utility.ContextExKt;
 
 public class GlassService

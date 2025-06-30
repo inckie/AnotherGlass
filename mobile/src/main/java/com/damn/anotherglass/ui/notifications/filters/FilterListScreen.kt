@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Download
@@ -39,7 +40,7 @@ import com.damn.anotherglass.extensions.notifications.filter.FilterAction
 import com.damn.anotherglass.extensions.notifications.filter.FilterConditionItem
 import com.damn.anotherglass.extensions.notifications.filter.IFilterRepository
 import com.damn.anotherglass.extensions.notifications.filter.NotificationFilter
-import com.damn.anotherglass.ui.notifications.AppRoute
+import com.damn.anotherglass.ui.AppRoute
 import com.damn.anotherglass.extensions.notifications.filter.IImportExportController
 import com.damn.anotherglass.ui.theme.AnotherGlassTheme
 import com.damn.anotherglass.utility.AndroidAppDetailsProvider
@@ -67,6 +68,11 @@ fun FilterListScreen(
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
                     actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
+                navigationIcon = {
+                    IconButton(onClick = { navController?.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
                 // You could add navigation back if this screen isn't the root
                 actions = {
                     IconButton(onClick = {

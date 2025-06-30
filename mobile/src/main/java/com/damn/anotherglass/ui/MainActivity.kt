@@ -1,4 +1,4 @@
-package com.damn.anotherglass.ui.notifications
+package com.damn.anotherglass.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,27 +10,38 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.damn.anotherglass.extensions.notifications.filter.IImportExportController
 import com.damn.anotherglass.extensions.notifications.filter.fromActivity
+import com.damn.anotherglass.ui.mainscreen.ServiceController
 import com.damn.anotherglass.ui.theme.AnotherGlassTheme
 
-class NotificationsConfigurationActivity : ComponentActivity() {
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         // can also just put to context
-        val importExportController = IImportExportController.fromActivity(this)
+        val importExportController = IImportExportController.Companion.fromActivity(this)
+        val serviceController = ServiceController(this)
 
         setContent {
             AnotherGlassTheme {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = AppRoute.FilterList.route,
-                    modifier = Modifier.fillMaxSize() // NavHost should typically fill the space
+                    startDestination = AppRoute.MainScreen.route,
+                    modifier = Modifier.Companion.fillMaxSize() // NavHost should typically fill the space
                 ) {
-                    navGraph(this, navController, importExportController)
+                    navGraph(
+                        builder = this,
+                        navController = navController,
+                        importExportController = importExportController,
+                        coreController = serviceController
+                    )
                 }
             }
         }
+    }
+
+    companion object {
+        const val TAG = "MainActivity"
     }
 }

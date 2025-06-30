@@ -40,7 +40,7 @@
             android:exported="true" />
 
         <activity
-            android:name=".ui.mainscreen.MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -48,11 +48,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.notifications.NotificationsConfigurationActivity"
-            android:exported="false"
-            android:label="@string/title_activity_notifications_history"
-            android:theme="@style/AppTheme" />
         <activity
             android:name=".logging.LogActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />

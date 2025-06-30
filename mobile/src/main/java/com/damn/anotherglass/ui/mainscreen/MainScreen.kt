@@ -1,5 +1,6 @@
 package com.damn.anotherglass.ui.mainscreen
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import androidx.annotation.DrawableRes
@@ -35,19 +36,25 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.damn.anotherglass.R
 import com.damn.anotherglass.core.Settings
 import com.damn.anotherglass.debug.DbgNotifications
 import com.damn.anotherglass.logging.LogActivity
+import com.damn.anotherglass.ui.MainActivity
 import com.damn.anotherglass.ui.mainscreen.widgets.DropDownMenuItem
 import com.damn.anotherglass.ui.mainscreen.widgets.SwitchRow
 import com.damn.anotherglass.ui.mainscreen.widgets.TopAppBarDropdownMenu
-import com.damn.anotherglass.ui.notifications.NotificationsConfigurationActivity
+import com.damn.anotherglass.ui.AppRoute
 import com.damn.anotherglass.ui.theme.AnotherGlassTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(settings: SettingsController) {
+fun MainScreen(
+    navController: NavHostController?,
+    settings: SettingsController,
+    serviceController: ServiceController?,
+) {
     val context = LocalContext.current
     val isServiceRunning by settings.isServiceRunning.observeAsState(false)
     val hostMode by settings.hostMode.observeAsState()
@@ -71,12 +78,13 @@ fun MainScreen(settings: SettingsController) {
                     actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
                 actions = {
-                    TopAppBarDropdownMenu(listOf(
+                    TopAppBarDropdownMenu(
+                        listOf(
                         DropDownMenuItem("X-Ray") {
                             context.startActivity(Intent(context, LogActivity::class.java))
                         },
                         DropDownMenuItem("Notification filters") {
-                            context.startActivity(Intent(context, NotificationsConfigurationActivity::class.java))
+                            navController?.navigate(AppRoute.FilterList.route)
                         }
                     ))
                 }
@@ -100,11 +108,20 @@ fun MainScreen(settings: SettingsController) {
                     Settings.HostMode.entries.forEachIndexed { index, option ->
                         SegmentedButton(
                             enabled = !isServiceRunning,
-                            shape = SegmentedButtonDefaults.itemShape(index = index, count = Settings.HostMode.entries.size),
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = index,
+                                count = Settings.HostMode.entries.size
+                            ),
                             checked = hostMode == option,
                             onCheckedChange = { settings.setHostMode(option) },
                             label = { Text("") },
-                            icon = { Icon(painter = painterResource(id = resolveIcon(option)), contentDescription = option.name) }) }
+                            icon = {
+                                Icon(
+                                    painter = painterResource(id = resolveIcon(option)),
+                                    contentDescription = option.name
+                                )
+                            })
+                    }
                 }
             }
 
@@ -122,7 +139,7 @@ fun MainScreen(settings: SettingsController) {
                         .verticalScroll(rememberScrollState())
                         .weight(weight = 1f, fill = false),
                 ) {
-                    OptionToggles(settings)
+                    OptionToggles(settings, serviceController)
                 }
             }
         }
@@ -131,7 +148,8 @@ fun MainScreen(settings: SettingsController) {
 
 @Composable
 private fun OptionToggles(
-    settings: SettingsController
+    settings: SettingsController,
+    serviceController: ServiceController?
 ) {
     val context = LocalContext.current
 
@@ -165,7 +183,7 @@ private fun OptionToggles(
                 modifier = Modifier.weight(1f)
             )
             Button(
-                onClick = { (context as MainActivity).showIPAddressDialog() }
+                onClick = { showIPAddressDialog((context as Activity)) }
             ) {
                 Text(stringResource(id = R.string.btn_show_ip_address))
             }
@@ -174,7 +192,14 @@ private fun OptionToggles(
 
     // WiFi Connect Button
     Button(
-        onClick = { (context as MainActivity).connectWiFi() }
+        onClick = {
+            serviceController?.let {
+                connectWiFi(
+                    (context as MainActivity),
+                    serviceController
+                )
+            }
+        }
     ) {
         Text(stringResource(id = R.string.btn_connect_wifi))
     }
@@ -222,11 +247,15 @@ private fun OptionToggles(
 @Composable
 fun DefaultPreview() {
     AnotherGlassTheme {
-        MainScreen(object : SettingsController() {
-            override fun setServiceRunning(checked: Boolean) = Unit
-            override fun setHostMode(mode: Settings.HostMode) = Unit
-            override fun setGPSEnabled(enabled: Boolean) = Unit
-            override fun setNotificationsEnabled(enabled: Boolean) = Unit
-        })
+        MainScreen(
+            null,
+            object : SettingsController() {
+                override fun setServiceRunning(checked: Boolean) = Unit
+                override fun setHostMode(mode: Settings.HostMode) = Unit
+                override fun setGPSEnabled(enabled: Boolean) = Unit
+                override fun setNotificationsEnabled(enabled: Boolean) = Unit
+            },
+            null,
+        )
     }
 }

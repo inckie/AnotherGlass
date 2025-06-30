@@ -13,7 +13,7 @@ import com.damn.anotherglass.extensions.notifications.filter.FilterConditionItem
 import com.damn.anotherglass.extensions.notifications.filter.IFilterRepository
 import com.damn.anotherglass.extensions.notifications.filter.NotificationFilter
 import com.damn.anotherglass.extensions.notifications.filter.from
-import com.damn.anotherglass.ui.notifications.AppRoute
+import com.damn.anotherglass.ui.AppRoute
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.util.UUID
