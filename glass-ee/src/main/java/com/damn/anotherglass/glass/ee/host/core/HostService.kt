@@ -33,6 +33,7 @@ class HostService : Service(), IService {
 
     // todo: move to proper place (maybe global in Application class?)
     private lateinit var sounds: SoundController
+    private lateinit var notificationNotifier: NotificationNotifier
     private lateinit var gps: MockGPS
 
     private var client: WiFiClient? = null
@@ -64,6 +65,7 @@ class HostService : Service(), IService {
         super.onCreate()
         gps = MockGPS(this)
         sounds = SoundController(this)
+        notificationNotifier = NotificationNotifier(sounds)
     }
 
     @Override
@@ -102,10 +104,7 @@ class HostService : Service(), IService {
                         Log.d(TAG, "Notification data received")
                         val notificationData = data.payload as NotificationData
                         NotificationController.instance.onNotificationUpdate(notificationData)
-                        // TODO: temporary hack to play sound on notification posted.
-                        //  Will also play even if it's just an update.
-                        if(notificationData.action == NotificationData.Action.Posted)
-                            sounds.playSound(SoundController.SoundEffect.NotificationPosted)
+                        notificationNotifier.notify(notificationData)
                     }
 
                     else -> Log.e(TAG, "Unknown service: ${data.service}")
