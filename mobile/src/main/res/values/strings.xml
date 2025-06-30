@@ -28,4 +28,6 @@
     <string name="title_notification_history">Notification History</string>
     <string name="title_notification_filters">Notification Filters</string>
     <string name="lbl_no_filters_defined">No filters defined yet.\nClick the \'+\' button to add one.</string>
+    <string name="title_create_filter">Create Filter</string>
+    <string name="title_edit_filter">Edit Filter</string>
 </resources>

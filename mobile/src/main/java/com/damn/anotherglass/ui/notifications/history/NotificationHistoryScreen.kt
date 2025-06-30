@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -61,6 +62,9 @@ fun NotificationHistoryScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { viewModel.cleanHistory() }) {
+                        Icon(Icons.Filled.Delete, contentDescription = "Clear History")
+                    }
                     IconButton(onClick = { viewModel.loadHistory() }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Refresh History")
                     }
@@ -98,7 +102,8 @@ fun NotificationHistoryScreen(
                             // Pass the original notification ID (sbn.id)
                             viewModel.onCreateFilterFromNotification(
                                 item.notification.id,
-                                navController)
+                                navController
+                            )
                         }
                     )
                     Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -166,7 +171,8 @@ fun NotificationHistoryScreenPreview() {
     )
 
     // A Preview ViewModel or direct data for the preview
-    val previewViewModel = NotificationHistoryViewModel(AndroidAppDetailsProvider(LocalContext.current)) // In a real preview, you might mock its state
+    val previewViewModel =
+        NotificationHistoryViewModel(AndroidAppDetailsProvider(LocalContext.current)) // In a real preview, you might mock its state
     previewViewModel.setHistoryItems(sampleNotifications) // Directly set for preview
 
     AnotherGlassTheme {

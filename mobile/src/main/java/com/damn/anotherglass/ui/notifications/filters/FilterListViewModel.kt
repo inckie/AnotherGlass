@@ -58,7 +58,7 @@ class FilterListViewModel(
         val parts = mutableListOf<String>()
 
         appDetails?.let {
-            parts.add("App: ${it.appName}")
+            parts.add(it.appName)
         }
 
         val conditionCount = filter.conditions.size

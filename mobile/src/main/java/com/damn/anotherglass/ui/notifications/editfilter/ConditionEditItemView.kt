@@ -57,7 +57,8 @@ fun ConditionEditItemView(
             ) {
                 // Condition Type Dropdown
                 Box( // Wrap ExposedDropdownMenuBox in a Box if you need to apply weight correctly
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
                         .padding(end = 8.dp) // Add some padding if next to icon
                 ) {
                     ExposedDropdownMenuBox(

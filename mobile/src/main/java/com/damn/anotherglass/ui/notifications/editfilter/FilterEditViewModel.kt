@@ -27,7 +27,7 @@ data class FilterConditionVM(
 )
 
 class FilterEditViewModel(
-    private val savedStateHandle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     private val filterRepository: IFilterRepository
 ) : ViewModel() {
 

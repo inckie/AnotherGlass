@@ -69,7 +69,14 @@ fun FilterEditScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (viewModel.filterId.value == null) "Create Filter" else "Edit Filter") },
+                title = {
+                    Text(
+                        if (viewModel.filterId.value == null)
+                            stringResource(R.string.title_create_filter)
+                        else
+                            stringResource(R.string.title_edit_filter)
+                    )
+                },
                 colors = TopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     scrolledContainerColor = MaterialTheme.colorScheme.primary,

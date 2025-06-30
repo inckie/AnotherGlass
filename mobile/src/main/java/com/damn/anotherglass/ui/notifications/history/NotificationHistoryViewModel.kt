@@ -72,6 +72,13 @@ class NotificationHistoryViewModel(
         }
     }
 
+    fun cleanHistory() {
+        viewModelScope.launch {
+            NotificationHistoryRepository.clearHistory()
+            loadHistory()
+        }
+    }
+
     companion object {
         class Factory(private val context: Context) : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
