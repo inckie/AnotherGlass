@@ -26,4 +26,6 @@
     <string name="btn_delete">Delete</string>
     <string name="lbl_no_notification_history">No notification history available.</string>
     <string name="title_notification_history">Notification History</string>
+    <string name="title_notification_filters">Notification Filters</string>
+    <string name="lbl_no_filters_defined">No filters defined yet.\nClick the \'+\' button to add one.</string>
 </resources>

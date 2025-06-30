@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.damn.anotherglass.R
 import com.damn.anotherglass.shared.notifications.NotificationData
+import com.damn.anotherglass.ui.theme.AnotherGlassTheme
 import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 import com.damn.anotherglass.utility.AppDetails
 
@@ -45,6 +48,18 @@ fun NotificationHistoryScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.title_notification_history)) },
+                colors = TopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    scrolledContainerColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+                navigationIcon = {
+                    IconButton(onClick = { navController?.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
                 actions = {
                     IconButton(onClick = { viewModel.loadHistory() }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Refresh History")
@@ -154,7 +169,7 @@ fun NotificationHistoryScreenPreview() {
     val previewViewModel = NotificationHistoryViewModel(AndroidAppDetailsProvider(LocalContext.current)) // In a real preview, you might mock its state
     previewViewModel.setHistoryItems(sampleNotifications) // Directly set for preview
 
-    MaterialTheme { // Replace with your app's theme
+    AnotherGlassTheme {
         NotificationHistoryScreen(navController = mockNavController, viewModel = previewViewModel)
     }
 }

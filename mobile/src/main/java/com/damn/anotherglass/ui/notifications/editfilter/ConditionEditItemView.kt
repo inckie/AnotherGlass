@@ -35,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.damn.anotherglass.extensions.notifications.filter.ConditionType
 import com.damn.anotherglass.extensions.notifications.filter.FilterConditionItem
+import com.damn.anotherglass.ui.theme.AnotherGlassTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -150,7 +151,7 @@ fun ConditionEditItemViewPreview() {
             )
         )
     }
-    MaterialTheme {
+    AnotherGlassTheme {
         ConditionEditItemView(
             conditionItem = condition.value,
             availableTypes = ConditionType.entries,

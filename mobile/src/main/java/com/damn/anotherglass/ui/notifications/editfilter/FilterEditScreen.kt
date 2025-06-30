@@ -13,8 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,6 +50,7 @@ import com.damn.anotherglass.extensions.notifications.filter.FilterConditionItem
 import com.damn.anotherglass.extensions.notifications.filter.IFilterRepository
 import com.damn.anotherglass.extensions.notifications.filter.from
 import com.damn.anotherglass.ui.notifications.AppRoute
+import com.damn.anotherglass.ui.theme.AnotherGlassTheme
 
 @OptIn(ExperimentalMaterial3Api::class) // For TopAppBar, etc.
 @Composable
@@ -68,9 +70,16 @@ fun FilterEditScreen(
         topBar = {
             TopAppBar(
                 title = { Text(if (viewModel.filterId.value == null) "Create Filter" else "Edit Filter") },
+                colors = TopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    scrolledContainerColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
                 navigationIcon = {
                     IconButton(onClick = { navController?.popBackStack() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
@@ -277,7 +286,7 @@ fun FilterEditScreenPreview_NewFilter() {
     )
     previewViewModel.filterName.value = "Filter from News"
 
-    MaterialTheme { // Replace with your actual theme
+    AnotherGlassTheme {
         FilterEditScreen(navController = null, viewModel = previewViewModel)
     }
 }
@@ -321,7 +330,7 @@ fun FilterEditScreenPreview_ExistingFilter() {
         )
     )
 
-    MaterialTheme { // Replace with your actual theme
+    AnotherGlassTheme { // Replace with your actual theme
         FilterEditScreen(navController = null, viewModel = previewViewModel)
     }
 }
