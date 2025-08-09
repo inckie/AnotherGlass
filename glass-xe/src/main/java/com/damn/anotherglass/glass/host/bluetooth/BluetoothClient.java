@@ -12,16 +12,15 @@ import androidx.annotation.NonNull;
 
 import com.damn.anotherglass.shared.Constants;
 import com.damn.anotherglass.shared.rpc.IRPCClient;
+import com.damn.anotherglass.shared.rpc.IMessageSerializer;
 import com.damn.anotherglass.shared.rpc.RPCHandler;
 import com.damn.anotherglass.shared.rpc.RPCMessage;
 import com.damn.anotherglass.shared.rpc.RPCMessageListener;
+import com.damn.anotherglass.shared.rpc.SerializerProvider;
 import com.damn.anotherglass.shared.utility.DisconnectReceiver;
 import com.damn.anotherglass.shared.utility.Sleep;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -97,31 +96,29 @@ public class BluetoothClient implements IRPCClient {
         }
 
         @SuppressLint("MissingPermission")
-        private void runLoop(@NonNull BluetoothDevice device) throws IOException, InterruptedException, ClassNotFoundException {
+        private void runLoop(@NonNull BluetoothDevice device) throws Exception {
             try (BluetoothSocket socket = device.createInsecureRfcommSocketToServiceRecord(Constants.uuid)) {
                 socket.connect();
                 Log.i(TAG, "Client has connected to " + device.getName());
                 AtomicBoolean active = new AtomicBoolean(true);
                 try (DisconnectReceiver ignored = new DisconnectReceiver(mContext, device, () -> active.getAndSet(false))) {
                     try (OutputStream outputStream = socket.getOutputStream();
-                         InputStream inputStream = socket.getInputStream()) {
-                        ObjectOutputStream os = new ObjectOutputStream(outputStream);
-                        ObjectInputStream in = new ObjectInputStream(inputStream);
+                        InputStream inputStream = socket.getInputStream()) {
+                        IMessageSerializer serializer = SerializerProvider.getSerializer(inputStream, outputStream);
                         mConnected = true;
                         mHandler.onConnectionStarted(device.getName());
                         while (active.get()) {
-                            while(null != mQueue.peek()){
+                            while (null != mQueue.peek()) {
                                 RPCMessage message = mQueue.take();
-                                os.writeObject(message);
+                                serializer.writeMessage(message);
                                 Log.v(TAG, "Message " + message.service + "/" + message.type + " was sent");
-                                if(null == message.service) {
+                                if (null == message.service) {
                                     Log.d(TAG, "Shutdown requested");
-                                    os.flush();
                                     return;
                                 }
                             }
                             while (inputStream.available() > 0) {
-                                RPCMessage objectReceived = (RPCMessage) in.readObject();
+                                RPCMessage objectReceived = serializer.readMessage();
                                 mHandler.onDataReceived(objectReceived);
                                 Log.v(TAG, "Message " + objectReceived.service + "/" + objectReceived.type + " was received");
                             }

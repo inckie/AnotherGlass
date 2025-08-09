@@ -10,23 +10,22 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
-import androidx.annotation.CallSuper;
 import androidx.core.app.ActivityCompat;
 
 import com.applicaster.xray.android.adapters.ALog;
 import com.damn.anotherglass.shared.Constants;
 import com.damn.anotherglass.shared.rpc.IRPCHost;
+import com.damn.anotherglass.shared.rpc.IMessageSerializer;
 import com.damn.anotherglass.shared.rpc.RPCHandler;
 import com.damn.anotherglass.shared.rpc.RPCMessage;
 import com.damn.anotherglass.shared.rpc.RPCMessageListener;
+import com.damn.anotherglass.shared.rpc.SerializerProvider;
 import com.damn.anotherglass.shared.utility.Closeables;
 import com.damn.anotherglass.shared.utility.DisconnectReceiver;
 import com.damn.anotherglass.shared.utility.Sleep;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -112,7 +111,7 @@ public class BluetoothHost implements IRPCHost {
                     if (socket == null)
                         continue;
                     runLoop(socket);
-                } catch (IOException | ClassNotFoundException | InterruptedException e) {
+                } catch (Exception e) {
                     Log.e(TAG, "Exception in runLoop: " + e, e);
                     mHandler.onConnectionLost(e.getLocalizedMessage());
                 } finally {
@@ -143,25 +142,25 @@ public class BluetoothHost implements IRPCHost {
         }
 
         @SuppressLint("MissingPermission")
-        private void runLoop(BluetoothSocket socket) throws IOException, ClassNotFoundException, InterruptedException {
+        private void runLoop(BluetoothSocket socket) throws Exception {
             final BluetoothDevice remoteDevice = socket.getRemoteDevice();
             ALog.d(TAG, "Connected to " + remoteDevice.getName());
             mHandler.onConnectionStarted(remoteDevice.getName());
             try (DisconnectReceiver ignored = new DisconnectReceiver(mContext, remoteDevice, this::onConnectionLost)) {
+
                 try (InputStream inputStream = socket.getInputStream();
                      OutputStream outputStream = socket.getOutputStream()) {
-                    ObjectInputStream in = new ObjectInputStream(inputStream);
-                    ObjectOutputStream os = new ObjectOutputStream(outputStream);
+                    IMessageSerializer serializer = SerializerProvider.getSerializer(inputStream, outputStream);
                     while (mActive) {
                         while (inputStream.available() > 0) {
-                            RPCMessage objectReceived = (RPCMessage) in.readObject();
+                            RPCMessage objectReceived = serializer.readMessage();
                             if (null == objectReceived.service)
                                 return; // shutdown requested
                             mHandler.onDataReceived(objectReceived);
                         }
                         while (null != mQueue.peek()) {
                             RPCMessage message = mQueue.take();
-                            os.writeObject(message);
+                            serializer.writeMessage(message);
                         }
                         Sleep.sleep(100);
                     }

@@ -10,8 +10,7 @@ import com.damn.anotherglass.shared.rpc.IRPCClient
 import com.damn.anotherglass.shared.rpc.RPCHandler
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.rpc.RPCMessageListener
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
+import com.damn.anotherglass.shared.rpc.SerializerProvider
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.SocketException
@@ -85,26 +84,27 @@ class WiFiClient(private val hostIP: String? = null) : IRPCClient {
         }
 
         private fun runLoop(socket: Socket) {
-            val iss = socket.getInputStream()
-            val oos = ObjectOutputStream(socket.getOutputStream())
-            val ois = ObjectInputStream(iss)
-            while (true) {
-                while (null != mQueue.peek()) {
-                    val message = mQueue.take()
-                    oos.writeObject(message)
-                    oos.flush()
-                    if (message.service == null) {
-                        return // disconnect requested
+            socket.getInputStream().use { inputStream ->
+                socket.getOutputStream().use { outputStream ->
+                    val serializer = SerializerProvider.getSerializer(inputStream, outputStream)
+                    while (true) {
+                        while (null != mQueue.peek()) {
+                            val message = mQueue.take()
+                            serializer.writeMessage(message)
+                            if (message.service == null) {
+                                return // disconnect requested
+                            }
+                        }
+                        while (inputStream.available() > 0) {
+                            val message = serializer.readMessage()
+                            if (null == message.service) {
+                                return
+                            }
+                            mHandler.onDataReceived(message)
+                        }
+                        sleep(100)
                     }
                 }
-                while (iss.available() > 0) {
-                    val message = ois.readObject() as RPCMessage
-                    if (null == message.service) {
-                        return
-                    }
-                    mHandler.onDataReceived(message)
-                }
-                sleep(100)
             }
         }
 

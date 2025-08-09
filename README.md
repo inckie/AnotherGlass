@@ -63,7 +63,7 @@ To enable GPS location passthrough on the Glass you will need to give the applic
 
 Originally, Glass application was serving as a host, and mobile was supposed to connect to it when some updates needed to be passed over, like notification status change or URL intent. But it turned out that the primary use case for the service was to serve as a GPS location provider, since most of my glassware is relying directly on web backends through tethered connection, so I switched the roles. In the future, I can add some 'temporary disconnected' state, when the Glass side will disconnect from the mobile application, but will open listening port so mobile application can 'knock' to re-instantiate the connection.
 
-Uses Java object stream to send data to Google Glass, since I don't want to mess with protocol buffers yet.
+Can use Java object stream or JSON Lines to send data to Google Glass, since I don't want to mess with protocol buffers yet.
 
 ## AnotherGlass Plans
 

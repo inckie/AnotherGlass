@@ -9,7 +9,13 @@ public class RPCMessage implements Serializable {
 
     public <T extends Serializable> RPCMessage(String service, T obj) {
         this.service = service;
-        type = null != obj ? obj.getClass().getName() : null;
-        payload = obj;
+        this.type = null != obj ? obj.getClass().getName() : null;
+        this.payload = obj;
+    }
+
+    public RPCMessage(String service, String typeName, Object payloadObj) {
+        this.service = service;
+        this.type = typeName;
+        this.payload = payloadObj;
     }
 }
