@@ -35,16 +35,16 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: mobile.apk
-        path: mobile/build/outputs/apk/release/app-release.apk
+        path: mobile/build/outputs/apk/release/mobile-release.apk
 
     - name: Upload glass-ex apk
       uses: actions/upload-artifact@v4
       with:
         name: glass-xe.apk
-        path: glass-ex/build/outputs/apk/release/app-release.apk
+        path: glass-ex/build/outputs/apk/release/glass-ex-release.apk
 
     - name: Upload glass-ee apk
       uses: actions/upload-artifact@v4
       with:
         name: glass-ee.apk
-        path: glass-ee/build/outputs/apk/release/app-release.apk
+        path: glass-ee/build/outputs/apk/release/glass-ee-release.apk
