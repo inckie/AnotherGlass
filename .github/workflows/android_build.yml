@@ -30,3 +30,21 @@ jobs:
 
     - name: Build with Gradle
       run: ./gradlew assemble --parallel
+
+    - name: Upload mobile apk
+      uses: actions/upload-artifact@v4
+      with:
+        name: mobile.apk
+        path: mobile/build/outputs/apk/release/mobile-release.apk
+
+    - name: Upload glass-xe apk
+      uses: actions/upload-artifact@v4
+      with:
+        name: glass-xe.apk
+        path: glass-xe/build/outputs/apk/release/glass-xe-release.apk
+
+    - name: Upload glass-ee apk
+      uses: actions/upload-artifact@v4
+      with:
+        name: glass-ee.apk
+        path: glass-ee/build/outputs/apk/release/glass-ee-release.apk
