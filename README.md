@@ -65,6 +65,10 @@ Originally, Glass application was serving as a host, and mobile was supposed to 
 
 Can use Java object stream or JSON Lines to send data to Google Glass, since I don't want to mess with protocol buffers yet.
 
+## Debug Python client
+There is a simple Python client in `python` folder to test the Glass Enterprise application without the mobile application. It can send fake GPS coordinates and notifications to the Glass.
+Make sure to change communication protocol to JSON Lines by setting `SerializerProvider.currentSerializer` to `JSON`.
+
 ## AnotherGlass Plans
 
 ### General
