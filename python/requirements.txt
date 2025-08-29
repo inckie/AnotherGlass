@@ -1,2 +1,3 @@
 qrcode
 netifaces
+Pillow
