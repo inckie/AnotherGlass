@@ -10,7 +10,7 @@ public class SerializerProvider {
         JSON, OBJECT
     }
 
-    private static final SerializerType currentSerializer = SerializerType.OBJECT;
+    private static final SerializerType currentSerializer = SerializerType.JSON;
 
     public static IMessageSerializer getSerializer(InputStream inputStream, OutputStream outputStream) throws IOException {
         return currentSerializer == SerializerType.JSON
