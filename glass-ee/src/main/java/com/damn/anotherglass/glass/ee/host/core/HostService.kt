@@ -14,6 +14,7 @@ import com.damn.anotherglass.shared.notifications.NotificationsAPI
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.rpc.RPCMessageListener
 import com.damn.glass.shared.gps.MockGPS
+import com.damn.glass.shared.notifications.NotificationController
 import org.greenrobot.eventbus.EventBus
 
 

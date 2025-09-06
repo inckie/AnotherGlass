@@ -1,8 +1,10 @@
-package com.damn.anotherglass.glass.host.notifications;
+package com.damn.glass.shared.notifications;
+
+import androidx.annotation.NonNull;
 
 import com.damn.anotherglass.shared.notifications.NotificationData;
 
-class NotificationId {
+public class NotificationId {
     public String packageName;
     public int id;
 
@@ -16,6 +18,7 @@ class NotificationId {
         return packageName.hashCode() * id;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "NotificationId{" +
@@ -27,8 +30,7 @@ class NotificationId {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof NotificationId)) return false;
-        NotificationId that = (NotificationId) o;
+        if (!(o instanceof NotificationId that)) return false;
         return id == that.id &&
                 packageName.equals(that.packageName);
     }

@@ -1,5 +1,7 @@
 package com.damn.anotherglass.glass.host.notifications;
 
+import static com.damn.anotherglass.glass.host.notifications.NotificationsActivityKt.getDismissibleNotifications;
+
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,10 +13,10 @@ import android.widget.RemoteViews;
 
 import com.damn.anotherglass.glass.host.BroadcastingStopMenuActivity;
 import com.damn.anotherglass.glass.host.HostService;
-import com.damn.anotherglass.glass.host.NotificationsActivity;
 import com.damn.anotherglass.shared.notifications.NotificationData;
+import com.damn.glass.shared.notifications.NotificationController;
+import com.damn.glass.shared.notifications.NotificationId;
 import com.google.android.glass.timeline.LiveCard;
-import com.google.android.glass.widget.CardBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +51,9 @@ public class NotificationsCardController extends BroadcastReceiver {
     }
 
     public void onNotificationUpdate(NotificationData data) {
-        NotificationsRepo.get().update(data);
+        // we do not observe NotificationController in XE app,
+        // since the service is always running and we can handle events directly
+        NotificationController.getInstance().onNotificationUpdate(data);
         NotificationId id = new NotificationId(data);
         if (data.action == NotificationData.Action.Posted) {
             if (data.isOngoing) {
@@ -61,6 +65,7 @@ public class NotificationsCardController extends BroadcastReceiver {
         } else if (data.action == NotificationData.Action.Removed) {
             removeOngoing(id); // don't bother to check if it was ongoing there, just try to remove
             // do not remove dismissible ones for now
+            // todo: remove dismissible ones and remove card if stack is empty
         }
     }
 
@@ -82,7 +87,8 @@ public class NotificationsCardController extends BroadcastReceiver {
         if (mStackedCard == null) {
             mStackedCard = new LiveCard(service, STACK_LIVE_CARD_TAG);
         }
-        boolean hasMore = NotificationsRepo.get().getDismissibleNotifications().size() > 1;
+
+        boolean hasMore = getDismissibleNotifications(NotificationController.getInstance()).size() > 1;
         mStackedCard.setViews(getViews(data, hasMore));
 
         // Update intent
@@ -109,6 +115,7 @@ public class NotificationsCardController extends BroadcastReceiver {
         if (null == liveCard)
             return;
         liveCard.unpublish();
+        NotificationController.getInstance().dismissNotification(notificationId);
     }
 
     private PendingIntent getCardDismissPendingIntent(String cardId) {
@@ -160,9 +167,10 @@ public class NotificationsCardController extends BroadcastReceiver {
     }
 
     private RemoteViews getViews(NotificationData data, boolean showStack) {
-        CardBuilder builder = NotificationViewBuilder.buildView(service.getApplicationContext(), data);
-        builder.showStackIndicator(showStack);
-        return builder.getRemoteViews();
+        return NotificationViewBuilder
+                .buildView(service.getApplicationContext(), data)
+                .showStackIndicator(showStack)
+                .getRemoteViews();
     }
 
 }

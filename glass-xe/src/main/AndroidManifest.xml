@@ -20,7 +20,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".NotificationsActivity"
+            android:name=".notifications.NotificationsActivity"
             android:icon="@drawable/ic_glass_logo"
             android:label="@string/title_activity_notifications" />
         <activity

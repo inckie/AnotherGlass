@@ -5,15 +5,19 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.lifecycle.LiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
-import com.damn.anotherglass.glass.ee.host.core.NotificationController
+import com.damn.glass.shared.notifications.NotificationController
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutNotificationsStackBinding
 import com.damn.anotherglass.glass.ee.host.databinding.ViewPager2LayoutBinding
 import com.damn.anotherglass.glass.ee.host.ui.extensions.LayoutNotificationsStackBindingEx.bindData
 import com.damn.anotherglass.shared.notifications.NotificationData
+import com.damn.glass.shared.notifications.NotificationId
 import com.example.glass.ui.GlassGestureDetector
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 class NotificationsActivity : BaseActivity() {
 
@@ -39,7 +43,7 @@ class NotificationsActivity : BaseActivity() {
             TabLayoutMediator(pageIndicator, viewPager) { _, _ ->}.attach()
             onTapListener = {
                 val notification = adapter.getData(viewPager.currentItem)
-                NotificationController.instance.dismissNotification(notification.id)
+                NotificationController.instance.dismissNotification(NotificationId(notification))
                 true
             }
         }
@@ -51,21 +55,23 @@ class NotificationsActivity : BaseActivity() {
     }
 
     class NotificationsPagerAdapter(
-        notificationsLiveData: LiveData<List<NotificationData>>,
+        notificationsFlow: StateFlow<List<NotificationData>>,
         activity: NotificationsActivity
     ) : RecyclerView.Adapter<NotificationsPagerAdapter.NotificationViewHolder>() {
 
-        private var notifications: List<NotificationData> = notificationsLiveData.value!!
+        private var notifications: List<NotificationData> = notificationsFlow.value
 
         init {
-            notificationsLiveData.observeForever {
-                if (it.isEmpty()) {
-                    activity.finish() // close activity if no notifications
-                } else {
-                    notifications = it
-                    notifyDataSetChanged()
+            notificationsFlow
+                .onEach {
+                    if (it.isEmpty()) {
+                        activity.finish() // close activity if no notifications
+                    } else {
+                        notifications = it
+                        notifyDataSetChanged()
+                    }
                 }
-            }
+                .launchIn(activity.lifecycleScope)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =

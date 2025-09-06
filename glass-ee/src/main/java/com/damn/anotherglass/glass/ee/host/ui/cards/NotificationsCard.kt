@@ -6,10 +6,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.damn.anotherglass.glass.ee.host.core.NotificationController
+import androidx.lifecycle.lifecycleScope
+import com.damn.glass.shared.notifications.NotificationController
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutNotificationsStackBinding
 import com.damn.anotherglass.glass.ee.host.ui.NotificationsActivity
 import com.damn.anotherglass.glass.ee.host.ui.extensions.LayoutNotificationsStackBindingEx.bindData
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 class NotificationsCard : BaseFragment() {
 
@@ -28,16 +31,18 @@ class NotificationsCard : BaseFragment() {
         binding = this
     }.root
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        NotificationController.instance.getNotifications().observe(this) {
-            if (it.isEmpty()) return@observe  // we are about to be removed
-            binding?.apply {
-                bindData(it.last(), context)
-                // todo: add another place for counter
-                if (it.size > 1) footer.text = "" + it.size
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        NotificationController.instance.getNotifications()
+            .onEach {
+                if (it.isEmpty()) return@onEach  // we are about to be removed
+                binding?.apply {
+                    bindData(it.last(), requireContext())
+                    // todo: add another place for counter
+                    if (it.size > 1) footer.text = "" + it.size
+                }
             }
-        }
+            .launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
     override fun onDestroyView() {
