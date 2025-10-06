@@ -96,4 +96,10 @@ object UserFilterRepository {
         getFiltersFlow(context).firstOrNull()?.let { filters ->
             gson.toJson(Filters(filters))
         } ?: ""
+
+    suspend fun importFilters(context: Context, json: String) {
+        // for now just replace current ones
+        val filters = gson.fromJson(json, Filters::class.java)
+        saveFilters(context, filters.filters)
+    }
 }
