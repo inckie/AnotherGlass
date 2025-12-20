@@ -24,7 +24,6 @@ import com.damn.anotherglass.shared.rpc.RPCMessage;
 import com.damn.anotherglass.shared.rpc.RPCMessageListener;
 import com.damn.anotherglass.shared.gps.GPSServiceAPI;
 import com.damn.anotherglass.shared.gps.Location;
-import com.damn.anotherglass.shared.device.BatteryStatusData;
 import com.damn.anotherglass.shared.notifications.NotificationData;
 import com.damn.anotherglass.shared.notifications.NotificationsAPI;
 import com.damn.anotherglass.shared.wifi.WiFiAPI;
@@ -39,7 +38,7 @@ import com.damn.anotherglass.glass.host.core.BatteryStatus;
  * A {@link Service} that publishes a {@link LiveCard} in the timeline.
  */
 
-public class HostService extends Service implements BatteryStatus.Listener {
+public class HostService extends Service {
 
     private static final String LIVE_CARD_TAG = "HostService";
 
@@ -86,7 +85,11 @@ public class HostService extends Service implements BatteryStatus.Listener {
 
             mNotificationsCardController = new NotificationsCardController(this);
 
-            mBatteryStatus = new BatteryStatus(this, this);
+            mBatteryStatus = new BatteryStatus(this, data -> {
+                if(null != mRPCClient) {
+                    mRPCClient.send(new RPCMessage(DeviceAPI.SERVICE_NAME, data));
+                }
+            });
             mBatteryStatus.start();
 
             AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -182,10 +185,4 @@ public class HostService extends Service implements BatteryStatus.Listener {
         super.onDestroy();
     }
 
-    @Override
-    public void onBatteryStatusChanged(BatteryStatusData data) {
-        if(null != mRPCClient) {
-            mRPCClient.send(new RPCMessage(DeviceAPI.SERVICE_NAME, data));
-        }
-    }
 }
