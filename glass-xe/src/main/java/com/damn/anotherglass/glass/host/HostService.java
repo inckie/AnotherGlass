@@ -19,10 +19,12 @@ import com.damn.anotherglass.glass.host.notifications.NotificationsCardControlle
 import com.damn.anotherglass.glass.host.ui.ICardViewProvider;
 import com.damn.anotherglass.glass.host.ui.MapCard;
 import com.damn.anotherglass.glass.host.wifi.WiFiActivity;
+import com.damn.anotherglass.shared.device.DeviceAPI;
 import com.damn.anotherglass.shared.rpc.RPCMessage;
 import com.damn.anotherglass.shared.rpc.RPCMessageListener;
 import com.damn.anotherglass.shared.gps.GPSServiceAPI;
 import com.damn.anotherglass.shared.gps.Location;
+import com.damn.anotherglass.shared.device.BatteryStatusData;
 import com.damn.anotherglass.shared.notifications.NotificationData;
 import com.damn.anotherglass.shared.notifications.NotificationsAPI;
 import com.damn.anotherglass.shared.wifi.WiFiAPI;
@@ -31,12 +33,13 @@ import com.google.android.glass.media.Sounds;
 import com.google.android.glass.timeline.LiveCard;
 import com.google.android.glass.timeline.LiveCard.PublishMode;
 import com.google.android.glass.widget.CardBuilder;
+import com.damn.anotherglass.glass.host.core.BatteryStatus;
 
 /**
  * A {@link Service} that publishes a {@link LiveCard} in the timeline.
  */
 
-public class HostService extends Service {
+public class HostService extends Service implements BatteryStatus.Listener {
 
     private static final String LIVE_CARD_TAG = "HostService";
 
@@ -49,6 +52,8 @@ public class HostService extends Service {
     private ICardViewProvider mCardProvider;
 
     private NotificationsCardController mNotificationsCardController;
+
+    private BatteryStatus mBatteryStatus;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -80,6 +85,9 @@ public class HostService extends Service {
             }
 
             mNotificationsCardController = new NotificationsCardController(this);
+
+            mBatteryStatus = new BatteryStatus(this, this);
+            mBatteryStatus.start();
 
             AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
@@ -156,6 +164,10 @@ public class HostService extends Service {
 
     @Override
     public void onDestroy() {
+        if(null != mBatteryStatus) {
+            mBatteryStatus.stop();
+            mBatteryStatus = null;
+        }
         mRPCClient.stop();
         mNotificationsCardController.remove();
         mGPS.remove();
@@ -168,5 +180,12 @@ public class HostService extends Service {
             mLiveCard = null;
         }
         super.onDestroy();
+    }
+
+    @Override
+    public void onBatteryStatusChanged(BatteryStatusData data) {
+        if(null != mRPCClient) {
+            mRPCClient.send(new RPCMessage(DeviceAPI.SERVICE_NAME, data));
+        }
     }
 }
