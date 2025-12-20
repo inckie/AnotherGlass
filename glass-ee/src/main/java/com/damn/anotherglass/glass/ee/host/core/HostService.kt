@@ -7,6 +7,8 @@ import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import android.widget.Toast
+import androidx.lifecycle.LifecycleService
+import com.damn.anotherglass.shared.device.DeviceAPI
 import com.damn.anotherglass.shared.gps.GPSServiceAPI
 import com.damn.anotherglass.shared.gps.Location
 import com.damn.anotherglass.shared.notifications.NotificationData
@@ -30,12 +32,14 @@ interface IService {
     val state: ServiceState // todo: global LiveData?
 }
 
-class HostService : Service(), IService {
+class HostService : LifecycleService(), IService {
 
     // todo: move to proper place (maybe global in Application class?)
     private lateinit var sounds: SoundController
     private lateinit var notificationNotifier: NotificationNotifier
     private lateinit var gps: MockGPS
+
+    private val batteryStatus: BatteryStatus by lazy { BatteryStatus(this) }
 
     private var client: WiFiClient? = null
 
@@ -67,6 +71,9 @@ class HostService : Service(), IService {
         gps = MockGPS(this)
         sounds = SoundController(this)
         notificationNotifier = NotificationNotifier(sounds)
+        batteryStatus.observe(this) {
+            client?.send(RPCMessage(DeviceAPI.SERVICE_NAME, it))
+        }
     }
 
     @Override
@@ -91,6 +98,10 @@ class HostService : Service(), IService {
                 Log.d(TAG, "Connected to $device")
                 state = IService.ServiceState.CONNECTED
                 NotificationController.instance.onServiceConnected()
+
+                batteryStatus.value?.let {
+                    client?.send(RPCMessage(DeviceAPI.SERVICE_NAME, it))
+                }
             }
 
             override fun onDataReceived(data: RPCMessage) {
@@ -136,7 +147,10 @@ class HostService : Service(), IService {
         client?.start(this, listener)
     }
 
-    override fun onBind(intent: Intent?): IBinder? = _binder
+    override fun onBind(intent: Intent): IBinder? {
+        super.onBind(intent)
+        return _binder
+    }
 
     companion object {
         private const val TAG = "HostService"

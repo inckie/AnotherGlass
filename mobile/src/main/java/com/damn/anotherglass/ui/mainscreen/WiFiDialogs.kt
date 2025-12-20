@@ -18,7 +18,7 @@ import com.damn.anotherglass.ui.MainActivity
 import com.damn.anotherglass.utility.QR2
 import com.google.zxing.WriterException
 
-fun connectWiFi(activity: ComponentActivity, serviceController: ServiceController) {
+fun connectWiFi(activity: ComponentActivity, serviceController: IServiceController) {
     val binding = ViewWifiDialogBinding.inflate(activity.layoutInflater)
     AlertDialog.Builder(activity)
         .setPositiveButton(android.R.string.ok) { _, _ ->

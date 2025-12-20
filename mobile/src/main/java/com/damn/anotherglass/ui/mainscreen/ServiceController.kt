@@ -7,14 +7,24 @@ import android.os.IBinder
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import com.damn.anotherglass.core.ConnectedDevice
 import com.damn.anotherglass.core.CoreController
 import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.core.GlassService.LocalBinder
+import com.damn.anotherglass.shared.rpc.RPCMessage
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
-class ServiceController(private val activity: ComponentActivity) : DefaultLifecycleObserver {
+class ServiceController(private val activity: ComponentActivity) : DefaultLifecycleObserver, IServiceController {
 
     private val glassServiceConnection = GlassServiceConnection()
     var controller: CoreController
+
+    private val _connectedDevice = MutableStateFlow<ConnectedDevice?>(null)
+    override val connectedDevice: StateFlow<ConnectedDevice?> = _connectedDevice
 
     init {
         activity.lifecycle.addObserver(this)
@@ -32,23 +42,29 @@ class ServiceController(private val activity: ComponentActivity) : DefaultLifecy
         glassServiceConnection.unbindGlassService()
     }
 
-    fun startService() {
+    override fun startService() {
         if (!GlassService.isRunning(activity)) {
             activity.startService(Intent(activity, GlassService::class.java))
         }
         glassServiceConnection.bindGlassService()
     }
 
-    fun stopService() {
+    override fun stopService() {
         activity.stopService(Intent(activity, GlassService::class.java))
     }
 
-    fun getService() = glassServiceConnection.service
+    override fun send(message: RPCMessage) {
+        glassServiceConnection.service?.send(message)
+    }
+
+    override fun getService() = glassServiceConnection.service
 
     private inner class GlassServiceConnection : ServiceConnection {
         var service: GlassService? = null
             private set
         private var bound = false
+        private var deviceStateJob: Job? = null
+
         fun bindGlassService() {
             try {
                 if (bound) {
@@ -67,19 +83,35 @@ class ServiceController(private val activity: ComponentActivity) : DefaultLifecy
         fun unbindGlassService() {
             if (!bound) return
             bound = false
-            service = null
+            cleanupConnection()
             activity.unbindService(glassServiceConnection)
         }
 
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
             this.service = (service as LocalBinder).service
             controller.onServiceConnected()
+            deviceStateJob = activity.lifecycleScope.launch {
+                this@ServiceController.glassServiceConnection.service?.connectedDevice?.collect {
+                    _connectedDevice.value = it
+                }
+            }
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
+            cleanupConnection()
+            // service framework will not call unbind on its own
+            if(bound) {
+                bound = false
+                activity.unbindService(glassServiceConnection)
+            }
+        }
+
+        private fun cleanupConnection() {
+            deviceStateJob?.cancel()
+            deviceStateJob = null
+            _connectedDevice.value = null
             service = null
             controller.onServiceDisconnected()
-            unbindGlassService()
         }
     }
 

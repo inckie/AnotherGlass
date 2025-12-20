@@ -6,10 +6,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import androidx.lifecycle.MutableLiveData
+import com.damn.anotherglass.shared.device.BatteryStatusData
 
-class BatteryStatus(private val context: Context) : MutableLiveData<BatteryStatus.BatteryStatusData>() {
-
-    data class BatteryStatusData(val level: Int, val isCharging: Boolean)
+class BatteryStatus(private val context: Context) : MutableLiveData<BatteryStatusData>() {
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {

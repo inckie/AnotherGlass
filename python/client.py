@@ -45,10 +45,15 @@ class NotificationData(TypedDict):
     deliveryMode: NotificationDeliveryMode
 
 
+class BatteryStatusData(TypedDict):
+    level: int
+    isCharging: bool
+
+
 class RPCMessage(TypedDict):
     service: Optional[str]
     type: Optional[str]
-    payload: Optional[Union[Location, NotificationData]]
+    payload: Optional[Union[Location, NotificationData, BatteryStatusData, str]]
 
 
 LOCATIONS: list[Location] = [
@@ -168,6 +173,8 @@ def main_ui():
             self.root.title("AnotherGlass Python Client")
             self.root.resizable(False, False)
             self.status_var = tk.StringVar()
+            self.device_name_var = tk.StringVar(value="Name: N/A")
+            self.battery_status_var = tk.StringVar(value="Battery: N/A")
 
             self.ip_address = get_local_ip()
             if not self.ip_address:
@@ -201,22 +208,32 @@ def main_ui():
             ip_label = ttk.Label(frame, text=f"IP Address: {self.ip_address}")
             ip_label.grid(row=1, column=0, columnspan=2)
 
+            # Device Info
+            device_frame = ttk.LabelFrame(frame, text="Device", padding="10")
+            device_frame.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
+
+            device_name_label = ttk.Label(device_frame, textvariable=self.device_name_var)
+            device_name_label.grid(row=0, column=0, sticky=tk.W)
+
+            battery_status_label = ttk.Label(device_frame, textvariable=self.battery_status_var)
+            battery_status_label.grid(row=1, column=0, sticky=tk.W)
+
             status_label = ttk.Label(frame, textvariable=self.status_var)
-            status_label.grid(row=4, column=0, columnspan=2, pady=10)
+            status_label.grid(row=5, column=0, columnspan=2, pady=10)
 
             # Buttons
 
             add_notification_button = ttk.Button(frame, text="Add Notification", command=self.core.add_notification)
-            add_notification_button.grid(row=2, column=0, padx=5, pady=10)
+            add_notification_button.grid(row=3, column=0, padx=5, pady=10)
 
             remove_notification_button = ttk.Button(frame, text="Remove Notification", command=self.core.remove_notification)
-            remove_notification_button.grid(row=2, column=1, padx=5, pady=10)
+            remove_notification_button.grid(row=3, column=1, padx=5, pady=10)
 
             send_gps_button = ttk.Button(frame, text="Send Random GPS", command=self.core.send_gps)
-            send_gps_button.grid(row=3, column=0, padx=5, pady=10)
+            send_gps_button.grid(row=4, column=0, padx=5, pady=10)
 
             exit_button = ttk.Button(frame, text="Exit", command=self.exit_app)
-            exit_button.grid(row=3, column=1, padx=5, pady=10)
+            exit_button.grid(row=4, column=1, padx=5, pady=10)
 
         def start_server(self):
             server_thread = threading.Thread(target=self.run_server)
@@ -233,16 +250,54 @@ def main_ui():
                     self.core.conn, addr = s.accept()
                     self.status_var.set(f"Connected by {addr}")
                     print(f"Connected by {addr}")
-                    # a simple loop to block until client disconnects
+
+                    buffer = b''
                     try:
                         while True:
                             data = self.core.conn.recv(1024)
                             if not data:
                                 break
+                            buffer += data
+                            while b'\n' in buffer:
+                                line, buffer = buffer.split(b'\n', 1)
+                                if line:
+                                    try:
+                                        message: RPCMessage = json.loads(line.decode('utf-8'))
+                                        self.handle_message(message)
+                                    except json.JSONDecodeError:
+                                        print(f"Error decoding JSON: {line.decode('utf-8')}")
                     except ConnectionResetError:
-                        pass # client disconnected
+                        pass  # client disconnected
+
                     self.core.conn = None
                     self.status_var.set("Disconnected")
+                    self.clear_device_info()
+
+        def handle_message(self, message: RPCMessage):
+            service = message.get('service')
+            payload = message.get('payload')
+            msg_type = message.get('type')
+
+            if service == 'device':
+                if msg_type == 'com.damn.anotherglass.shared.device.BatteryStatusData' and isinstance(payload, dict):
+                    self.update_battery_status(payload)
+                elif msg_type == 'name' and isinstance(payload, str):
+                    self.update_device_name(payload)
+
+        def update_device_name(self, name: str):
+            self.device_name_var.set(f"Name: {name}")
+
+        def update_battery_status(self, data: BatteryStatusData):
+            level = data['level']
+            is_charging = data['isCharging']
+            status_str = f"{level}%"
+            if is_charging:
+                status_str += " ⚡"
+            self.battery_status_var.set(f"Battery: {status_str}")
+
+        def clear_device_info(self):
+            self.device_name_var.set("Name: N/A")
+            self.battery_status_var.set("Battery: N/A")
 
         def exit_app(self):
             self.core.exit()

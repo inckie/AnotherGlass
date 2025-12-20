@@ -2,7 +2,6 @@ package com.damn.anotherglass.ui.mainscreen
 
 import android.app.Activity
 import android.content.Intent
-import android.os.Build
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -25,6 +25,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -38,22 +39,28 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.damn.anotherglass.R
+import com.damn.anotherglass.core.ConnectedDevice
+import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.core.Settings
 import com.damn.anotherglass.debug.DbgNotifications
 import com.damn.anotherglass.logging.LogActivity
+import com.damn.anotherglass.shared.device.BatteryStatusData
+import com.damn.anotherglass.shared.rpc.RPCMessage
+import com.damn.anotherglass.ui.AppRoute
 import com.damn.anotherglass.ui.MainActivity
 import com.damn.anotherglass.ui.mainscreen.widgets.DropDownMenuItem
 import com.damn.anotherglass.ui.mainscreen.widgets.SwitchRow
 import com.damn.anotherglass.ui.mainscreen.widgets.TopAppBarDropdownMenu
-import com.damn.anotherglass.ui.AppRoute
 import com.damn.anotherglass.ui.theme.AnotherGlassTheme
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     navController: NavHostController?,
     settings: SettingsController,
-    serviceController: ServiceController?,
+    serviceController: IServiceController?,
 ) {
     val context = LocalContext.current
     val isServiceRunning by settings.isServiceRunning.observeAsState(false)
@@ -149,7 +156,7 @@ fun MainScreen(
 @Composable
 private fun OptionToggles(
     settings: SettingsController,
-    serviceController: ServiceController?
+    serviceController: IServiceController?,
 ) {
     val context = LocalContext.current
 
@@ -166,12 +173,10 @@ private fun OptionToggles(
         onCheckedChange = { settings.setGPSEnabled(it) })
 
     // Notifications Toggle
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-        SwitchRow(
-            label = stringResource(id = R.string.lbl_enable_notifications),
-            checked = isNotificationsEnabled,
-            onCheckedChange = { settings.setNotificationsEnabled(it) })
-    }
+    SwitchRow(
+        label = stringResource(id = R.string.lbl_enable_notifications),
+        checked = isNotificationsEnabled,
+        onCheckedChange = { settings.setNotificationsEnabled(it) })
 
     if (settings.hostMode.value == Settings.HostMode.WiFi) {
         Row(
@@ -196,12 +201,18 @@ private fun OptionToggles(
             serviceController?.let {
                 connectWiFi(
                     (context as MainActivity),
-                    serviceController
+                    it // Pass IServiceController
                 )
             }
         }
     ) {
         Text(stringResource(id = R.string.btn_connect_wifi))
+    }
+
+    val connectedDeviceState = serviceController?.connectedDevice?.collectAsState()
+    val connectedDevice = connectedDeviceState?.value
+    connectedDevice?.let {
+        DeviceStatusCard(it)
     }
 
     // Divider
@@ -243,6 +254,29 @@ private fun OptionToggles(
     }
 }
 
+@Composable
+private fun DeviceStatusCard(device: com.damn.anotherglass.core.ConnectedDevice) {
+    val deviceName by device.name.collectAsState()
+    val batteryStatus by device.batteryStatus.collectAsState()
+
+    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(text = "Device: $deviceName")
+            val batteryText = batteryStatus?.let {
+                "${it.level}% ${if (it.isCharging) "⚡" else ""}"
+            } ?: "N/A"
+            Text(text = "Battery: $batteryText")
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
@@ -255,7 +289,19 @@ fun DefaultPreview() {
                 override fun setGPSEnabled(enabled: Boolean) = Unit
                 override fun setNotificationsEnabled(enabled: Boolean) = Unit
             },
-            null,
+            object : IServiceController {
+                override val connectedDevice: StateFlow<ConnectedDevice?>
+                    get() = MutableStateFlow(
+                        ConnectedDevice(
+                            MutableStateFlow("Stub Device"),
+                            MutableStateFlow(BatteryStatusData(75, false))
+                        )
+                    )
+                override fun startService() = Unit
+                override fun stopService() = Unit
+                override fun send(message: RPCMessage) = Unit
+                override fun getService(): GlassService? = null
+            },
         )
     }
 }
