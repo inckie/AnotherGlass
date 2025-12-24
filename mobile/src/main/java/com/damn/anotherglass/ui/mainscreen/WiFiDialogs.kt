@@ -6,10 +6,10 @@ import android.content.Context
 import android.net.wifi.WifiManager
 import android.text.TextUtils
 import android.text.format.Formatter
-import android.util.Log
 import android.widget.ImageView
 import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AlertDialog
+import com.applicaster.xray.android.adapters.ALog
 import com.damn.anotherglass.databinding.ViewWifiDialogBinding
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.wifi.WiFiAPI
@@ -53,6 +53,6 @@ fun showIPAddressDialog(activity: Activity) {
             .setPositiveButton(android.R.string.ok, null)
             .show()
     } catch (e: WriterException) {
-        Log.e(MainActivity.Companion.TAG, "showIPAddressDialog: ", e)
+        ALog.e(MainActivity.TAG, "showIPAddressDialog: ", e)
     }
 }
