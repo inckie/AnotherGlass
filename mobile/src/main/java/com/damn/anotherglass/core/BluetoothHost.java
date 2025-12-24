@@ -112,7 +112,7 @@ public class BluetoothHost implements IRPCHost {
                         continue;
                     runLoop(socket);
                 } catch (Exception e) {
-                    Log.e(TAG, "Exception in runLoop: " + e, e);
+                    ALog.e(TAG, "Exception in runLoop: " + e, e);
                     mHandler.onConnectionLost(e.getLocalizedMessage());
                 } finally {
                     Closeables.close(serverSocket);

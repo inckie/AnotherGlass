@@ -44,13 +44,21 @@ class JsonMessageSerializer implements IMessageSerializer {
         // do not read from the stream directly,
         // since it will looks like multiple concatenated jsons
         String line = reader.readLine();
-        return gson.fromJson(line, RPCMessage.class);
+        try {
+            return gson.fromJson(line, RPCMessage.class);
+        }
+        catch (JsonParseException | NullPointerException e) {
+            throw new Exception("Unable to parse message: " + line, e);
+        }
     }
 
     private static class RPCMessageDeserializer implements JsonDeserializer<RPCMessage> {
         @Override
         public RPCMessage deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject jsonObject = json.getAsJsonObject();
+
+            if(!jsonObject.has("service") || jsonObject.get("service").isJsonNull())
+                return new RPCMessage(null, null); // disconnect message received
 
             String service = jsonObject.get("service").getAsString();
             String type = null;
