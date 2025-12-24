@@ -46,9 +46,6 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17
-    }
     buildFeatures {
         viewBinding true
         compose true
@@ -58,6 +55,10 @@ android {
         kotlinCompilerVersion '1.4.32'
     }
     namespace 'com.damn.anotherglass'
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {

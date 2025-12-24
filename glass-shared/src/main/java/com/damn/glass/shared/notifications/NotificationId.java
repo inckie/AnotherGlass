@@ -30,7 +30,9 @@ public class NotificationId {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof NotificationId that)) return false;
+        if (!(o instanceof NotificationId)) return false;
+        //noinspection PatternVariableCanBeUsed Java 1.8 target
+        NotificationId that = (NotificationId) o;
         return id == that.id &&
                 packageName.equals(that.packageName);
     }

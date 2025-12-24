@@ -4,6 +4,7 @@ apply from: file('../gradle/signing.gradle')
 apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
+    // todo: migrate to gdk.aar stubs instead of using old SDK
     compileSdkVersion "Google Inc.:Glass Development Kit Preview:19"
     defaultConfig {
         applicationId "com.damn.anotherglass.host"
@@ -36,13 +37,14 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
-    }
     lint {
         checkReleaseBuilds false
     }
     namespace 'com.damn.anotherglass.glass.host'
+}
+
+kotlin {
+    jvmToolchain(8)
 }
 
 repositories {

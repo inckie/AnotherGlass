@@ -29,5 +29,5 @@ tasks.register('clean', Delete) {
 }
 
 // xray defaults
-ext.compileSdkVersion=35
+ext.compileSdkVersion=36
 ext.buildToolsVersion="36.0.0"
