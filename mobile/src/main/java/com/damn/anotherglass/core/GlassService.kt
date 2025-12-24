@@ -13,6 +13,7 @@ import android.os.IBinder
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 import com.applicaster.xray.core.Logger
 import com.damn.anotherglass.R
 import com.damn.anotherglass.extensions.GPSExtension
@@ -27,6 +28,9 @@ import com.damn.anotherglass.ui.MainActivity
 import com.damn.anotherglass.utility.isServiceRunning
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 
 class GlassService
     : LifecycleService(), SharedPreferences.OnSharedPreferenceChangeListener {
@@ -61,18 +65,27 @@ class GlassService
         createChannels()
         startForeground(NOTIFICATION_ID, buildNotification())
 
-        // todo: update notification and UI on changes
+        lifecycleScope.launch {
+            combine(mConnectedDevice, mBatteryStatus) { _, _ ->
+                mNM.notify(NOTIFICATION_ID, buildNotification())
+            }.collect()
+        }
+
         val rpcMessageListener: RPCMessageListener = object : RPCMessageListener {
             override fun onWaiting() {
                 log.i(TAG, "Waiting for connection")
-                Toast.makeText(this@GlassService, "Waiting for connection", Toast.LENGTH_SHORT)
+                Toast.makeText(this@GlassService, R.string.service_waiting_for_connection, Toast.LENGTH_SHORT)
                     .show()
                 mConnectedDevice.value = null
             }
 
             override fun onConnectionStarted(device: String) {
                 log.i(TAG, "Connected to $device")
-                Toast.makeText(this@GlassService, "Connected to $device", Toast.LENGTH_SHORT)
+                Toast.makeText(
+                    this@GlassService,
+                    getString(R.string.service_connected_to_s, device),
+                    Toast.LENGTH_SHORT
+                )
                     .show()
                 mDeviceName.value = device
                 mBatteryStatus.value = null
@@ -94,7 +107,7 @@ class GlassService
             override fun onConnectionLost(error: String?) {
                 if (null != error) log.e(TAG, "Disconnected with error: $error")
                 else log.i(TAG, "Disconnected")
-                Toast.makeText(this@GlassService, "Disconnected", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@GlassService, R.string.service_disconnected, Toast.LENGTH_SHORT).show()
                 mGPS.stop()
                 mNotifications.stop()
                 mConnectedDevice.value = null
@@ -170,12 +183,27 @@ class GlassService
     }
 
     private fun buildNotification(): Notification {
+        // no icon in notification to make it occupy less space
         val builder: NotificationCompat.Builder = NotificationCompat.Builder(this, sCHANNEL_DEFAULT)
             .setOngoing(true)
             .setContentTitle(getString(R.string.app_name))
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOnlyAlertOnce(true)
+
+        val device = mConnectedDevice.value
+        if (null != device) {
+            val deviceName = mDeviceName.value
+            val batteryStatus = mBatteryStatus.value
+            var contentText = getString(R.string.service_connected_to_s, deviceName)
+            if (null != batteryStatus) {
+                val chargingIcon = if (batteryStatus.isCharging) "⚡" else ""
+                contentText += " ($chargingIcon${batteryStatus.level}%)"
+            }
+            builder.setContentText(contentText)
+        } else {
+            builder.setContentText(getString(R.string.service_waiting_for_connection))
+        }
 
         val intent = Intent(this, MainActivity::class.java)
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
