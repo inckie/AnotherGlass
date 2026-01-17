@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_play_pause"
+        android:icon="@android:drawable/ic_media_play"
+        android:title="Pause" />
+    <item
+        android:id="@+id/action_next"
+        android:icon="@android:drawable/ic_media_next"
+        android:title="Next" />
+    <item
+        android:id="@+id/action_prev"
+        android:icon="@android:drawable/ic_media_previous"
+        android:title="Previous" />
+</menu>

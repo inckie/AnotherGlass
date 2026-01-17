@@ -17,10 +17,12 @@ import androidx.lifecycle.lifecycleScope
 import com.applicaster.xray.core.Logger
 import com.damn.anotherglass.R
 import com.damn.anotherglass.extensions.GPSExtension
+import com.damn.anotherglass.extensions.music.MusicExtension
 import com.damn.anotherglass.extensions.notifications.NotificationExtension
 import com.damn.anotherglass.logging.ALog
 import com.damn.anotherglass.shared.device.BatteryStatusData
 import com.damn.anotherglass.shared.device.DeviceAPI
+import com.damn.anotherglass.shared.music.MusicAPI
 import com.damn.anotherglass.shared.rpc.IRPCHost
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.rpc.RPCMessageListener
@@ -52,6 +54,7 @@ class GlassService
     // todo: generalize
     private lateinit var mGPS: GPSExtension
     private lateinit var mNotifications: NotificationExtension
+    private lateinit var mMusic: MusicExtension
 
     // connected device info
     private val mDeviceName = MutableStateFlow("")
@@ -92,6 +95,7 @@ class GlassService
                 mConnectedDevice.value = mConnectedDeviceData
                 if (mSettings.isGPSEnabled) mGPS.start()
                 if (mSettings.isNotificationsEnabled) mNotifications.start()
+                mMusic.start()
             }
 
             override fun onDataReceived(data: RPCMessage) {
@@ -101,6 +105,8 @@ class GlassService
                     if (payload is BatteryStatusData) {
                         mBatteryStatus.value = payload
                     }
+                } else if (MusicAPI.ID == data.service) {
+                    mMusic.onMessage(data.payload)
                 }
             }
 
@@ -110,6 +116,7 @@ class GlassService
                 Toast.makeText(this@GlassService, R.string.service_disconnected, Toast.LENGTH_SHORT).show()
                 mGPS.stop()
                 mNotifications.stop()
+                mMusic.stop()
                 mConnectedDevice.value = null
             }
 
@@ -128,6 +135,7 @@ class GlassService
         mSettings = Settings(this)
         mNotifications = NotificationExtension(this)
         mGPS = GPSExtension(this)
+        mMusic = MusicExtension(this)
 
         val useWifi = Settings.HostMode.WiFi == mSettings.hostMode
         mHost = if (useWifi) WiFiHost(rpcMessageListener) else BluetoothHost(rpcMessageListener)
@@ -155,6 +163,7 @@ class GlassService
     override fun onDestroy() {
         mGPS.stop()
         mNotifications.stop()
+        mMusic.stop()
         mHost.stop()
         mConnectedDevice.value = null
         super.onDestroy()

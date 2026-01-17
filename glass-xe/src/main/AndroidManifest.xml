@@ -53,6 +53,9 @@
         <activity
             android:name=".BroadcastingStopMenuActivity"
             android:theme="@style/MenuTheme" />
+        <activity
+            android:name=".music.MusicMenuActivity"
+            android:theme="@style/MenuTheme" />
     </application>
 
 </manifest>

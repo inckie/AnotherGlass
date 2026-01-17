@@ -25,6 +25,11 @@ class NotificationExtension(private val service: GlassService) {
     fun onMessageEvent(event: NotificationEvent) {
         val notificationData = Converter.convert(service, event.action, event.notification)
 
+        // Filter out YouTube Music notifications to avoid duplication
+        if ("com.google.android.apps.youtube.music" == notificationData.packageName) {
+            return
+        }
+
         CoroutineScope(Dispatchers.IO).launch {
             val action = filterChecker.filter(notificationData) ?: FilterAction.ALLOW_WITH_NOTIFICATION
             if (action == FilterAction.BLOCK) {
