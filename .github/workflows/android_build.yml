@@ -51,7 +51,9 @@ jobs:
       with:
         script: |
           const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
-          const body = `## 📦 Build Artifacts
+          const marker = '<!-- build-artifacts-comment -->';
+          const body = `${marker}
+          ## 📦 Build Artifacts
 
           | APK | Download |
           |-----|----------|
@@ -61,9 +63,26 @@ jobs:
 
           *Download from the [Actions run](${runUrl}) artifacts section.*`;
 
-          github.rest.issues.createComment({
+          const { data: comments } = await github.rest.issues.listComments({
             issue_number: context.issue.number,
             owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: body
+            repo: context.repo.repo
           });
+
+          const existing = comments.find(c => c.body.includes(marker));
+
+          if (existing) {
+            await github.rest.issues.updateComment({
+              comment_id: existing.id,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+          } else {
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+          }
