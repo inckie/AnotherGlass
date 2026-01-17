@@ -2,9 +2,11 @@ name: Android CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
+    tags:
+      - 'v*'
   pull_request:
-    branches: [ "master" ]
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -12,9 +14,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Collect Workflow Telemetry
-      uses: catchpoint/workflow-telemetry-action@v2
-
     - uses: actions/checkout@v4
       with:
         submodules: 'true'
@@ -34,20 +33,12 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew assemble --parallel
 
-    - name: Upload mobile apk
-      uses: actions/upload-artifact@v4
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v2
       with:
-        name: mobile.apk
-        path: mobile/build/outputs/apk/release/mobile-release.apk
-
-    - name: Upload glass-xe apk
-      uses: actions/upload-artifact@v4
-      with:
-        name: glass-xe.apk
-        path: glass-xe/build/outputs/apk/release/glass-xe-release.apk
-
-    - name: Upload glass-ee apk
-      uses: actions/upload-artifact@v4
-      with:
-        name: glass-ee.apk
-        path: glass-ee/build/outputs/apk/release/glass-ee-release.apk
+        files: |
+          mobile/build/outputs/apk/release/mobile-release.apk
+          glass-xe/build/outputs/apk/release/glass-xe-release.apk
+          glass-ee/build/outputs/apk/release/glass-ee-release.apk
+        generate_release_notes: true
