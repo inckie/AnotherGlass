@@ -6,6 +6,9 @@ import android.media.MediaMetadata
 import android.media.session.MediaController
 import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
 import com.applicaster.xray.core.Logger
 import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.extensions.notifications.NotificationService
@@ -19,6 +22,17 @@ class MusicExtension(private val service: GlassService) {
     private val log = Logger.get(TAG)
     private var mediaSessionManager: MediaSessionManager? = null
     private var currentController: MediaController? = null
+    private val handler = Handler(Looper.getMainLooper())
+    private var isPlaying = false
+
+    private val progressRunnable = object : Runnable {
+        override fun run() {
+            if (isPlaying && currentController != null) {
+                sendUpdate()
+                handler.postDelayed(this, PROGRESS_UPDATE_INTERVAL)
+            }
+        }
+    }
 
     private val sessionsListener = MediaSessionManager.OnActiveSessionsChangedListener { controllers ->
         updateController(controllers)
@@ -26,7 +40,16 @@ class MusicExtension(private val service: GlassService) {
 
     private val callback = object : MediaController.Callback() {
         override fun onPlaybackStateChanged(state: PlaybackState?) {
+            val wasPlaying = isPlaying
+            isPlaying = state?.state == PlaybackState.STATE_PLAYING
             sendUpdate()
+            
+            if (isPlaying && !wasPlaying) {
+                handler.removeCallbacks(progressRunnable)
+                handler.postDelayed(progressRunnable, PROGRESS_UPDATE_INTERVAL)
+            } else if (!isPlaying) {
+                handler.removeCallbacks(progressRunnable)
+            }
         }
 
         override fun onMetadataChanged(metadata: MediaMetadata?) {
@@ -34,7 +57,9 @@ class MusicExtension(private val service: GlassService) {
         }
 
         override fun onSessionDestroyed() {
+            handler.removeCallbacks(progressRunnable)
             currentController = null
+            isPlaying = false
         }
     }
 
@@ -61,9 +86,11 @@ class MusicExtension(private val service: GlassService) {
 
     fun stop() {
         try {
+            handler.removeCallbacks(progressRunnable)
             mediaSessionManager?.removeOnActiveSessionsChangedListener(sessionsListener)
             currentController?.unregisterCallback(callback)
             currentController = null
+            isPlaying = false
             log.i(TAG).message("MusicExtension stopped")
         } catch (e: Exception) {
             log.e(TAG).exception(e).message("Error stopping MusicExtension")
@@ -109,13 +136,23 @@ class MusicExtension(private val service: GlassService) {
 
         val artist = metadata.getString(MediaMetadata.METADATA_KEY_ARTIST)
         val track = metadata.getString(MediaMetadata.METADATA_KEY_TITLE)
+        val duration = metadata.getLong(MediaMetadata.METADATA_KEY_DURATION)
         val isPlaying = playbackState?.state == PlaybackState.STATE_PLAYING
 
-        val data = MusicData(artist, track, null, isPlaying)
+        // Calculate current position accounting for time elapsed since last update
+        var position = playbackState?.position ?: 0L
+        if (isPlaying && playbackState != null) {
+            val timeDelta = SystemClock.elapsedRealtime() - playbackState.lastPositionUpdateTime
+            val speed = playbackState.playbackSpeed
+            position += (timeDelta * speed).toLong()
+        }
+
+        val data = MusicData(artist, track, null, isPlaying, position, duration)
         service.send(RPCMessage(MusicAPI.ID, data))
     }
 
     companion object {
         private const val TAG = "MusicExtension"
+        private const val PROGRESS_UPDATE_INTERVAL = 1000L // 1 second
     }
 }

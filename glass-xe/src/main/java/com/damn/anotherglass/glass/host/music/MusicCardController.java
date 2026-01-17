@@ -5,8 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.widget.RemoteViews;
 
 import com.damn.anotherglass.glass.host.HostService;
@@ -40,13 +38,15 @@ public class MusicCardController extends BroadcastReceiver {
         }
 
         CardBuilder builder = new CardBuilder(service, CardBuilder.Layout.CAPTION);
-        builder.setText(data.track != null ? data.track : "Unknown Track");
-        builder.setFootnote(data.artist != null ? data.artist : "Unknown Artist");
-
-        if (data.albumArt != null && data.albumArt.length > 0) {
-            Bitmap art = BitmapFactory.decodeByteArray(data.albumArt, 0, data.albumArt.length);
-            builder.addImage(art);
+        
+        String trackText = data.track != null ? data.track : "Unknown Track";
+        if (data.duration > 0) {
+            String progress = formatTime(data.position) + " / " + formatTime(data.duration);
+            trackText += "\n" + progress;
         }
+        
+        builder.setText(trackText);
+        builder.setFootnote(data.artist != null ? data.artist : "Unknown Artist");
 
         RemoteViews views = builder.getRemoteViews();
         liveCard.setViews(views);
@@ -61,6 +61,13 @@ public class MusicCardController extends BroadcastReceiver {
         } else {
             // liveCard.navigate();
         }
+    }
+
+    private String formatTime(long ms) {
+        long totalSeconds = ms / 1000;
+        long minutes = totalSeconds / 60;
+        long seconds = totalSeconds % 60;
+        return String.format("%d:%02d", minutes, seconds);
     }
 
     public void remove() {
