@@ -76,7 +76,7 @@
             android:exported="false"
             android:theme="@style/MenuTheme" />
         <activity
-            android:name=".ui.NotificationsActivity"
+            android:name=".ui.notifications.NotificationsActivity"
             android:exported="false"
             android:theme="@style/MenuTheme" />
         <activity

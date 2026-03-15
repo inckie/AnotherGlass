@@ -1,4 +1,4 @@
-package com.damn.anotherglass.glass.ee.host.ui
+package com.damn.anotherglass.glass.ee.host.ui.notifications
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -7,11 +7,12 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
-import com.damn.glass.shared.notifications.NotificationController
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutNotificationsStackBinding
 import com.damn.anotherglass.glass.ee.host.databinding.ViewPager2LayoutBinding
+import com.damn.anotherglass.glass.ee.host.ui.BaseActivity
 import com.damn.anotherglass.glass.ee.host.ui.extensions.LayoutNotificationsStackBindingEx.bindData
 import com.damn.anotherglass.shared.notifications.NotificationData
+import com.damn.glass.shared.notifications.NotificationController
 import com.damn.glass.shared.notifications.NotificationId
 import com.example.glass.ui.GlassGestureDetector
 import com.google.android.material.tabs.TabLayoutMediator
@@ -40,7 +41,7 @@ class NotificationsActivity : BaseActivity() {
                 this@NotificationsActivity
             )
             viewPager.adapter = adapter
-            TabLayoutMediator(pageIndicator, viewPager) { _, _ ->}.attach()
+            TabLayoutMediator(pageIndicator, viewPager) { _, _ -> }.attach()
             onTapListener = {
                 val notification = adapter.getData(viewPager.currentItem)
                 NotificationController.instance.dismissNotification(NotificationId(notification))
@@ -75,11 +76,13 @@ class NotificationsActivity : BaseActivity() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-            NotificationViewHolder(LayoutNotificationsStackBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            ))
+            NotificationViewHolder(
+                LayoutNotificationsStackBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
 
         override fun onBindViewHolder(holder: NotificationViewHolder, position: Int) {
             val notification = notifications[position]

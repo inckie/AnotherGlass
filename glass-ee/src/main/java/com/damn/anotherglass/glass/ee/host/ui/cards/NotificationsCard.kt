@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import com.damn.glass.shared.notifications.NotificationController
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutNotificationsStackBinding
-import com.damn.anotherglass.glass.ee.host.ui.NotificationsActivity
+import com.damn.anotherglass.glass.ee.host.ui.notifications.NotificationsActivity
 import com.damn.anotherglass.glass.ee.host.ui.extensions.LayoutNotificationsStackBindingEx.bindData
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
