@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - name: Collect Workflow Telemetry
-      uses: catchpoint/workflow-telemetry-action@v2
+      uses: dev-hato/actions-workflow-metrics@v1
 
     - uses: actions/checkout@v4
       with:
