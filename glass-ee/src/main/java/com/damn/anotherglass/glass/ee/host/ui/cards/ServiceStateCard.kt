@@ -8,6 +8,7 @@ import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.StringRes
@@ -106,6 +107,34 @@ class ServiceStateCard : BaseFragment() {
         }
     }
 
+    override fun onCreateVoiceCommandMenu(menu: Menu): Boolean {
+        val mainActivity = mainActivityOrNull() ?: return false
+        val serviceState = mainActivity.getServiceState().value
+        val canStart = serviceState == null || serviceState == IService.ServiceState.DISCONNECTED
+        if (canStart) {
+            menu.add(0, VOICE_COMMAND_START_SERVICE, 0, "Start service")
+        } else {
+            menu.add(0, VOICE_COMMAND_STOP_SERVICE, 0, "Stop service")
+        }
+        return true
+    }
+
+    override fun onVoiceCommand(itemId: Int): Boolean = when (itemId) {
+        VOICE_COMMAND_START_SERVICE -> {
+            mainActivityOrNull()?.let {
+                it.tryStartService()
+                true
+            } ?: false
+        }
+        VOICE_COMMAND_STOP_SERVICE -> {
+            mainActivityOrNull()?.let {
+                it.stopService()
+                true
+            } ?: false
+        }
+        else -> false
+    }
+
     private fun showIPPicker(activity: MainActivity) {
         DynamicMenuActivity.createIntent(activity, ipMenuItems(activity)).also {
             startActivityForResult(it, REQUEST_CODE_PICK_IP)
@@ -114,10 +143,14 @@ class ServiceStateCard : BaseFragment() {
 
     private fun mainActivity() = requireActivity() as MainActivity
 
+    private fun mainActivityOrNull(): MainActivity? = activity as? MainActivity
+
     companion object {
 
         private const val REQUEST_CODE_PICK_IP = 1
         private const val REQUEST_CODE_SCAN_BARCODE = 2
+        private const val VOICE_COMMAND_START_SERVICE = 10_001
+        private const val VOICE_COMMAND_STOP_SERVICE = 10_002
 
         @JvmStatic
         fun newInstance(): ServiceStateCard = ServiceStateCard()
@@ -160,7 +193,12 @@ class ServiceStateCard : BaseFragment() {
                 text = "192.168.1.241",
                 icon = R.drawable.ic_save,
                 tag = "192.168.1.241"
-            )
+            ),
+            DynamicMenuActivity.DynamicMenuItem(
+                id = 3,
+                text = "192.168.1.180",
+                icon = R.drawable.ic_save,
+                tag = "192.168.1.180")
         )
     }
 }

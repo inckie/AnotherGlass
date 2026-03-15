@@ -1,11 +1,16 @@
 package com.damn.anotherglass.glass.ee.host.ui
 
+import android.Manifest
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.IBinder
 import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.lifecycle.LiveData
@@ -44,6 +49,7 @@ class MainActivity : BaseActivity() {
     private val connection = GlassServiceConnection()
     private val fragments: MutableList<BaseFragment> = ArrayList()
     private lateinit var viewPager: ViewPager
+    private var hasVoiceCommandPermission = false
 
     // todo: observe service actual state
     private val serviceState = MutableLiveData<IService.ServiceState?>()
@@ -78,8 +84,13 @@ class MainActivity : BaseActivity() {
     private val debugManager: DebugManager by lazy { DebugManager() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        requestWindowFeature(FEATURE_VOICE_COMMANDS)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.view_pager_layout)
+        hasVoiceCommandPermission = hasRecordAudioPermission()
+        if (!hasVoiceCommandPermission) {
+            ActivityCompat.requestPermissions(this, PERMISSIONS, REQUEST_PERMISSION_CODE)
+        }
         fragments.add(TiltToWakeCard.newInstance()) // -1 fragment (settings)
         fragments.add(ServiceStateCard.newInstance()) // default fragment
         fragments.add(MapCard.newInstance())
@@ -90,6 +101,11 @@ class MainActivity : BaseActivity() {
             override fun getItem(position: Int): Fragment = fragments[position]
             override fun getCount(): Int = fragments.size
             override fun getItemPosition(o: Any): Int = POSITION_NONE // TODO: hack
+        })
+        viewPager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
+            override fun onPageSelected(position: Int) {
+                reloadVoiceCommands()
+            }
         })
 
         val tabLayout = findViewById<TabLayout>(R.id.page_indicator)
@@ -123,10 +139,52 @@ class MainActivity : BaseActivity() {
 
         HostService.startService(this, ip)
         connection.bindGlassService()
+        reloadVoiceCommands()
     }
 
     fun stopService() {
         stopService(Intent(this, HostService::class.java))
+        reloadVoiceCommands()
+    }
+
+    fun invalidateVoiceCommands() {
+        reloadVoiceCommands()
+    }
+
+    override fun onCreatePanelMenu(featureId: Int, menu: Menu): Boolean {
+        if (featureId != FEATURE_VOICE_COMMANDS) {
+            return super.onCreatePanelMenu(featureId, menu)
+        }
+        if (!hasVoiceCommandPermission) {
+            menu.clear()
+            return false
+        }
+        menu.clear()
+        return focusedFragment()?.onCreateVoiceCommandMenu(menu) ?: false
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        val handled = focusedFragment()?.onVoiceCommand(item.itemId) == true
+        if (handled) {
+            reloadVoiceCommands()
+            return true
+        }
+        return super.onContextItemSelected(item)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == REQUEST_PERMISSION_CODE) {
+            hasVoiceCommandPermission = grantResults.isNotEmpty() && grantResults.all {
+                it == PackageManager.PERMISSION_GRANTED
+            }
+            reloadVoiceCommands()
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
     }
 
     override fun onGesture(gesture: GlassGestureDetector.Gesture): Boolean =
@@ -162,6 +220,18 @@ class MainActivity : BaseActivity() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onServiceState(state: IService.ServiceState) {
         serviceState.postValue(state)
+        reloadVoiceCommands()
+    }
+
+    private fun focusedFragment(): BaseFragment? = fragments.getOrNull(viewPager.currentItem)
+
+    private fun hasRecordAudioPermission(): Boolean =
+        ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) ==
+                PackageManager.PERMISSION_GRANTED
+
+    private fun reloadVoiceCommands() {
+        invalidateOptionsMenu()
+        sendBroadcast(Intent(ACTION_RELOAD_VOICE_COMMANDS))
     }
 
     private inner class GlassServiceConnection : ServiceConnection {
@@ -185,6 +255,7 @@ class MainActivity : BaseActivity() {
             bound = false
             service = null
             serviceState.postValue(null)
+            reloadVoiceCommands()
             unbindService(connection)
         }
 
@@ -192,10 +263,12 @@ class MainActivity : BaseActivity() {
             val s = (service as HostService.LocalBinder).getService()
             this.service = s
             serviceState.postValue(s.state)
+            reloadVoiceCommands()
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
             serviceState.postValue(null)
+            reloadVoiceCommands()
             service = null
             unbindGlassService()
         }
@@ -203,5 +276,9 @@ class MainActivity : BaseActivity() {
 
     companion object {
         private const val TAG = "MainActivity"
+        private const val FEATURE_VOICE_COMMANDS = 14
+        private const val ACTION_RELOAD_VOICE_COMMANDS = "reload-voice-commands"
+        private const val REQUEST_PERMISSION_CODE = 200
+        private val PERMISSIONS = arrayOf(Manifest.permission.RECORD_AUDIO)
     }
 }

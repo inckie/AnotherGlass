@@ -17,9 +17,11 @@ package com.damn.anotherglass.glass.ee.host.ui.cards
 
 import android.app.Activity
 import android.content.Intent
+import android.view.Menu
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.damn.anotherglass.glass.ee.host.R
+import com.damn.anotherglass.glass.ee.host.ui.MainActivity
 import com.damn.anotherglass.glass.ee.host.ui.menu.MenuActivity
 
 /**
@@ -27,6 +29,21 @@ import com.damn.anotherglass.glass.ee.host.ui.menu.MenuActivity
  */
 abstract class BaseFragment : Fragment(),
     GestureListener {
+
+    override fun onResume() {
+        super.onResume()
+        (activity as? MainActivity)?.invalidateVoiceCommands()
+    }
+
+    /**
+     * Allows a focused timeline card to contribute voice commands.
+     */
+    open fun onCreateVoiceCommandMenu(menu: Menu): Boolean = false
+
+    /**
+     * Handles a selected voice command from this card.
+     */
+    open fun onVoiceCommand(itemId: Int): Boolean = false
 
     override fun onSingleTapUp() {
         if (arguments != null) {

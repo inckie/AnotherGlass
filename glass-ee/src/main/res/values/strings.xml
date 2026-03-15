@@ -17,6 +17,8 @@
     <string name="msg_service_connected">Connected</string>
     <string name="msg_service_connected_hint">Long press to stop.</string>
     <string name="msg_service_disconnected">Disconnected</string>
+    <string name="voice_start_service">Start service</string>
+    <string name="voice_stop_service">Stop service</string>
 
     <!-- Service state card connection menu -->
     <string name="lbl_gateway_ip">Gateway IP</string>
