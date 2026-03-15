@@ -22,7 +22,7 @@ class TiltToWake(context: Context): SensorEventListener {
     private var lastWakeTime = 0L
 
     fun start() {
-        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER, true), SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     fun stop() {
