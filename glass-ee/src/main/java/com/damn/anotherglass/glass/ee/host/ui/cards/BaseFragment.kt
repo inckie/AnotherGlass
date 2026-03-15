@@ -59,6 +59,8 @@ abstract class BaseFragment : Fragment(),
 
     override fun onTapAndHold() = Unit
 
+    override fun onTwoFingerTap() = Unit
+
     /**
      * Code for a response to selected menu item should be placed inside of this method.
      *

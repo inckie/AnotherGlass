@@ -20,4 +20,5 @@ package com.damn.anotherglass.glass.ee.host.ui.cards;
 public interface GestureListener {
   void onSingleTapUp();
   void onTapAndHold();
+  void onTwoFingerTap();
 }

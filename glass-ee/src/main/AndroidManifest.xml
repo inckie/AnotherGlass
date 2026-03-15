@@ -83,6 +83,10 @@
             android:name=".ui.qr2.CameraActivity"
             android:exported="false"
             android:theme="@style/AppTheme" />
+        <activity
+            android:name=".ui.launcher.AppLauncherActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme" />
 
         <service
             android:name=".core.HostService"

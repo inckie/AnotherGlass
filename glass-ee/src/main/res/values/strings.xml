@@ -19,6 +19,9 @@
     <string name="msg_service_disconnected">Disconnected</string>
     <string name="voice_start_service">Start service</string>
     <string name="voice_stop_service">Stop service</string>
+    <string name="voice_start_app">Start application</string>
+    <string name="lbl_app_icon">Application icon</string>
+    <string name="hint_two_finger_tap_launcher">✌ Two-finger tap to browse apps</string>
 
     <!-- Service state card connection menu -->
     <string name="lbl_gateway_ip">Gateway IP</string>

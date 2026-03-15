@@ -197,6 +197,10 @@ class MainActivity : BaseActivity() {
                 fragments[viewPager.currentItem].onTapAndHold()
                 true
             }
+            GlassGestureDetector.Gesture.TWO_FINGER_TAP -> {
+                fragments[viewPager.currentItem].onTwoFingerTap()
+                true
+            }
             else -> super.onGesture(gesture)
         }
 

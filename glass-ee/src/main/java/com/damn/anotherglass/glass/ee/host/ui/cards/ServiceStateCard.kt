@@ -18,6 +18,7 @@ import com.damn.anotherglass.glass.ee.host.core.ConnectionUtils.getHostIPAddress
 import com.damn.anotherglass.glass.ee.host.core.IService
 import com.damn.anotherglass.glass.ee.host.core.Settings
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutCardServiceBinding
+import com.damn.anotherglass.glass.ee.host.ui.launcher.AppLauncherActivity
 import com.damn.anotherglass.glass.ee.host.ui.qr2.CameraActivity
 import com.damn.anotherglass.glass.ee.host.ui.MainActivity
 import com.damn.anotherglass.glass.ee.host.ui.menu.DynamicMenuActivity
@@ -100,6 +101,10 @@ class ServiceStateCard : BaseFragment() {
         }
     }
 
+    override fun onTwoFingerTap() {
+        startActivity(Intent(requireContext(), AppLauncherActivity::class.java))
+    }
+
     override fun onTapAndHold() {
         super.onTapAndHold()
         val mainActivity = mainActivity()
@@ -119,6 +124,7 @@ class ServiceStateCard : BaseFragment() {
         } else {
             menu.add(0, VOICE_COMMAND_STOP_SERVICE, 0, "Stop service")
         }
+        menu.add(0, VOICE_COMMAND_START_APP, 1, "Start application")
         return true
     }
 
@@ -134,6 +140,10 @@ class ServiceStateCard : BaseFragment() {
                 it.stopService()
                 true
             } ?: false
+        }
+        VOICE_COMMAND_START_APP -> {
+            startActivity(Intent(requireContext(), AppLauncherActivity::class.java))
+            true
         }
         else -> false
     }
@@ -154,6 +164,7 @@ class ServiceStateCard : BaseFragment() {
         private const val REQUEST_CODE_SCAN_BARCODE = 2
         private const val VOICE_COMMAND_START_SERVICE = 10_001
         private const val VOICE_COMMAND_STOP_SERVICE = 10_002
+        private const val VOICE_COMMAND_START_APP = 10_003
 
         @JvmStatic
         fun newInstance(): ServiceStateCard = ServiceStateCard()
@@ -179,13 +190,17 @@ class ServiceStateCard : BaseFragment() {
             state: IService.ServiceState?,
             resources: Resources
         ): String {
-            val commandRes = when (state) {
+            val serviceCommandRes = when (state) {
                 null, IService.ServiceState.DISCONNECTED -> R.string.voice_start_service
                 IService.ServiceState.INITIALIZING,
                 IService.ServiceState.WAITING,
                 IService.ServiceState.CONNECTED -> R.string.voice_stop_service
             }
-            return "\uD83C\uDF99 ${resources.getString(commandRes)}"
+            val lines = listOf(
+                resources.getString(serviceCommandRes),
+                resources.getString(R.string.voice_start_app)
+            )
+            return "\uD83C\uDF99 ${lines.joinToString(" / ")}"
         }
 
         private fun ipMenuItems(context: Context): ArrayList<DynamicMenuActivity.DynamicMenuItem> {
