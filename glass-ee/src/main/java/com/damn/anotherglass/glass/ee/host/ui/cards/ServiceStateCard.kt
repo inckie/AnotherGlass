@@ -16,6 +16,7 @@ import com.damn.anotherglass.glass.ee.host.R
 import com.damn.anotherglass.glass.ee.host.core.BatteryStatus
 import com.damn.anotherglass.glass.ee.host.core.ConnectionUtils.getHostIPAddress
 import com.damn.anotherglass.glass.ee.host.core.IService
+import com.damn.anotherglass.glass.ee.host.core.Settings
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutCardServiceBinding
 import com.damn.anotherglass.glass.ee.host.ui.qr2.CameraActivity
 import com.damn.anotherglass.glass.ee.host.ui.MainActivity
@@ -74,6 +75,7 @@ class ServiceStateCard : BaseFragment() {
             REQUEST_CODE_SCAN_BARCODE -> data?.getStringExtra(CameraActivity.SCAN_RESULT)?.let {
                 it.substringBefore("|").also { ip ->
                     Log.d("BarcodeScanner", "Scanned IP: $ip")
+                    Settings(requireContext()).lastScannedServerIp = ip
                     mainActivity().tryStartService(ip)
                 }
             }
@@ -172,33 +174,53 @@ class ServiceStateCard : BaseFragment() {
             IService.ServiceState.DISCONNECTED -> ""
         }
 
-        private fun ipMenuItems(context: Context) = arrayListOf(
-            DynamicMenuActivity.DynamicMenuItem(
-                id = 0,
-                text = context.getString(R.string.lbl_gateway_ip),
-                icon = R.drawable.ic_wifi_tethering,
-                tag = "gateway_ip",
-                subtext = getHostIPAddress(context)
-            ),
-            // barcode format: `xxx.xxx.xxx.xxx[|User readable name]`
-            DynamicMenuActivity.DynamicMenuItem(
-                id = 1,
-                text = context.getString(R.string.lbl_barcode),
-                icon = R.drawable.ic_qr_code_scanner,
-                tag = "barcode_scanner"
-            ),
-            // todo: last used IPs
-            DynamicMenuActivity.DynamicMenuItem(
-                id = 2,
-                text = "192.168.1.241",
-                icon = R.drawable.ic_save,
-                tag = "192.168.1.241"
-            ),
-            DynamicMenuActivity.DynamicMenuItem(
-                id = 3,
-                text = "192.168.1.180",
-                icon = R.drawable.ic_save,
-                tag = "192.168.1.180")
-        )
+        private fun ipMenuItems(context: Context): ArrayList<DynamicMenuActivity.DynamicMenuItem> {
+            val menuItems = arrayListOf(
+                DynamicMenuActivity.DynamicMenuItem(
+                    id = 0,
+                    text = context.getString(R.string.lbl_gateway_ip),
+                    icon = R.drawable.ic_wifi_tethering,
+                    tag = "gateway_ip",
+                    subtext = getHostIPAddress(context)
+                ),
+                // barcode format: `xxx.xxx.xxx.xxx[|User readable name]`
+                DynamicMenuActivity.DynamicMenuItem(
+                    id = 1,
+                    text = context.getString(R.string.lbl_barcode),
+                    icon = R.drawable.ic_qr_code_scanner,
+                    tag = "barcode_scanner"
+                )
+            )
+
+            Settings(context).lastScannedServerIp?.takeIf { it.isNotBlank() }?.let { lastIp ->
+                menuItems.add(
+                    DynamicMenuActivity.DynamicMenuItem(
+                        id = 2,
+                        text = lastIp,
+                        icon = R.drawable.ic_outline_history,
+                        tag = lastIp
+                    )
+                )
+            }
+
+            // test IPs
+            menuItems.add(
+                DynamicMenuActivity.DynamicMenuItem(
+                    id = 3,
+                    text = "192.168.1.241",
+                    icon = R.drawable.ic_save,
+                    tag = "192.168.1.241"
+                )
+            )
+            menuItems.add(
+                DynamicMenuActivity.DynamicMenuItem(
+                    id = 4,
+                    text = "192.168.1.180",
+                    icon = R.drawable.ic_save,
+                    tag = "192.168.1.180"
+                )
+            )
+            return menuItems
+        }
     }
 }
