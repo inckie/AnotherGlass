@@ -19,6 +19,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:gravity="center_vertical"
             android:orientation="vertical">
 
             <TextView
@@ -32,8 +33,25 @@
                 android:id="@+id/hint"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 tools:text="@string/msg_service_not_running_hint" />
+
+            <TextView
+                android:id="@+id/battery_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                tools:text="🔋 85%" />
+
+            <TextView
+                android:id="@+id/voice_commands"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                tools:text="🎤 Start service" />
         </LinearLayout>
 
     </FrameLayout>

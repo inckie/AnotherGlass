@@ -42,9 +42,11 @@ class ServiceStateCard : BaseFragment() {
             val state = mainActivity().getServiceState()
             setText(serviceState(state.value))
             binding.hint.text = serviceHint(state.value, resources)
+            binding.voiceCommands.text = availableVoiceCommands(state.value, resources)
             state.observe(viewLifecycleOwner) {
                 setText(serviceState(it))
                 binding.hint.text = serviceHint(it, resources)
+                binding.voiceCommands.text = availableVoiceCommands(it, resources)
             }
         }
         return binding.root
@@ -94,8 +96,7 @@ class ServiceStateCard : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         batteryStatus.observe(viewLifecycleOwner) {
-            // todo: replace with tile (text is too small)
-            binding.footer.text = BatteryStatus.batteryStatusString(it)
+            binding.batteryValue.text = BatteryStatus.batteryStatusString(it)
         }
     }
 
@@ -172,6 +173,19 @@ class ServiceStateCard : BaseFragment() {
             IService.ServiceState.WAITING -> ""
             IService.ServiceState.CONNECTED -> resources.getString(R.string.msg_service_connected_hint)
             IService.ServiceState.DISCONNECTED -> ""
+        }
+
+        private fun availableVoiceCommands(
+            state: IService.ServiceState?,
+            resources: Resources
+        ): String {
+            val commandRes = when (state) {
+                null, IService.ServiceState.DISCONNECTED -> R.string.voice_start_service
+                IService.ServiceState.INITIALIZING,
+                IService.ServiceState.WAITING,
+                IService.ServiceState.CONNECTED -> R.string.voice_stop_service
+            }
+            return "\uD83C\uDF99 ${resources.getString(commandRes)}"
         }
 
         private fun ipMenuItems(context: Context): ArrayList<DynamicMenuActivity.DynamicMenuItem> {
