@@ -37,7 +37,6 @@ import org.greenrobot.eventbus.ThreadMode
 
 
 // TODO:
-//  - add option to connect by barcode
 //  - add Bluetooth connection support (and WiFi for xe)?
 //  - add zoom levels to map card
 //  - add controls cards: slider, Gyro lists
