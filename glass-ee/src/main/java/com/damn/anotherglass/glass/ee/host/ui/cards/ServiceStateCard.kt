@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import androidx.annotation.StringRes
 import com.damn.anotherglass.glass.ee.host.R
 import com.damn.anotherglass.glass.ee.host.core.BatteryStatus
-import com.damn.anotherglass.glass.ee.host.core.ConnectionUtils.getHostIPAddress
 import com.damn.anotherglass.glass.ee.host.core.IService
 import com.damn.anotherglass.glass.ee.host.core.Settings
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutCardServiceBinding
@@ -22,6 +21,7 @@ import com.damn.anotherglass.glass.ee.host.ui.launcher.AppLauncherActivity
 import com.damn.anotherglass.glass.ee.host.ui.qr2.CameraActivity
 import com.damn.anotherglass.glass.ee.host.ui.MainActivity
 import com.damn.anotherglass.glass.ee.host.ui.menu.DynamicMenuActivity
+import com.damn.glass.shared.rpc.ConnectionUtils.getHostIPAddress
 
 class ServiceStateCard : BaseFragment() {
 

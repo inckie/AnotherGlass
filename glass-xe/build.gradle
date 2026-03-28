@@ -53,6 +53,7 @@ repositories {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.google.zxing:core:3.5.4'
     implementation project(':shared')
     implementation project(':glass-shared')
     // cant use androidx due to API levels

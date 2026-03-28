@@ -1,5 +1,6 @@
 package com.damn.anotherglass.glass.host;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -15,6 +16,7 @@ import androidx.annotation.Nullable;
 import com.damn.anotherglass.glass.host.bluetooth.BluetoothClient;
 import com.damn.anotherglass.shared.rpc.IRPCClient;
 import com.damn.glass.shared.gps.MockGPS;
+import com.damn.glass.shared.rpc.WiFiClient;
 import com.damn.anotherglass.glass.host.notifications.NotificationsCardController;
 import com.damn.anotherglass.glass.host.ui.ICardViewProvider;
 import com.damn.anotherglass.glass.host.ui.MapCard;
@@ -41,6 +43,16 @@ import com.damn.anotherglass.glass.host.core.BatteryStatus;
 public class HostService extends Service {
 
     private static final String LIVE_CARD_TAG = "HostService";
+    private static final String PREFS_NAME = "host_service";
+    private static final String PREF_CONNECTION_TYPE = "connection_type";
+
+    public static final String EXTRA_CONNECTION_TYPE = "connection_type";
+    public static final String EXTRA_IP = "ip";
+
+    public static final String CONNECTION_TYPE_BLUETOOTH = "bluetooth";
+    public static final String CONNECTION_TYPE_WIFI = "wifi";
+
+    public static final String DEFAULT_WIFI_IP = "192.168.1.180"; // kept for source compatibility, prefer gateway auto-detection
 
     private LiveCard mLiveCard;
 
@@ -60,6 +72,7 @@ public class HostService extends Service {
     }
 
     @Override
+    @SuppressLint("WrongConstant")
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (mLiveCard == null) {
             mLiveCard = new LiveCard(this, LIVE_CARD_TAG);
@@ -94,7 +107,9 @@ public class HostService extends Service {
 
             AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
-            mRPCClient = new BluetoothClient();
+            final String connectionType = resolveConnectionType(intent);
+            final String wifiIp = intent != null ? intent.getStringExtra(EXTRA_IP) : null;
+            mRPCClient = createClient(connectionType, wifiIp);
             mRPCClient.start(this, new RPCMessageListener() {
 
                 @Override
@@ -165,13 +180,43 @@ public class HostService extends Service {
                 .getRemoteViews());
     }
 
+    @NonNull
+    private IRPCClient createClient(@NonNull String connectionType, @Nullable String wifiIp) {
+        if (CONNECTION_TYPE_WIFI.equals(connectionType)) {
+            return new WiFiClient(wifiIp); // null → WiFiClient auto-detects gateway via ConnectionUtils
+        }
+        return new BluetoothClient();
+    }
+
+    @NonNull
+    private String resolveConnectionType(@Nullable Intent intent) {
+        String requestedType = intent != null ? intent.getStringExtra(EXTRA_CONNECTION_TYPE) : null;
+        if (requestedType != null && isKnownConnectionType(requestedType)) {
+            getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                    .edit()
+                    .putString(PREF_CONNECTION_TYPE, requestedType)
+                    .apply();
+            return requestedType;
+        }
+
+        String persistedType = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                .getString(PREF_CONNECTION_TYPE, CONNECTION_TYPE_BLUETOOTH);
+        return isKnownConnectionType(persistedType) ? persistedType : CONNECTION_TYPE_BLUETOOTH;
+    }
+
+    private boolean isKnownConnectionType(@Nullable String type) {
+        return CONNECTION_TYPE_BLUETOOTH.equals(type) || CONNECTION_TYPE_WIFI.equals(type);
+    }
+
     @Override
     public void onDestroy() {
         if(null != mBatteryStatus) {
             mBatteryStatus.stop();
             mBatteryStatus = null;
         }
-        mRPCClient.stop();
+        if (mRPCClient != null) {
+            mRPCClient.stop();
+        }
         mNotificationsCardController.remove();
         mGPS.remove();
         if(null != mCardProvider) {

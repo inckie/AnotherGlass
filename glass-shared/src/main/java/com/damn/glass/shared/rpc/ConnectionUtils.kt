@@ -1,10 +1,11 @@
-package com.damn.anotherglass.glass.ee.host.core
+package com.damn.glass.shared.rpc
 
 import android.content.Context
 import android.net.wifi.WifiManager
 import android.text.format.Formatter
 
 object ConnectionUtils {
+
     fun isPossiblyTethering(ip: String): Boolean {
         // Check is IP address is in the range of possible tethering addresses.
         // default tethering IP ranges addresses are
@@ -19,12 +20,15 @@ object ConnectionUtils {
         return ip.startsWith("192.168.")
     }
 
-    // todo: replace deprecated API, move isPossiblyTethering up
+    // todo: replace deprecated API
+    @JvmStatic
+    @Suppress("DEPRECATION")
     fun getHostIPAddress(context: Context): String? {
-        val wf = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val wf = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+            ?: return null
         val dhcpInfo = wf.dhcpInfo ?: return null
-        val tmp = dhcpInfo.gateway
-        val ip = Formatter.formatIpAddress(tmp)
-        return if(isPossiblyTethering(ip)) ip else null
+        val ip = Formatter.formatIpAddress(dhcpInfo.gateway)
+        return if (isPossiblyTethering(ip)) ip else null
     }
 }
+

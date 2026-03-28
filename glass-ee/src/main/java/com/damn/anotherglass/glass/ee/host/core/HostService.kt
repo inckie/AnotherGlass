@@ -1,6 +1,5 @@
 package com.damn.anotherglass.glass.ee.host.core
 
-import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.Binder
@@ -13,8 +12,10 @@ import com.damn.anotherglass.shared.gps.GPSServiceAPI
 import com.damn.anotherglass.shared.gps.Location
 import com.damn.anotherglass.shared.notifications.NotificationData
 import com.damn.anotherglass.shared.notifications.NotificationsAPI
+import com.damn.anotherglass.shared.rpc.IRPCClient
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.rpc.RPCMessageListener
+import com.damn.glass.shared.rpc.WiFiClient
 import com.damn.glass.shared.gps.MockGPS
 import com.damn.glass.shared.notifications.NotificationController
 import org.greenrobot.eventbus.EventBus
@@ -41,7 +42,7 @@ class HostService : LifecycleService(), IService {
 
     private val batteryStatus: BatteryStatus by lazy { BatteryStatus(this) }
 
-    private var client: WiFiClient? = null
+    private var client: IRPCClient? = null
 
     inner class LocalBinder : Binder() {
         fun getService(): IService = this@HostService
@@ -147,7 +148,7 @@ class HostService : LifecycleService(), IService {
         client?.start(this, listener)
     }
 
-    override fun onBind(intent: Intent): IBinder? {
+    override fun onBind(intent: Intent): IBinder {
         super.onBind(intent)
         return _binder
     }

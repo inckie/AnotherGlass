@@ -34,13 +34,26 @@ key_password=<key password>
 
 ### Google Glass Explorer Edition
 
-Uses Bluetooth to connect to the phone. WiFi tethering is not supported yet.
+Supports both Bluetooth and WiFi connection modes.
 
+1. Install both applications.
+2. Start Host Service from the phone app.
+3. On Glass, trigger/start AnotherGlass and choose connection mode:
+   - `Bluetooth` to connect over paired Bluetooth.
+   - `Wi-Fi` to connect using current network gateway IP.
+   - `Scan Barcode` to scan server IP from QR code (`ip` or `ip|label` format).
+4. If needed, use the long-press options and menu cards to reconnect using gateway IP or last scanned IP.
+
+For Bluetooth mode:
 1. Pair the Glass with the phone.
 2. Install both applications.
-3. Select Bluetooth connection mode in the mobile application.
-4. Toggle service switch on the phone application to start Host Service.
-5. On the Glass, use a 'Sign in' menu option ('Help me sign in' voice command) to start Client Service.
+3. Select Bluetooth connection mode in the phone application.
+4. Start service on Glass and choose `Bluetooth`.
+
+For WiFi mode:
+1. Ensure Glass and phone are on the same network, or use phone hotspot.
+2. Start service on Glass and choose `Wi-Fi`, or `Scan Barcode` to provide an explicit server IP.
+3. If QR scan succeeds, the scanned IP is remembered and shown as a quick reconnect option.
 
 ### Google Glass Enterprise Edition
 
@@ -96,7 +109,6 @@ Make sure to change communication protocol to JSON Lines by setting `SerializerP
 * Add Dismiss command to notifications (send message to mobile application).
 * Add notifications filter options and better display.
 * Add one time notification stack activity (easy, but lazy).
-* Add WiFi connection mode.
 * Handle Bluetooth reconnects (Glass sometimes loses the Bluetooth connection and immediately reconnects, but I stop the service for now).
 
 ## GlassWare Plans
