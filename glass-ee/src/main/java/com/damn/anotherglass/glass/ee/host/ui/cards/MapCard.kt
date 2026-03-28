@@ -25,6 +25,7 @@ import com.damn.anotherglass.glass.ee.host.databinding.LayoutCardMapBinding
 import com.damn.anotherglass.glass.ee.host.gpsPermissions
 import com.damn.anotherglass.glass.ee.host.utility.hasPermission
 import com.damn.anotherglass.glass.ee.host.utility.locationManager
+import com.damn.glass.shared.maps.MapBitmap
 import java.util.Locale
 
 
@@ -152,7 +153,7 @@ class MapCard : BaseFragment() {
             @SuppressLint("SetTextI18n")
             lblGpsStatus.text = "${location.latitude}, ${location.longitude}"
             mapView.apply {
-                val url = getMapUrl(location)
+                val url = MapBitmap.getMapUrl(location)
                 if (lastMapUrl == url) return
                 load(url) {
                     diskCachePolicy(CachePolicy.DISABLED)
@@ -199,18 +200,6 @@ class MapCard : BaseFragment() {
                 // todo:try to install and remove mock provider to check if permission is granted
                 false
             }
-        }
-
-        // todo: copypasted from Explorer app
-        private fun getMapUrl(location: Location): String {
-            return String.format(
-                Locale.getDefault(),
-                "https://static-maps.yandex.ru/1.x/?lang=en_US" +
-                        "&size=640,360&z=15&l=map&pt=" +
-                        "%f,%f" +
-                        ",pm2rdl",
-                location.longitude, location.latitude
-            )
         }
 
         @JvmStatic

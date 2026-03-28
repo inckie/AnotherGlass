@@ -255,7 +255,7 @@ private fun OptionToggles(
 }
 
 @Composable
-private fun DeviceStatusCard(device: com.damn.anotherglass.core.ConnectedDevice) {
+private fun DeviceStatusCard(device: ConnectedDevice) {
     val deviceName by device.name.collectAsState()
     val batteryStatus by device.batteryStatus.collectAsState()
 

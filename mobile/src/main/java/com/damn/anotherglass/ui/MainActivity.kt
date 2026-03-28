@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         // can also just put to context
-        val importExportController = IImportExportController.Companion.fromActivity(this)
+        val importExportController = IImportExportController.fromActivity(this)
         val serviceController = ServiceController(this)
 
         setContent {

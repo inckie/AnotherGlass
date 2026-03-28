@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.damn.glass.shared.maps.MapBitmap;
 import com.google.android.glass.timeline.LiveCard;
 import com.google.android.glass.widget.CardBuilder;
 import com.squareup.picasso.MemoryPolicy;
@@ -83,7 +84,7 @@ public class MapCard extends ICardViewProvider implements LocationListener {
         if(null == mLocation)
             return;
 
-        final String mapUrl = getMapUrl(mLocation);
+        final String mapUrl = MapBitmap.getMapUrl(mLocation);
         if (mLastMapUrl.equals(mapUrl))
             return;
 
@@ -128,16 +129,6 @@ public class MapCard extends ICardViewProvider implements LocationListener {
         if(null != mLastMap)
             cardBuilder.addImage(mLastMap);
         return cardBuilder.getRemoteViews();
-    }
-
-    private String getMapUrl(Location location) {
-        return String.format(
-                Locale.getDefault(),
-                "https://static-maps.yandex.ru/1.x/?lang=en_US" +
-                        "&size=640,360&z=15&l=map&pt=" +
-                        "%f,%f" +
-                        ",pm2rdl",
-                location.getLongitude(), location.getLatitude());
     }
 
 }
