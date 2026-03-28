@@ -17,10 +17,14 @@ import androidx.lifecycle.lifecycleScope
 import com.applicaster.xray.core.Logger
 import com.damn.anotherglass.R
 import com.damn.anotherglass.extensions.GPSExtension
+import com.damn.anotherglass.extensions.media.MediaExtension
 import com.damn.anotherglass.extensions.notifications.NotificationExtension
 import com.damn.anotherglass.logging.ALog
 import com.damn.anotherglass.shared.device.BatteryStatusData
 import com.damn.anotherglass.shared.device.DeviceAPI
+import com.damn.anotherglass.shared.media.MediaAPI
+import com.damn.anotherglass.shared.media.MediaCommandData
+import com.damn.anotherglass.shared.media.MediaStateData
 import com.damn.anotherglass.shared.rpc.IRPCHost
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.rpc.RPCMessageListener
@@ -52,12 +56,14 @@ class GlassService
     // todo: generalize
     private lateinit var mGPS: GPSExtension
     private lateinit var mNotifications: NotificationExtension
+    private lateinit var mMedia: MediaExtension
 
     // connected device info
     private val mDeviceName = MutableStateFlow("")
     private val mBatteryStatus = MutableStateFlow<BatteryStatusData?>(null)
     private val mConnectedDeviceData = ConnectedDevice(mDeviceName, mBatteryStatus)
     private val mConnectedDevice = MutableStateFlow<ConnectedDevice?>(null)
+    private val mMediaState = MutableStateFlow<MediaStateData?>(null)
 
     override fun onCreate() {
         super.onCreate()
@@ -76,6 +82,8 @@ class GlassService
                 log.i(TAG, "Waiting for connection")
                 Toast.makeText(this@GlassService, R.string.service_waiting_for_connection, Toast.LENGTH_SHORT)
                     .show()
+                mMedia.stop()
+                mMediaState.value = null
                 mConnectedDevice.value = null
             }
 
@@ -92,14 +100,25 @@ class GlassService
                 mConnectedDevice.value = mConnectedDeviceData
                 if (mSettings.isGPSEnabled) mGPS.start()
                 if (mSettings.isNotificationsEnabled) mNotifications.start()
+                mMediaState.value = null
+                mMedia.start()
             }
 
             override fun onDataReceived(data: RPCMessage) {
                 log.d(TAG, "Received $data")
-                if (DeviceAPI.SERVICE_NAME == data.service) {
-                    val payload = data.payload
-                    if (payload is BatteryStatusData) {
-                        mBatteryStatus.value = payload
+                when (data.service) {
+                    DeviceAPI.SERVICE_NAME -> {
+                        val payload = data.payload
+                        if (payload is BatteryStatusData) {
+                            mBatteryStatus.value = payload
+                        }
+                    }
+
+                    MediaAPI.ID -> {
+                        val payload = data.payload
+                        if (payload is MediaCommandData) {
+                            mMedia.onCommand(payload)
+                        }
                     }
                 }
             }
@@ -110,6 +129,8 @@ class GlassService
                 Toast.makeText(this@GlassService, R.string.service_disconnected, Toast.LENGTH_SHORT).show()
                 mGPS.stop()
                 mNotifications.stop()
+                mMedia.stop()
+                mMediaState.value = null
                 mConnectedDevice.value = null
             }
 
@@ -120,6 +141,8 @@ class GlassService
                     "BluetoothHost has stopped, terminating GlassService",
                     Toast.LENGTH_SHORT
                 ).show()
+                mMedia.stop()
+                mMediaState.value = null
                 mConnectedDevice.value = null
                 stopSelf()
             }
@@ -128,6 +151,9 @@ class GlassService
         mSettings = Settings(this)
         mNotifications = NotificationExtension(this)
         mGPS = GPSExtension(this)
+        mMedia = MediaExtension(this) { mediaState ->
+            mMediaState.value = mediaState
+        }
 
         val useWifi = Settings.HostMode.WiFi == mSettings.hostMode
         mHost = if (useWifi) WiFiHost(rpcMessageListener) else BluetoothHost(rpcMessageListener)
@@ -155,6 +181,8 @@ class GlassService
     override fun onDestroy() {
         mGPS.stop()
         mNotifications.stop()
+        mMedia.stop()
+        mMediaState.value = null
         mHost.stop()
         mConnectedDevice.value = null
         super.onDestroy()
@@ -164,11 +192,19 @@ class GlassService
         mHost.send(message)
     }
 
+    fun sendMediaCommand(command: MediaCommandData) {
+        mMedia.onCommand(command)
+    }
+
     val connectedDevice: StateFlow<ConnectedDevice?>
         get() = mConnectedDevice
 
     val settings: Settings
         get() = mSettings
+
+    val mediaState: StateFlow<MediaStateData?>
+        get() = mMediaState
+
 
     private fun createChannels() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return

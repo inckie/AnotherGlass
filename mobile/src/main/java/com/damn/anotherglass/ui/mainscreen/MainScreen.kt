@@ -45,6 +45,8 @@ import com.damn.anotherglass.core.Settings
 import com.damn.anotherglass.debug.DbgNotifications
 import com.damn.anotherglass.logging.LogActivity
 import com.damn.anotherglass.shared.device.BatteryStatusData
+import com.damn.anotherglass.shared.media.MediaCommandData
+import com.damn.anotherglass.shared.media.MediaStateData
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.ui.AppRoute
 import com.damn.anotherglass.ui.MainActivity
@@ -215,6 +217,11 @@ private fun OptionToggles(
         DeviceStatusCard(it)
     }
 
+    val mediaState = serviceController?.mediaState?.collectAsState()?.value
+    mediaState?.let {
+        MediaStatusCard(it, serviceController)
+    }
+
     // Divider
     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
@@ -297,8 +304,10 @@ fun DefaultPreview() {
                             MutableStateFlow(BatteryStatusData(75, false))
                         )
                     )
+                override val mediaState: StateFlow<MediaStateData?> = MutableStateFlow(null)
                 override fun startService() = Unit
                 override fun stopService() = Unit
+                override fun sendMediaCommand(command: MediaCommandData) = Unit
                 override fun send(message: RPCMessage) = Unit
                 override fun getService(): GlassService? = null
             },

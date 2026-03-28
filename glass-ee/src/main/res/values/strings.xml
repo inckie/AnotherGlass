@@ -39,4 +39,11 @@
     <!-- Tilt to Wake Service -->
     <string name="lbl_wake_service_tap_to_stop">Tap and hold to stop Tilt to Wake Service</string>
     <string name="wake_service_tap_to_start">Tap and hold to start Tilt to Wake Service</string>
+
+    <!-- Media Card -->
+    <string name="media_state_playing">▶ Playing</string>
+    <string name="media_state_paused">⏸ Paused</string>
+    <string name="media_state_buffering">⏳ Buffering</string>
+    <string name="media_state_stopped">⏹ Stopped</string>
+    <string name="media_hint">Tap: play/pause  •  Swipe →: next  •  ✌ tap: stop</string>
 </resources>

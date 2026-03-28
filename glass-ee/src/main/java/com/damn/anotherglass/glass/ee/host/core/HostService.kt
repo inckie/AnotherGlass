@@ -10,6 +10,8 @@ import androidx.lifecycle.LifecycleService
 import com.damn.anotherglass.shared.device.DeviceAPI
 import com.damn.anotherglass.shared.gps.GPSServiceAPI
 import com.damn.anotherglass.shared.gps.Location
+import com.damn.anotherglass.shared.media.MediaAPI
+import com.damn.anotherglass.shared.media.MediaStateData
 import com.damn.anotherglass.shared.notifications.NotificationData
 import com.damn.anotherglass.shared.notifications.NotificationsAPI
 import com.damn.anotherglass.shared.rpc.IRPCClient
@@ -17,6 +19,8 @@ import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.rpc.RPCMessageListener
 import com.damn.glass.shared.rpc.WiFiClient
 import com.damn.glass.shared.gps.MockGPS
+import com.damn.glass.shared.media.IRPCSender
+import com.damn.glass.shared.media.MediaController
 import com.damn.glass.shared.notifications.NotificationController
 import org.greenrobot.eventbus.EventBus
 
@@ -66,7 +70,6 @@ class HostService : LifecycleService(), IService {
         return START_STICKY
     }
 
-    @Override
     override fun onCreate() {
         super.onCreate()
         gps = MockGPS(this)
@@ -75,12 +78,13 @@ class HostService : LifecycleService(), IService {
         batteryStatus.observe(this) {
             client?.send(RPCMessage(DeviceAPI.SERVICE_NAME, it))
         }
+        MediaController.instance.setService { client?.send(it) }
     }
 
-    @Override
     override fun onDestroy() {
         super.onDestroy()
         Log.i(TAG, "HostService stopped")
+        MediaController.instance.clearService()
         gps.remove()
         client?.stop()
         sounds.release()
@@ -99,6 +103,7 @@ class HostService : LifecycleService(), IService {
                 Log.d(TAG, "Connected to $device")
                 state = IService.ServiceState.CONNECTED
                 NotificationController.instance.onServiceConnected()
+                MediaController.instance.onServiceConnected()
 
                 batteryStatus.value?.let {
                     client?.send(RPCMessage(DeviceAPI.SERVICE_NAME, it))
@@ -118,6 +123,12 @@ class HostService : LifecycleService(), IService {
                         val notificationData = data.payload as NotificationData
                         NotificationController.instance.onNotificationUpdate(notificationData)
                         notificationNotifier.notify(notificationData)
+                    }
+
+                    MediaAPI.ID -> {
+                        Log.d(TAG, "Media data received")
+                        val mediaState = data.payload as? MediaStateData ?: return
+                        MediaController.instance.onMediaStateUpdate(mediaState)
                     }
 
                     else -> Log.e(TAG, "Unknown service: ${data.service}")

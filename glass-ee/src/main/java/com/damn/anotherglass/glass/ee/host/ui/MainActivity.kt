@@ -24,6 +24,7 @@ import com.damn.anotherglass.glass.ee.host.core.Settings
 import com.damn.anotherglass.glass.ee.host.core.tiltawake.TiltToWakeService
 import com.damn.anotherglass.glass.ee.host.debug.DebugManager
 import com.damn.anotherglass.glass.ee.host.ui.MainActivityEx.addNotificationsModule
+import com.damn.anotherglass.glass.ee.host.ui.MainActivityEx.addMediaModule
 import com.damn.anotherglass.glass.ee.host.ui.cards.BaseFragment
 import com.damn.anotherglass.glass.ee.host.ui.cards.MapCard
 import com.damn.anotherglass.glass.ee.host.ui.cards.ServiceStateCard
@@ -111,6 +112,7 @@ class MainActivity : BaseActivity() {
         tabLayout.setupWithViewPager(viewPager, true)
 
         addNotificationsModule(timeLine)
+        addMediaModule(timeLine)
 
         timeLine.setCurrent(1, false)
 
@@ -200,6 +202,10 @@ class MainActivity : BaseActivity() {
                 fragments[viewPager.currentItem].onTwoFingerTap()
                 true
             }
+            GlassGestureDetector.Gesture.SWIPE_FORWARD -> {
+                fragments[viewPager.currentItem].onSwipeForward()
+                true
+            }
             else -> super.onGesture(gesture)
         }
 
@@ -244,9 +250,7 @@ class MainActivity : BaseActivity() {
 
         fun bindGlassService() {
             try {
-                if (bound) {
-                    unbindService(connection)
-                }
+                if (bound) unbindService(connection)
             } catch (e: Exception) {
                 e.printStackTrace()
             }

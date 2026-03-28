@@ -12,6 +12,8 @@ import com.damn.anotherglass.core.ConnectedDevice
 import com.damn.anotherglass.core.CoreController
 import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.core.GlassService.LocalBinder
+import com.damn.anotherglass.shared.media.MediaCommandData
+import com.damn.anotherglass.shared.media.MediaStateData
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +27,8 @@ class ServiceController(private val activity: ComponentActivity) : DefaultLifecy
 
     private val _connectedDevice = MutableStateFlow<ConnectedDevice?>(null)
     override val connectedDevice: StateFlow<ConnectedDevice?> = _connectedDevice
+    private val _mediaState = MutableStateFlow<MediaStateData?>(null)
+    override val mediaState: StateFlow<MediaStateData?> = _mediaState
 
     init {
         activity.lifecycle.addObserver(this)
@@ -53,6 +57,10 @@ class ServiceController(private val activity: ComponentActivity) : DefaultLifecy
         activity.stopService(Intent(activity, GlassService::class.java))
     }
 
+    override fun sendMediaCommand(command: MediaCommandData) {
+        glassServiceConnection.service?.sendMediaCommand(command)
+    }
+
     override fun send(message: RPCMessage) {
         glassServiceConnection.service?.send(message)
     }
@@ -64,6 +72,7 @@ class ServiceController(private val activity: ComponentActivity) : DefaultLifecy
             private set
         private var bound = false
         private var deviceStateJob: Job? = null
+        private var mediaStateJob: Job? = null
 
         fun bindGlassService() {
             try {
@@ -95,6 +104,11 @@ class ServiceController(private val activity: ComponentActivity) : DefaultLifecy
                     _connectedDevice.value = it
                 }
             }
+            mediaStateJob = activity.lifecycleScope.launch {
+                this@ServiceController.glassServiceConnection.service?.mediaState?.collect {
+                    _mediaState.value = it
+                }
+            }
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
@@ -109,7 +123,10 @@ class ServiceController(private val activity: ComponentActivity) : DefaultLifecy
         private fun cleanupConnection() {
             deviceStateJob?.cancel()
             deviceStateJob = null
+            mediaStateJob?.cancel()
+            mediaStateJob = null
             _connectedDevice.value = null
+            _mediaState.value = null
             service = null
             controller.onServiceDisconnected()
         }
