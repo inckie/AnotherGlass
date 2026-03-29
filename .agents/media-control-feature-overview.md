@@ -1,115 +1,121 @@
 # Media Control Feature Overview
 
+## Status
+**Complete** — all phases implemented and integrated. _(2026-03-28)_
+
 ## Goal
-Enable AnotherGlass to control media currently playing on the Android phone (YouTube, Spotify, etc.) while `GlassService` is running, and surface media playback state on:
-- Mobile app UI
-- Glass Enterprise Edition timeline card
-- Glass Explorer Edition live card
+Enable AnotherGlass to mirror the currently playing media session from the Android phone to Glass and allow playback control from Glass back to the phone, while `GlassService` is running.
 
-## Scope (Requested)
-1. Add a mobile-side extension (similar to `GPSExtension` / `NotificationExtension`) that listens to active OS media sessions and attaches to the currently playing one.
-2. Show playback state and basic controls in mobile app UI.
-3. Introduce a shared media communication protocol in `shared/src/main/java/com/damn/anotherglass/shared`.
-4. Add a shared receiver/controller in `glass-shared` for both Explorer and Enterprise apps.
-5. Add an Enterprise card.
-6. Add an Explorer live card.
+## Scope
+1. Mobile-side `MediaExtension` that listens to OS media sessions and forwards state + routes commands.
+2. Shared media protocol DTOs and API constants in `shared`.
+3. Shared `MediaController` in `glass-shared` used by both Glass apps.
+4. Mobile app UI showing now-playing state and local controls.
+5. Glass Enterprise Edition (EE) timeline media card with gesture controls.
+6. Glass Explorer Edition (XE) media live card + `MediaPlaybackActivity` control screen.
+7. Python debug client bidirectional support (receives and handles media commands from Glass).
 
-## Non-goals (for this iteration)
-- In-app media browsing/queue management.
-- Album art transfer over RPC (can be added later as optional optimization).
-- Per-app preference rules (forward from all apps vs allow-list).
+## Non-goals (this iteration)
+- Album art transfer over RPC.
+- In-app media browsing / queue management.
+- Per-app allow-list filtering.
+- Settings toggle to enable/disable the feature independently.
 
-## High-Level Architecture
+---
 
-### Mobile side
-- `GlassService` owns a new `MediaExtension` lifecycle:
-  - Start when service is connected and media forwarding is enabled.
-  - Stop when disconnected or feature is disabled.
-- `MediaExtension` uses Android media session APIs to:
-  - Discover active sessions.
-  - Track the "best" active controller (prefer `STATE_PLAYING`, then recent active).
-  - Subscribe to playback/metadata updates.
-  - Emit media state updates to:
-    1) Local service state flow (for mobile UI)
-    2) RPC outbound message to Glass host
-- `GlassService.onDataReceived` handles inbound media commands from Glass (play/pause/next/prev/seek) and routes them to `MediaExtension`.
+## Architecture
 
-### Shared protocol layer (`shared`)
-Add a `shared.media` package with serializable DTOs and API constants.
-- Suggested names:
-  - `MediaAPI` (service name/id)
-  - `MediaStateData` (title, artist, app name, duration, position, play state, actions bitmask)
-  - `MediaCommandData` (command enum + optional value for seek)
+### Data Flow
 
-### Glass shared layer (`glass-shared`)
-- Add `MediaController` (similar role to `NotificationController`) as shared in-memory receiver/state holder.
-- Responsibilities:
-  - Accept media state updates from host service.
-  - Expose observable state flow.
-  - Optionally keep last known state across temporary disconnects.
+#### Phone → Glass (state updates)
+1. Android OS media session fires a callback.
+2. `MediaExtension` normalises it into `MediaStateData` and emits via `GlassService`.
+3. `RPCMessage(MediaAPI.ID, MediaStateData)` is sent over the transport.
+4. Host service on Glass (`HostService`) routes it to `MediaController.instance`.
+5. UI observes `MediaController.getState()` and re-renders.
 
-### Glass EE app
-- Host service routes `MediaAPI` state messages into `MediaController`.
-- Main timeline registers a `MediaCard` module, similar to notifications module:
-  - Card appears when media state is available.
-  - Displays now playing + play state.
-  - Tap/voice actions send media command back to phone via RPC.
+#### Glass → Phone (control commands)
+1. User triggers a card action (tap / swipe).
+2. UI calls `MediaController.instance.sendCommand(MediaCommandData)`.
+3. `MediaController` forwards via `IRPCSender` set by the host service.
+4. `RPCMessage(MediaAPI.ID, MediaCommandData)` is sent over the transport.
+5. `GlassService` on the phone routes it to `MediaExtension.onCommand(...)`.
+6. `MediaExtension` calls `TransportControls` on the active media session.
 
-### Glass XE app
-- Host service routes `MediaAPI` state into the same shared `MediaController`.
-- Add a live-card based `MediaCardController`/provider:
-  - Renders current media state in `RemoteViews`.
-  - Card action triggers menu/activity for controls or direct toggle (implementation choice).
-  - Sends commands back using existing RPC client.
+---
 
-## Proposed Data Flow
+## Key Files
 
-### A) Phone -> Glass (state updates)
-1. Android OS media session update.
-2. `MediaExtension` receives callback and computes normalized `MediaStateData`.
-3. `GlassService.send(RPCMessage(MediaAPI.ID, MediaStateData))`.
-4. Host service (`glass-ee`/`glass-xe`) routes to shared `MediaController`.
-5. UI cards observe and re-render.
+### Shared protocol (`shared`)
+| File | Purpose |
+|------|---------|
+| `shared/media/MediaAPI.kt` | Service ID constant: `"Media"` |
+| `shared/media/MediaStateData.kt` | Playback state DTO: title, artist, album, sourceApp, sourcePackage, positionMs, durationMs, actionsMask, lastUpdatedMs, playbackState |
+| `shared/media/MediaCommandData.kt` | Command DTO: `command` enum + `seekToMs`. Commands: `Play`, `Pause`, `TogglePlayPause`, `Next`, `Previous`, `SeekTo` |
 
-### B) Glass -> Phone (control commands)
-1. User triggers card action (tap/menu/voice).
-2. Host sends `RPCMessage(MediaAPI.ID, MediaCommandData)`.
-3. Mobile `GlassService` routes inbound media command to `MediaExtension`.
-4. `MediaExtension` invokes transport controls on active `MediaControllerCompat`.
+### Mobile (`mobile`)
+| File | Purpose |
+|------|---------|
+| `extensions/media/MediaExtension.kt` | Discovers active sessions via `MediaSessionManager`; selects best controller (prefers `STATE_PLAYING`); throttles position-only updates to 1 s; executes inbound `MediaCommandData` via `TransportControls` |
+| `core/GlassService.kt` | Owns `MediaExtension` lifecycle; exposes `mediaState: StateFlow<MediaStateData?>`; routes inbound `MediaAPI` messages to extension |
+| `ui/mainscreen/MediaStatusCard.kt` | Compose card: hidden when extension inactive; shows app/title/artist/position; play/pause/prev/next buttons gated by `actionsMask` |
+| `ui/mainscreen/MainScreen.kt` | Conditionally renders `MediaStatusCard` |
 
-## Android Platform Notes
-- Primary integration: `MediaSessionManager` + active session callbacks + controller callbacks.
-- Session discovery typically requires notification listener permission (already relevant in app due to notifications feature).
-- Commands should no-op safely when no active session is available.
-- Session churn is common (ads, short clips, app handoffs); extension should debounce/reselect target controller.
+### Shared Glass layer (`glass-shared`)
+| File | Purpose |
+|------|---------|
+| `glass/shared/media/MediaController.kt` | Singleton state holder; `getState(): StateFlow<MediaStateData?>`; `setService`/`clearService`/`sendCommand` lifecycle; clears state on reconnect |
 
-## UI/UX Summary
-- Mobile app: show now-playing section under service options:
-  - App + title + artist + playback state + position
-  - Controls: previous, play/pause, next
-- Glass EE: timeline card with compact metadata and interaction.
-- Glass XE: live card view with concise text-first rendering.
+### Glass Enterprise Edition (`glass-ee`)
+| File | Purpose |
+|------|---------|
+| `core/HostService.kt` | Routes `MediaAPI` messages to `MediaController`; registers/clears `IRPCSender` |
+| `ui/MainActivityEx.kt` | Adds/removes `MediaCard` module on the timeline based on state presence |
+| `ui/cards/MediaCard.kt` | Observes state; displays app/title/artist; gesture controls: single tap → `TogglePlayPause`, timed double tap → `Next`, two-finger tap → `Pause` |
+| `res/layout/layout_card_media.xml` | Card layout |
 
-## Error Handling and Fallbacks
-- No active media: show "No media playing" state.
-- Unsupported command by source app: disable/hide unavailable actions based on actions bitmask.
-- Lost session token: re-scan active sessions and rebind.
-- RPC disconnect: keep local state but pause outbound sync until connection resumes.
+### Glass Explorer Edition (`glass-xe`)
+| File | Purpose |
+|------|---------|
+| `host/HostService.java` | Routes `MediaAPI` messages to `MediaController`; registers/clears `IRPCSender` |
+| `host/media/MediaCardController.java` | Publishes/unpublishes media live card; renders `RemoteViews` using `CardBuilder.Layout.AUTHOR`; opens `MediaPlaybackActivity` on tap |
+| `host/media/MediaPlaybackActivity.kt` | 3-card `CardScrollView`: Prev (`CAPTION`), Center (`AUTHOR`), Next (`CAPTION`). Center: single tap → `TogglePlayPause`, timed double tap → `Next`. All commands via `MediaController.sendCommand(...)` |
 
-## Security and Privacy
-- Do not transmit raw notification text bodies beyond media metadata required for playback UI.
-- Avoid persisting sensitive track history unless explicitly enabled later.
-- Keep feature off if required Android permission is missing; expose clear UI hint.
+### Python debug client (`python`)
+| File | Purpose |
+|------|---------|
+| `client.py` | `MediaDebugController` simulates a 5-track playlist with full state machine; UI mode handles inbound `MediaCommandData` messages from Glass (`TogglePlayPause`, `Play`, `Pause`, `Next`, `Previous`) and updates the UI; console mode provides a manual menu |
 
-## Performance
-- State updates should be throttled for position ticks (e.g., 1 Hz max while playing).
-- Send immediate updates on play/pause/track change.
-- Avoid heavy payloads in RPC messages (text + primitive fields only).
+---
 
-## Acceptance Criteria (Feature-level)
-- While `GlassService` is running, active media from major apps can be seen and controlled from AnotherGlass.
-- Mobile UI reflects current media state in near real-time.
-- Both Glass editions display media status using shared state receiver code in `glass-shared`.
-- Play/pause/next/previous command roundtrip works phone <-> Glass.
-- Feature degrades gracefully when no session/permission is available.
+## Card Layout Decisions
 
+### XE Live Card & Center playback card — `CardBuilder.Layout.AUTHOR`
+Fields mapped:
+- `setHeading(title)` — track title (or source app name if no title)
+- `setSubheading(artist ?? sourceApp)` — artist, falling back to source app
+- `setFootnote(sourceApp)` — source app name (live card) / interaction hint (playback center card)
+- `setTimestamp(playbackState.name)` — e.g. "Playing", "Paused"
+
+### XE Prev / Next cards — `CardBuilder.Layout.CAPTION`
+Short action label + footnote hint; avoids text cropping seen with `LAYOUT_MENU`.
+
+### EE Media Card — custom XML layout (`layout_card_media.xml`)
+Full-bleed card with title, artist, state, and gesture hint footer.
+
+---
+
+## Platform Notes
+- `MediaSessionManager` requires notification-listener permission to enumerate sessions — reuses the existing `NotificationService` component name.
+- Session churn (ads, app handoffs) is handled by re-selecting the best controller on every `OnActiveSessionsChangedListener` callback and `onSessionDestroyed`.
+- Position-tick updates are throttled to 1 Hz via a state fingerprint; play/pause/track-change events are sent immediately.
+- `actionsMask` bits from the media session are forwarded as-is; UI disables controls for unsupported actions.
+- Commands no-op safely when no active session exists.
+
+## Expansion Ideas
+- **Album art** — transfer as a Base64 or compressed byte array in `MediaStateData`; render as `setIcon` on `AUTHOR` cards.
+- **Seek bar** — add a position/duration progress view; use `MediaCommandData.Command.SeekTo` + `seekToMs`.
+- **Per-app filter** — settings toggle or allow-list stored in `SharedPreferences`; `MediaExtension` skips disallowed packages.
+- **Settings toggle** — add `Settings.MEDIA_ENABLED` flag; start/stop `MediaExtension` dynamically.
+- **Voice commands** — EE voice grammar entry to trigger play/pause/next without tapping the card.
+- **EE queue card** — swipe-right from the media card to show upcoming tracks if the session exposes a queue.

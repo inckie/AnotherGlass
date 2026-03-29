@@ -7,7 +7,8 @@ Companion application to handle **Google Glass Explorer Edition** and **Google G
 
 Currently, the application can:
  * pass GPS data from the phone to the Glass
- * forwarding ongoing and one-shot notifications to the Glass
+ * forward ongoing and one-shot notifications to the Glass
+ * control media playback on the phone (play/pause, next, previous) directly from Glass
  * perform tilt to wake up on Enterprise Edition like on Explorer Edition (be aware of battery usage)
  * pass WiFi network information (SSID and password) from the phone to the Glass (Explorer Edition only)
 
@@ -78,8 +79,26 @@ Originally, Glass application was serving as a host, and mobile was supposed to 
 
 Can use Java object stream or JSON Lines to send data to Google Glass, since I don't want to mess with protocol buffers yet.
 
+## Media Playback Controls
+
+While the Host Service is running, AnotherGlass mirrors the currently playing media session from the phone to Glass in near real-time. Any app that integrates with the Android media system (Spotify, YouTube, YouTube Music, Podcast apps, etc.) is supported automatically — no extra setup is required.
+
+**What you see:**
+- The current track title, artist, and playback state are shown on the phone app UI.
+- **Explorer Edition:** a dedicated media live card appears in the Glass timeline whenever something is playing. Tap it to open the playback controls screen.
+- **Enterprise Edition:** a media card appears in the Glass timeline when a session is active.
+
+**Controls from Glass:**
+- **Tap** — play / pause toggle.
+- **Double-tap** — skip to next track.
+- **Explorer Edition playback screen:** swipe left/right to reach dedicated Previous and Next track cards; tap either to send that command.
+
+Controls that the source app does not support are automatically disabled based on what the app reports as available actions.
+
+The media card disappears automatically when there is nothing playing.
+
 ## Debug Python client
-There is a simple Python client in `python` folder to test the Glass Enterprise application without the mobile application. It can send fake GPS coordinates and notifications to the Glass.
+There is a simple Python client in `python` folder to test the Glass Enterprise application without the mobile application. It can send fake GPS coordinates, notifications, and simulated media playback state to the Glass, and also receives and handles media control commands sent back from the Glass.
 Make sure to change communication protocol to JSON Lines by setting `SerializerProvider.currentSerializer` to `JSON`.
 
 ## AnotherGlass Plans
