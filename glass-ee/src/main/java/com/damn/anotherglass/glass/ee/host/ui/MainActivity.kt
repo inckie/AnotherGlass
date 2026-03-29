@@ -202,10 +202,6 @@ class MainActivity : BaseActivity() {
                 fragments[viewPager.currentItem].onTwoFingerTap()
                 true
             }
-            GlassGestureDetector.Gesture.SWIPE_FORWARD -> {
-                fragments[viewPager.currentItem].onSwipeForward()
-                true
-            }
             else -> super.onGesture(gesture)
         }
 

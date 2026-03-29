@@ -21,5 +21,4 @@ public interface GestureListener {
   void onSingleTapUp();
   void onTapAndHold();
   void onTwoFingerTap();
-  default void onSwipeForward() {}
 }
