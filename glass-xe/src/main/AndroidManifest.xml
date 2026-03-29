@@ -29,6 +29,10 @@
             android:icon="@drawable/ic_glass_logo"
             android:label="@string/title_activity_notifications" />
         <activity
+            android:name=".media.MediaPlaybackActivity"
+            android:icon="@drawable/ic_glass_logo"
+            android:label="@string/title_activity_media_playback" />
+        <activity
             android:name=".wifi.WiFiActivity"
             android:icon="@drawable/ic_glass_logo"
             android:label="@string/title_activity_wi_fi" />

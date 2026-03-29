@@ -22,6 +22,15 @@
 -keepnames class * implements java.io.Serializable
 -keepclassmembers class * implements java.io.Serializable { *; }
 
+# GDK (Glass Development Kit) classes are provided by the Glass system at runtime.
+# Do not rename or remove any references to them.
+-keep class com.google.android.glass.** { *; }
+
+# Shared RPC protocol classes are looked up by full class name at runtime via
+# Class.forName() in JsonMessageSerializer, and their fields/enum constants are
+# accessed by name by Gson. Renaming any of them breaks deserialization.
+-keep class com.damn.anotherglass.shared.** { *; }
+
 # This is generated automatically by the Android Gradle plugin.
 -dontwarn java.lang.invoke.MethodHandleInfo
 -dontwarn javax.annotation.Nullable

@@ -14,8 +14,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.damn.anotherglass.glass.host.bluetooth.BluetoothClient;
+import com.damn.anotherglass.glass.host.media.MediaCardController;
 import com.damn.anotherglass.shared.rpc.IRPCClient;
 import com.damn.glass.shared.gps.MockGPS;
+import com.damn.glass.shared.media.MediaController;
 import com.damn.glass.shared.rpc.WiFiClient;
 import com.damn.anotherglass.glass.host.notifications.NotificationsCardController;
 import com.damn.anotherglass.glass.host.ui.ICardViewProvider;
@@ -26,6 +28,8 @@ import com.damn.anotherglass.shared.rpc.RPCMessage;
 import com.damn.anotherglass.shared.rpc.RPCMessageListener;
 import com.damn.anotherglass.shared.gps.GPSServiceAPI;
 import com.damn.anotherglass.shared.gps.Location;
+import com.damn.anotherglass.shared.media.MediaAPI;
+import com.damn.anotherglass.shared.media.MediaStateData;
 import com.damn.anotherglass.shared.notifications.NotificationData;
 import com.damn.anotherglass.shared.notifications.NotificationsAPI;
 import com.damn.anotherglass.shared.wifi.WiFiAPI;
@@ -63,6 +67,7 @@ public class HostService extends Service {
     private ICardViewProvider mCardProvider;
 
     private NotificationsCardController mNotificationsCardController;
+    private MediaCardController mMediaCardController;
 
     private BatteryStatus mBatteryStatus;
 
@@ -97,6 +102,7 @@ public class HostService extends Service {
             }
 
             mNotificationsCardController = new NotificationsCardController(this);
+            mMediaCardController = new MediaCardController(this);
 
             mBatteryStatus = new BatteryStatus(this, data -> {
                 if(null != mRPCClient) {
@@ -110,6 +116,11 @@ public class HostService extends Service {
             final String connectionType = resolveConnectionType(intent);
             final String wifiIp = intent != null ? intent.getStringExtra(EXTRA_IP) : null;
             mRPCClient = createClient(connectionType, wifiIp);
+            MediaController.getInstance().setService(message -> {
+                if (mRPCClient != null) {
+                    mRPCClient.send(message);
+                }
+            });
             mRPCClient.start(this, new RPCMessageListener() {
 
                 @Override
@@ -124,6 +135,7 @@ public class HostService extends Service {
                     // map can take a while or not show at all, so show status card
                     displayStatusCard(getString(R.string.msg_connected_to_s, device));
                     mCardProvider = new MapCard(mLiveCard, HostService.this);
+                    mMediaCardController.onServiceConnected();
                 }
 
                 @Override
@@ -161,6 +173,14 @@ public class HostService extends Service {
         } else if (NotificationsAPI.ID.equals(data.service)) {
             if (data.type.equals(NotificationData.class.getName())) {
                 mNotificationsCardController.onNotificationUpdate((NotificationData) data.payload);
+            }
+        } else if (MediaAPI.ID.equals(data.service)) {
+            if (data.type.equals(MediaStateData.class.getName())) {
+                MediaStateData state = (MediaStateData) data.payload;
+                MediaController.getInstance().onMediaStateUpdate(state);
+                if (mMediaCardController != null) {
+                    mMediaCardController.onMediaStateUpdate(state);
+                }
             }
         } else if (WiFiAPI.ID.equals(data.service)) {
             if (data.type.equals(WiFiConfiguration.class.getName()))
@@ -217,7 +237,12 @@ public class HostService extends Service {
         if (mRPCClient != null) {
             mRPCClient.stop();
         }
+        MediaController.getInstance().clearService();
         mNotificationsCardController.remove();
+        if (mMediaCardController != null) {
+            mMediaCardController.remove();
+            mMediaCardController = null;
+        }
         mGPS.remove();
         if(null != mCardProvider) {
             mCardProvider.onRemoved();
