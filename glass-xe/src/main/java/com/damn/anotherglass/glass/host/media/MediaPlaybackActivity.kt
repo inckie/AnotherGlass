@@ -57,7 +57,7 @@ class MediaPlaybackActivity : Activity() {
             override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
                 val current = mediaState
                 return when (position) {
-                    POSITION_PREV -> CardBuilder(this@MediaPlaybackActivity, CardBuilder.Layout.MENU)
+                    POSITION_PREV -> CardBuilder(this@MediaPlaybackActivity, CardBuilder.Layout.CAPTION)
                         .setText(getString(R.string.media_prev_title))
                         .setFootnote(getString(R.string.media_prev_hint))
                         .getView(convertView, parent)
@@ -65,20 +65,24 @@ class MediaPlaybackActivity : Activity() {
                     POSITION_CENTER -> {
                         val title = current?.title ?: getString(R.string.media_no_playback)
                         val artist = current?.artist
+                        val source = current?.sourceApp ?: current?.sourcePackage
                         val state = current?.playbackState?.name ?: "None"
-                        val text = if (!artist.isNullOrBlank()) "$title\n$artist" else title
-                        CardBuilder(this@MediaPlaybackActivity, CardBuilder.Layout.MENU)
-                            .setText(text)
-                            .setFootnote("$state | ${getString(R.string.media_center_hint)}")
-                            .getView(convertView, parent)
+                        val heading = title
+                        val subheading = if (!artist.isNullOrBlank()) artist else source
+                        val builder = CardBuilder(this@MediaPlaybackActivity, CardBuilder.Layout.AUTHOR)
+                            .setHeading(heading)
+                            .setTimestamp(state)
+                            .setFootnote(getString(R.string.media_center_hint))
+                        if (subheading != null) builder.setSubheading(subheading)
+                        builder.getView(convertView, parent)
                     }
 
-                    POSITION_NEXT -> CardBuilder(this@MediaPlaybackActivity, CardBuilder.Layout.MENU)
+                    POSITION_NEXT -> CardBuilder(this@MediaPlaybackActivity, CardBuilder.Layout.CAPTION)
                         .setText(getString(R.string.media_next_title))
                         .setFootnote(getString(R.string.media_next_hint))
                         .getView(convertView, parent)
 
-                    else -> CardBuilder(this@MediaPlaybackActivity, CardBuilder.Layout.MENU)
+                    else -> CardBuilder(this@MediaPlaybackActivity, CardBuilder.Layout.CAPTION)
                         .setText(getString(R.string.media_no_playback))
                         .getView(convertView, parent)
                 }

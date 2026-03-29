@@ -70,23 +70,20 @@ public class MediaCardController {
         String artist = state.getArtist();
         String source = state.getSourceApp() != null ? state.getSourceApp() : state.getSourcePackage();
 
-        String text;
-        if (title != null && artist != null && !artist.isEmpty()) {
-            text = title + "\n" + artist;
-        } else if (title != null) {
-            text = title;
-        } else if (source != null) {
-            text = source;
-        } else {
-            text = service.getString(R.string.media_no_playback);
+        String heading = title != null ? title : (source != null ? source : service.getString(R.string.media_no_playback));
+        String subheading = (artist != null && !artist.isEmpty()) ? artist : source;
+        String timestamp = state.getPlaybackState().name();
+
+        CardBuilder builder = new CardBuilder(service.getApplicationContext(), CardBuilder.Layout.AUTHOR)
+                .setHeading(heading)
+                .setTimestamp(timestamp);
+        if (subheading != null) {
+            builder.setSubheading(subheading);
         }
-
-        String footnote = state.getPlaybackState().name();
-
-        return new CardBuilder(service.getApplicationContext(), CardBuilder.Layout.MENU)
-                .setText(text)
-                .setFootnote(footnote)
-                .getRemoteViews();
+        if (source != null) {
+            builder.setFootnote(source);
+        }
+        return builder.getRemoteViews();
     }
 
     private boolean hasPlayableSession(@NonNull MediaStateData state) {

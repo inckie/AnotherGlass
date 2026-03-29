@@ -70,7 +70,7 @@ public class StartActivity extends Activity {
                 CardBuilder builder = new CardBuilder(StartActivity.this, CardBuilder.Layout.MENU)
                         .setText(option.titleText != null ? option.titleText : getString(option.titleRes));
                 if (option.connectionType.equals(HostService.CONNECTION_TYPE_WIFI)) {
-                    String gatewayIp = ConnectionUtils.INSTANCE.getHostIPAddress(StartActivity.this);
+                    String gatewayIp = ConnectionUtils.getHostIPAddress(StartActivity.this);
                     builder.setFootnote(gatewayIp != null ? gatewayIp : getString(R.string.subtitle_connection_wifi));
                 } else if (option.footnoteRes != null) {
                     builder.setFootnote(option.footnoteRes);
@@ -142,6 +142,7 @@ public class StartActivity extends Activity {
 
     private List<ConnectionOption> buildOptions() {
         List<ConnectionOption> options = new ArrayList<>();
+
         options.add(new ConnectionOption(
                 R.string.title_connection_bluetooth,
                 null,
