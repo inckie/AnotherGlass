@@ -101,6 +101,15 @@ The media card disappears automatically when there is nothing playing.
 There is a simple Python client in `python` folder to test the Glass Enterprise application without the mobile application. It can send fake GPS coordinates, notifications, and simulated media playback state to the Glass, and also receives and handles media control commands sent back from the Glass.
 Make sure to change communication protocol to JSON Lines by setting `SerializerProvider.currentSerializer` to `JSON`.
 
+## APK Server
+There is a small GUI tool in `python/apk_server.py` to simplify sideloading APK files onto the Glass over WiFi without ADB.
+
+1. Run `apk_server.py` (requires `qrcode` and `Pillow` from `python/requirements.txt`).
+2. The tool scans its own directory for `.apk` files and lists them.
+3. Select the APK you want to install and press **Start** — a local HTTP server starts serving that file.
+4. A QR code with the download URL is displayed. Scan it on the Glass using the `Scan Barcode` connection option (or any QR scanner), then open the URL in a browser or download manager to install the APK.
+5. Press **Stop** or close the window when done.
+
 ## AnotherGlass Plans
 
 ### General
