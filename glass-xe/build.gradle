@@ -51,7 +51,9 @@ repositories {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    // gdk.jar is a compile-time stub only; the real implementation is provided by the Glass system.
+    // Using 'implementation' causes ProGuard to process and break GDK classes in release builds.
+    compileOnly fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.google.zxing:core:3.5.4'
     implementation project(':shared')
