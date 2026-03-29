@@ -17,6 +17,7 @@ import com.damn.anotherglass.shared.media.MediaAPI
 import com.damn.anotherglass.shared.media.MediaCommandData
 import com.damn.anotherglass.shared.media.MediaStateData
 import com.damn.anotherglass.shared.rpc.RPCMessage
+import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 
 class MediaExtension(
     private val service: GlassService,
@@ -34,6 +35,7 @@ class MediaExtension(
     private var lastPayloadFingerprint = ""
     private var lastEmitTimeMs = 0L
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val appDetailsProvider = AndroidAppDetailsProvider(service)
 
     private val activeSessionsListener =
         MediaSessionManager.OnActiveSessionsChangedListener { controllers ->
@@ -217,12 +219,7 @@ class MediaExtension(
     }
 
     private fun resolveApplicationName(packageName: String): String {
-        return try {
-            val pm = service.packageManager
-            pm.getApplicationLabel(pm.getApplicationInfo(packageName, 0)).toString()
-        } catch (_: Exception) {
-            packageName
-        }
+        return appDetailsProvider.getAppDetails(packageName).appName
     }
 
     private fun getActiveSessionsSafe(): List<MediaController> {
@@ -262,5 +259,4 @@ class MediaExtension(
         private const val POST_COMMAND_SYNC_DELAY_LATE_MS = 900L
     }
 }
-
 
