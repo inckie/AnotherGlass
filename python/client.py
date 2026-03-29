@@ -516,6 +516,27 @@ def main_ui():
                     self.update_battery_status(payload)
                 elif msg_type == 'name' and isinstance(payload, str):
                     self.update_device_name(payload)
+            elif service == 'Media':
+                if msg_type == 'com.damn.anotherglass.shared.media.MediaCommandData' and isinstance(payload, dict):
+                    self.handle_media_command(payload)
+
+        def handle_media_command(self, payload: dict):
+            command = payload.get('command')
+            print(f"Received media command: {command}")
+            if command == 'TogglePlayPause':
+                if self.core.media.playback_state == PlaybackStateValue.Playing:
+                    self.core.media_pause()
+                else:
+                    self.core.media_play()
+            elif command == 'Play':
+                self.core.media_play()
+            elif command == 'Pause':
+                self.core.media_pause()
+            elif command == 'Next':
+                self.core.media_next()
+            elif command == 'Previous':
+                self.core.media_prev()
+            self.root.after(0, self.refresh_media_ui)
 
         def update_device_name(self, name: str):
             self.device_name_var.set(f"Name: {name}")
