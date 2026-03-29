@@ -24,7 +24,7 @@ fun connectWiFi(activity: ComponentActivity, serviceController: IServiceControll
         .setPositiveButton(android.R.string.ok) { _, _ ->
             if (TextUtils.isEmpty(binding.edSsid.text)) return@setPositiveButton
             // pass can be empty
-            serviceController.getService()?.send(
+            serviceController.send(
                 RPCMessage(
                     WiFiAPI.ID,
                     WiFiConfiguration(binding.edSsid.toString(), binding.edPassword.toString())

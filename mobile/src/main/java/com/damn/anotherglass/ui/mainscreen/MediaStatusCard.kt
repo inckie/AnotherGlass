@@ -22,9 +22,9 @@ import com.damn.anotherglass.R
 import com.damn.anotherglass.shared.media.MediaCommandData
 import com.damn.anotherglass.shared.media.MediaStateData
 import com.damn.anotherglass.ui.theme.AnotherGlassTheme
-import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.util.Locale
 
 @Composable
 internal fun MediaStatusCard(
@@ -128,17 +128,7 @@ internal fun formatDuration(valueMs: Long): String {
 private fun MediaStatusCardPreviewPlaying() {
     AnotherGlassTheme {
         MediaStatusCard(
-            mediaState = MediaStateData(
-                playbackState = MediaStateData.PlaybackStateValue.Playing,
-                title = "Preview song",
-                artist = "Preview artist",
-                sourceApp = "Spotify",
-                positionMs = 12_000,
-                durationMs = 240_000,
-                actionsMask = PlaybackState.ACTION_PLAY_PAUSE or
-                    PlaybackState.ACTION_SKIP_TO_PREVIOUS or
-                    PlaybackState.ACTION_SKIP_TO_NEXT,
-            ),
+            mediaState = mockMediaState(),
             serviceController = null,
         )
     }
@@ -160,17 +150,7 @@ private fun MediaStatusCardPreviewNoMedia() {
 private fun MediaStatusCardPreviewIServiceController() {
     AnotherGlassTheme {
         MediaStatusCard(
-            mediaState = MediaStateData(
-                playbackState = MediaStateData.PlaybackStateValue.Playing,
-                title = "Preview song",
-                artist = "Preview artist",
-                sourceApp = "Preview app",
-                positionMs = 12_000,
-                durationMs = 240_000,
-                actionsMask = PlaybackState.ACTION_PLAY_PAUSE or
-                    PlaybackState.ACTION_SKIP_TO_PREVIOUS or
-                    PlaybackState.ACTION_SKIP_TO_NEXT,
-            ),
+            mediaState = mockMediaState(),
             serviceController = object : IServiceController {
                 override val connectedDevice = MutableStateFlow(null)
                 override val mediaState: StateFlow<MediaStateData?> = MutableStateFlow(null)
@@ -178,9 +158,19 @@ private fun MediaStatusCardPreviewIServiceController() {
                 override fun stopService() = Unit
                 override fun sendMediaCommand(command: MediaCommandData) = Unit
                 override fun send(message: com.damn.anotherglass.shared.rpc.RPCMessage) = Unit
-                override fun getService() = null
             },
         )
     }
 }
 
+fun mockMediaState(): MediaStateData = MediaStateData(
+    playbackState = MediaStateData.PlaybackStateValue.Playing,
+    title = "Preview song",
+    artist = "Preview artist",
+    sourceApp = "Preview app",
+    positionMs = 12_000,
+    durationMs = 240_000,
+    actionsMask = PlaybackState.ACTION_PLAY_PAUSE or
+            PlaybackState.ACTION_SKIP_TO_PREVIOUS or
+            PlaybackState.ACTION_SKIP_TO_NEXT,
+)

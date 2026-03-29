@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.damn.anotherglass.R
 import com.damn.anotherglass.core.ConnectedDevice
-import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.core.Settings
 import com.damn.anotherglass.debug.DbgNotifications
 import com.damn.anotherglass.logging.LogActivity
@@ -89,13 +88,13 @@ fun MainScreen(
                 actions = {
                     TopAppBarDropdownMenu(
                         listOf(
-                        DropDownMenuItem("X-Ray") {
-                            context.startActivity(Intent(context, LogActivity::class.java))
-                        },
-                        DropDownMenuItem("Notification filters") {
-                            navController?.navigate(AppRoute.FilterList.route)
-                        }
-                    ))
+                            DropDownMenuItem("X-Ray") {
+                                context.startActivity(Intent(context, LogActivity::class.java))
+                            },
+                            DropDownMenuItem("Notification filters") {
+                                navController?.navigate(AppRoute.FilterList.route)
+                            }
+                        ))
                 }
             )
         }
@@ -304,12 +303,13 @@ fun DefaultPreview() {
                             MutableStateFlow(BatteryStatusData(75, false))
                         )
                     )
-                override val mediaState: StateFlow<MediaStateData?> = MutableStateFlow(null)
+                override val mediaState: StateFlow<MediaStateData?> =
+                    MutableStateFlow(mockMediaState())
+
                 override fun startService() = Unit
                 override fun stopService() = Unit
                 override fun sendMediaCommand(command: MediaCommandData) = Unit
                 override fun send(message: RPCMessage) = Unit
-                override fun getService(): GlassService? = null
             },
         )
     }

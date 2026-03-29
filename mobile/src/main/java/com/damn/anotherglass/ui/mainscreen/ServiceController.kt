@@ -65,8 +65,6 @@ class ServiceController(private val activity: ComponentActivity) : DefaultLifecy
         glassServiceConnection.service?.send(message)
     }
 
-    override fun getService() = glassServiceConnection.service
-
     private inner class GlassServiceConnection : ServiceConnection {
         var service: GlassService? = null
             private set

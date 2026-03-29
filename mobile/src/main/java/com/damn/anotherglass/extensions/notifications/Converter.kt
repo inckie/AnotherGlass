@@ -8,12 +8,12 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.service.notification.StatusBarNotification
+import androidx.core.graphics.createBitmap
 import com.applicaster.xray.core.Logger
 import com.damn.anotherglass.logging.ALog
 import com.damn.anotherglass.shared.notifications.NotificationData
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import androidx.core.graphics.createBitmap
 
 object Converter {
     private const val TAG = "IconConverter"
