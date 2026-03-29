@@ -6,6 +6,8 @@ import android.media.MediaMetadata
 import android.media.session.MediaController
 import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import com.applicaster.xray.core.Logger
 import com.damn.anotherglass.core.GlassService
@@ -31,6 +33,7 @@ class MediaExtension(
     private var activeController: MediaController? = null
     private var lastPayloadFingerprint = ""
     private var lastEmitTimeMs = 0L
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     private val activeSessionsListener =
         MediaSessionManager.OnActiveSessionsChangedListener { controllers ->
@@ -73,6 +76,7 @@ class MediaExtension(
     fun stop() {
         if (!isStarted) return
         isStarted = false
+        mainHandler.removeCallbacksAndMessages(null)
         try {
             mediaSessionManager.removeOnActiveSessionsChangedListener(activeSessionsListener)
         } catch (_: Exception) {
@@ -96,6 +100,16 @@ class MediaExtension(
             MediaCommandData.Command.Previous -> controls.skipToPrevious()
             MediaCommandData.Command.SeekTo -> controls.seekTo(command.seekToMs)
         }
+
+        // Some players emit delayed/incomplete callbacks for rapid transport commands.
+        // Force a short follow-up sync so Glass receives the final track metadata.
+        schedulePostCommandSync()
+    }
+
+    private fun schedulePostCommandSync() {
+        emitState(force = true)
+        mainHandler.postDelayed({ emitState(force = true) }, POST_COMMAND_SYNC_DELAY_MS)
+        mainHandler.postDelayed({ emitState(force = true) }, POST_COMMAND_SYNC_DELAY_LATE_MS)
     }
 
     private fun togglePlayPause(
@@ -244,6 +258,8 @@ class MediaExtension(
     companion object {
         private const val TAG = "MediaExtension"
         private const val POSITION_THROTTLE_MS = 1000L
+        private const val POST_COMMAND_SYNC_DELAY_MS = 250L
+        private const val POST_COMMAND_SYNC_DELAY_LATE_MS = 900L
     }
 }
 
