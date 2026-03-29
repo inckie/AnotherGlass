@@ -15,12 +15,12 @@ jobs:
     - name: Collect Workflow Telemetry
       uses: dev-hato/actions-workflow-metrics@v0.0.3
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: 'true'
 
     - name: set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: '17'
         distribution: 'temurin'
@@ -35,19 +35,19 @@ jobs:
       run: ./gradlew assemble --parallel
 
     - name: Upload mobile apk
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: mobile.apk
         path: mobile/build/outputs/apk/release/mobile-release.apk
 
     - name: Upload glass-xe apk
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: glass-xe.apk
         path: glass-xe/build/outputs/apk/release/glass-xe-release.apk
 
     - name: Upload glass-ee apk
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: glass-ee.apk
         path: glass-ee/build/outputs/apk/release/glass-ee-release.apk
