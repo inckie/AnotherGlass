@@ -49,6 +49,10 @@ class Settings(context: Context) {
         get() = preferences.getBoolean(NOTIFICATIONS_ENABLED, false)
         set(enabled) = preferences.edit { putBoolean(NOTIFICATIONS_ENABLED, enabled) }
 
+    var isMediaNotificationsIgnored: Boolean
+        get() = preferences.getBoolean(IGNORE_MEDIA_NOTIFICATIONS, true)
+        set(enabled) = preferences.edit { putBoolean(IGNORE_MEDIA_NOTIFICATIONS, enabled) }
+
     var hostMode: HostMode
         get() = preferences.getString(HOST_MODE, HostMode.WiFi.value)?.let { mode ->
             HostMode.entries.firstOrNull { mode == it.value }
@@ -59,6 +63,7 @@ class Settings(context: Context) {
         private const val sPreferencesName = "anotherglass"
         const val GPS_ENABLED = "gps_enabled"
         const val NOTIFICATIONS_ENABLED = "notifications_enabled"
+        const val IGNORE_MEDIA_NOTIFICATIONS = "ignore_media_notifications"
         const val HOST_MODE = "host_mode"
     }
 }

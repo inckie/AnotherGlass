@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.damn.anotherglass.core.Settings
 import com.damn.anotherglass.extensions.notifications.filter.FilterAction
 import com.damn.anotherglass.extensions.notifications.filter.IFilterRepository
 import com.damn.anotherglass.extensions.notifications.filter.NotificationFilter
@@ -11,8 +12,10 @@ import com.damn.anotherglass.extensions.notifications.filter.from
 import com.damn.anotherglass.utility.AndroidAppDetailsProvider
 import com.damn.anotherglass.utility.AppDetails
 import com.damn.anotherglass.utility.AppDetailsProvider
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -31,7 +34,19 @@ data class FilterListItemUI( // A UI-specific model for the list
 
 class FilterListViewModel(
     private val appDetailsProvider: AppDetailsProvider,
-    private val filterRepository: IFilterRepository) : ViewModel() {
+    private val filterRepository: IFilterRepository,
+    private val settings: Settings? = null) : ViewModel() {
+
+    private val _isMediaNotificationsIgnored = MutableStateFlow(
+        settings?.isMediaNotificationsIgnored ?: true
+    )
+    val isMediaNotificationsIgnored: StateFlow<Boolean> =
+        _isMediaNotificationsIgnored.asStateFlow()
+
+    fun setMediaNotificationsIgnored(ignored: Boolean) {
+        settings?.isMediaNotificationsIgnored = ignored
+        _isMediaNotificationsIgnored.value = ignored
+    }
 
     val filters: StateFlow<List<FilterListItemUI>> =
         filterRepository.getFiltersFlow()
@@ -97,7 +112,8 @@ class FilterListViewModel(
                     @Suppress("UNCHECKED_CAST")
                     return FilterListViewModel(
                         AndroidAppDetailsProvider(context),
-                        IFilterRepository.from(context)
+                        IFilterRepository.from(context),
+                        Settings(context)
                     ) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")

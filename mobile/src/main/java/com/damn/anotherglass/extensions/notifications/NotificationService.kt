@@ -1,77 +1,84 @@
-package com.damn.anotherglass.extensions.notifications;
+package com.damn.anotherglass.extensions.notifications
 
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
-import android.os.IBinder;
-import android.provider.Settings.Secure;
-import android.service.notification.NotificationListenerService;
-import android.service.notification.StatusBarNotification;
-import android.text.TextUtils;
-
-import com.applicaster.xray.core.Logger;
-import com.damn.anotherglass.core.GlassService;
-import com.damn.anotherglass.core.Settings;
-import com.damn.anotherglass.extensions.notifications.filter.NotificationHistoryRepository;
-import com.damn.anotherglass.logging.ALog;
-import com.damn.anotherglass.shared.notifications.NotificationData;
-
-import org.greenrobot.eventbus.EventBus;
+import android.app.Notification
+import android.content.Context
+import android.content.Intent
+import android.os.IBinder
+import android.service.notification.NotificationListenerService
+import android.service.notification.StatusBarNotification
+import com.applicaster.xray.core.Logger
+import com.damn.anotherglass.core.GlassService.Companion.isRunning
+import com.damn.anotherglass.core.Settings
+import com.damn.anotherglass.extensions.notifications.Converter.convert
+import com.damn.anotherglass.extensions.notifications.filter.NotificationHistoryRepository.addNotification
+import com.damn.anotherglass.logging.ALog
+import com.damn.anotherglass.shared.notifications.NotificationData
+import org.greenrobot.eventbus.EventBus
 
 // todo: filter self notifications
 // todo: add whitelist
+class NotificationService : NotificationListenerService() {
+    private var mSettings: Settings? = null
 
-public class NotificationService extends NotificationListenerService {
+    private val log = ALog(Logger.get(TAG))
 
-    private Settings mSettings;
-
-    private static final String TAG = "NotificationService";
-    private final ALog log = new ALog(Logger.get(TAG));
-
-    public NotificationService() {
+    override fun onCreate() {
+        super.onCreate()
+        mSettings = Settings(this)
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        mSettings = new Settings(this);
+    override fun onBind(intent: Intent?): IBinder? = super.onBind(intent)
+
+    override fun onNotificationPosted(sbn: StatusBarNotification) {
+        emit(sbn, NotificationData.Action.Posted)
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        return super.onBind(intent);
-    }
+    override fun onNotificationRemoved(sbn: StatusBarNotification) = emit(sbn, NotificationData.Action.Removed)
 
-    @Override
-    public void onNotificationPosted(StatusBarNotification sbn) {
-        emit(sbn, NotificationData.Action.Posted);
-    }
-
-    @Override
-    public void onNotificationRemoved(StatusBarNotification sbn) {
-        emit(sbn, NotificationData.Action.Removed);
-    }
-
-    private void emit(StatusBarNotification sbn, NotificationData.Action posted) {
-        if (mSettings.isNotificationsEnabled() &&
-                GlassService.isRunning(this)) {
-            log.d(TAG, "Notification received");
+    private fun emit(sbn: StatusBarNotification, posted: NotificationData.Action) {
+        if (mSettings!!.isNotificationsEnabled &&
+            !(mSettings!!.isMediaNotificationsIgnored && isMediaNotification(sbn)) &&
+            isRunning(this)
+        ) {
+            log.d(TAG, "Notification received")
             // do not convert notification yet, send as is
-            EventBus.getDefault().post(new NotificationEvent(sbn, posted));
+            EventBus.getDefault().post(NotificationEvent(sbn, posted))
 
-            NotificationData convert = Converter.INSTANCE.convert(this, posted, sbn);
-            NotificationHistoryRepository.INSTANCE.addNotification(convert);
+            val convert = convert(this, posted, sbn)
+            addNotification(convert)
         }
     }
 
-    // https://stackoverflow.com/a/51724784
-    public static boolean isEnabled(Context context) {
-        ContentResolver contentResolver = context.getContentResolver();
-        String enabledNotificationListeners = Secure.getString(contentResolver, "enabled_notification_listeners");
-        if(TextUtils.isEmpty(enabledNotificationListeners))
-            return false;
-        String packageName = context.getPackageName();
-        return enabledNotificationListeners.contains(packageName);
-    }
+    companion object {
+        private const val TAG = "NotificationService"
 
+        // https://stackoverflow.com/a/51724784
+        fun isEnabled(context: Context): Boolean {
+            val contentResolver = context.contentResolver
+            val enabledNotificationListeners = android.provider.Settings.Secure.getString(
+                contentResolver,
+                "enabled_notification_listeners"
+            )
+            if (enabledNotificationListeners.isNullOrEmpty()) return false
+            val packageName = context.packageName
+            return enabledNotificationListeners.contains(packageName)
+        }
+
+        fun isMediaNotification(sbn: StatusBarNotification): Boolean {
+            val notification = sbn.notification ?: return false
+            val extras = notification.extras ?: return false
+
+            // 1. Check for MediaSession Token (The most reliable indicator)
+            val hasMediaSession = extras.get(Notification.EXTRA_MEDIA_SESSION) != null
+
+            // 2. Check for MediaStyle Template
+            val template = extras.getString(Notification.EXTRA_TEMPLATE)
+            val isMediaStyle = template == $$"android.app.Notification$MediaStyle"
+
+            // 3. Check Category (Optional fallback/verification)
+            val isTransportCategory = notification.category == Notification.CATEGORY_TRANSPORT
+
+            return hasMediaSession || isMediaStyle || isTransportCategory
+        }
+    }
 }
