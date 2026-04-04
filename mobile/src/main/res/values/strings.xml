@@ -5,6 +5,7 @@
     <string name="service_waiting_for_connection">Waiting for connection…</string>
     <string name="service_connected_to_s">Connected to %s</string>
     <string name="service_disconnected">Disconnected</string>
+    <string name="service_shutdown">RPC host has stopped, terminating GlassService</string>
     <string name="btn_stop">Stop</string>
     <string name="notification_channel_state">AnotherGlass Service</string>
     <string name="lbl_connection_type">Connection type</string>

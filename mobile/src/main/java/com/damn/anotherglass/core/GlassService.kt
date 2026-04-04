@@ -135,10 +135,10 @@ class GlassService
             }
 
             override fun onShutdown() {
-                log.i(TAG, "BluetoothHost has stopped, terminating GlassService")
+                log.i(TAG, getString(R.string.service_shutdown))
                 Toast.makeText(
                     this@GlassService,
-                    "BluetoothHost has stopped, terminating GlassService",
+                    "RPC host has stopped, terminating GlassService",
                     Toast.LENGTH_SHORT
                 ).show()
                 mMedia.stop()
