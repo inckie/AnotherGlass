@@ -1,5 +1,6 @@
 package com.damn.anotherglass.shared.media
 
+import com.damn.anotherglass.shared.BinaryData
 import java.io.Serializable
 
 data class MediaStateData(
@@ -7,6 +8,7 @@ data class MediaStateData(
     val title: String? = null,
     val artist: String? = null,
     val album: String? = null,
+    val artwork: BinaryData? = null,
     val sourceApp: String? = null,
     val sourcePackage: String? = null,
     val positionMs: Long = 0L,

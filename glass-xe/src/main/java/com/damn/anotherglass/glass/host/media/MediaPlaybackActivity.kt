@@ -1,12 +1,17 @@
 package com.damn.anotherglass.glass.host.media
 
 import android.app.Activity
+import android.graphics.BitmapFactory
 import android.media.AudioManager
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
+import android.widget.ImageView
+import android.widget.TextView
 import com.damn.anotherglass.glass.host.R
+import com.damn.anotherglass.shared.BinaryData
 import com.damn.anotherglass.shared.media.MediaCommandData
 import com.damn.anotherglass.shared.media.MediaStateData
 import com.damn.glass.shared.media.MediaController
@@ -63,18 +68,7 @@ class MediaPlaybackActivity : Activity() {
                         .getView(convertView, parent)
 
                     POSITION_CENTER -> {
-                        val title = current?.title ?: getString(R.string.media_no_playback)
-                        val artist = current?.artist
-                        val source = current?.sourceApp ?: current?.sourcePackage
-                        val state = current?.playbackState?.name ?: "None"
-                        val heading = title
-                        val subheading = if (!artist.isNullOrBlank()) artist else source
-                        val builder = CardBuilder(this@MediaPlaybackActivity, CardBuilder.Layout.AUTHOR)
-                            .setHeading(heading)
-                            .setTimestamp(state)
-                            .setFootnote(getString(R.string.media_center_hint))
-                        if (subheading != null) builder.setSubheading(subheading)
-                        builder.getView(convertView, parent)
+                        buildCenterCardView(current, convertView, parent)
                     }
 
                     POSITION_NEXT -> CardBuilder(this@MediaPlaybackActivity, CardBuilder.Layout.CAPTION)
@@ -137,6 +131,53 @@ class MediaPlaybackActivity : Activity() {
 
     private fun sendCommand(command: MediaCommandData.Command) {
         MediaController.instance.sendCommand(MediaCommandData(command))
+    }
+
+    private fun buildCenterCardView(
+        state: MediaStateData?,
+        convertView: View?,
+        parent: ViewGroup?,
+    ): View {
+        val view = convertView ?: LayoutInflater.from(this)
+            .inflate(R.layout.layout_media_card, parent, false)
+
+        val source = state?.sourceApp ?: state?.sourcePackage
+        val title = state?.title ?: getString(R.string.media_no_playback)
+        val artist = state?.artist
+        val subheading = if (!artist.isNullOrBlank()) artist else source
+
+        view.findViewById<TextView>(R.id.media_app).text = source ?: ""
+        view.findViewById<TextView>(R.id.media_title).text = title
+        view.findViewById<TextView>(R.id.media_artist).text = subheading ?: ""
+        view.findViewById<TextView>(R.id.media_state).text = getPlaybackLabel(state)
+        view.findViewById<TextView>(R.id.media_footer).text = getString(R.string.media_center_hint)
+
+        bindArtwork(view.findViewById(R.id.media_artwork), state?.artwork)
+        return view
+    }
+
+    private fun bindArtwork(imageView: ImageView, artwork: BinaryData?) {
+        val bytes = artwork?.bytes
+        if (bytes == null || bytes.isEmpty()) {
+            imageView.setImageResource(R.drawable.ic_music_50)
+            return
+        }
+        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        if (bitmap != null) {
+            imageView.setImageBitmap(bitmap)
+        } else {
+            imageView.setImageResource(R.drawable.ic_music_50)
+        }
+    }
+
+    private fun getPlaybackLabel(state: MediaStateData?): String {
+        return when (state?.playbackState) {
+            MediaStateData.PlaybackStateValue.Playing -> getString(R.string.media_state_playing)
+            MediaStateData.PlaybackStateValue.Paused -> getString(R.string.media_state_paused)
+            MediaStateData.PlaybackStateValue.Buffering -> getString(R.string.media_state_buffering)
+            MediaStateData.PlaybackStateValue.Stopped -> getString(R.string.media_state_stopped)
+            else -> getString(R.string.media_state_none)
+        }
     }
 
     private fun hasMedia(state: MediaStateData?): Boolean {

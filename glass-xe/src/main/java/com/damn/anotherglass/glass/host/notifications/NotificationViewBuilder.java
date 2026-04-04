@@ -21,8 +21,8 @@ public class NotificationViewBuilder {
                 .setText(data.text);
 
         // icon
-        if (null != data.icon) {
-            Bitmap bitmap = BitmapFactory.decodeByteArray(data.icon, 0, data.icon.length);
+        if (null != data.icon && null != data.icon.bytes) {
+            Bitmap bitmap = BitmapFactory.decodeByteArray(data.icon.bytes, 0, data.icon.bytes.length);
             builder.setIcon(bitmap);
         }
 

@@ -23,11 +23,12 @@ object LayoutNotificationsStackBindingEx {
             last.postedTime,
             DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_ABBREV_ALL
         )
-        if (last.icon == null) {
+        val iconBytes = last.icon?.bytes
+        if (iconBytes == null) {
             imgIcon.setImageResource(android.R.drawable.ic_dialog_info)
         } else {
             try {
-                val bitmap = BitmapFactory.decodeByteArray(last.icon, 0, last.icon.size)
+                val bitmap = BitmapFactory.decodeByteArray(iconBytes, 0, iconBytes.size)
                 imgIcon.setImageBitmap(bitmap)
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to decode icon: " + e.message, e)

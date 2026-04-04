@@ -46,4 +46,10 @@
     <string name="media_next_title">Next Track</string>
     <string name="media_next_hint">Tap to skip next</string>
     <string name="media_center_hint">Tap: play/pause  |  Double tap: next</string>
+    <string name="media_state_playing">▶ Playing</string>
+    <string name="media_state_paused">⏸ Paused</string>
+    <string name="media_state_buffering">⏳ Buffering</string>
+    <string name="media_state_stopped">⏹ Stopped</string>
+    <string name="media_state_none">No media</string>
+    <string name="media_artwork_content_description">Media artwork</string>
 </resources>

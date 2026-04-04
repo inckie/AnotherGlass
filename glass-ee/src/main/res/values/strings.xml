@@ -45,5 +45,6 @@
     <string name="media_state_paused">⏸ Paused</string>
     <string name="media_state_buffering">⏳ Buffering</string>
     <string name="media_state_stopped">⏹ Stopped</string>
-    <string name="media_hint">Tap: play/pause  •  Swipe →: next  •  ✌ tap: stop</string>
+    <string name="media_hint">Tap: play/pause  •  Double tap: next  •  ✌ tap: stop</string>
+    <string name="media_artwork_content_description">Media artwork</string>
 </resources>

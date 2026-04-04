@@ -6,16 +6,40 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <FrameLayout
+        android:id="@+id/left_column"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:background="#303030"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent=".333">
+
+        <ImageView
+            android:id="@+id/media_artwork"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/media_artwork_content_description"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            tools:src="@drawable/ic_music_50" />
+
+    </FrameLayout>
+
     <LinearLayout
         android:id="@+id/body_layout"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_margin="@dimen/glass_card_margin"
+        android:layout_marginStart="@dimen/glass_card_two_column_margin"
+        android:layout_marginTop="@dimen/glass_card_two_column_margin"
+        android:layout_marginEnd="@dimen/glass_card_margin"
+        android:layout_marginBottom="@dimen/glass_card_two_column_margin"
         android:gravity="center_vertical"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@id/footer"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/left_column"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
@@ -28,16 +52,20 @@
         <TextView
             android:id="@+id/media_title"
             style="@style/TextViewStyleTitle"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:maxLines="2"
             tools:text="Song Title" />
 
         <TextView
             android:id="@+id/media_artist"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:maxLines="2"
             android:textAppearance="?android:attr/textAppearanceLarge"
             tools:text="Artist Name" />
 
@@ -55,11 +83,13 @@
         android:id="@+id/footer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/glass_card_margin"
+        android:layout_marginStart="@dimen/glass_card_two_column_margin"
+        android:layout_marginEnd="@dimen/glass_card_margin"
+        android:layout_marginBottom="@dimen/glass_card_margin"
         android:textAppearance="?android:attr/textAppearanceSmall"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/left_column"
         tools:text="Tap: play/pause  •  2× tap: next  •  ✌ tap: stop" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

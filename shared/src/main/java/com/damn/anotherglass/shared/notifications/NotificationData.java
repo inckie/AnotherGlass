@@ -2,6 +2,8 @@ package com.damn.anotherglass.shared.notifications;
 
 import androidx.annotation.NonNull;
 
+import com.damn.anotherglass.shared.BinaryData;
+
 import java.io.Serializable;
 
 public class NotificationData implements Serializable {
@@ -24,6 +26,6 @@ public class NotificationData implements Serializable {
     public String title;
     public String text;
     public String tickerText;
-    public byte[] icon;
+    public BinaryData icon;
     public DeliveryMode deliveryMode;
 }

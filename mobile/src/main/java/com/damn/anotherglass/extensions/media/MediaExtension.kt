@@ -2,6 +2,7 @@ package com.damn.anotherglass.extensions.media
 
 import android.content.ComponentName
 import android.content.Context
+import android.graphics.Bitmap
 import android.media.MediaMetadata
 import android.media.session.MediaController
 import android.media.session.MediaSessionManager
@@ -9,15 +10,19 @@ import android.media.session.PlaybackState
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import androidx.core.graphics.scale
 import com.applicaster.xray.core.Logger
 import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.extensions.notifications.NotificationService
 import com.damn.anotherglass.logging.ALog
+import com.damn.anotherglass.shared.BinaryData
 import com.damn.anotherglass.shared.media.MediaAPI
 import com.damn.anotherglass.shared.media.MediaCommandData
 import com.damn.anotherglass.shared.media.MediaStateData
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.utility.AndroidAppDetailsProvider
+import com.damn.anotherglass.utility.toJpegBinaryData
+import kotlin.math.roundToInt
 
 class MediaExtension(
     private val service: GlassService,
@@ -190,11 +195,13 @@ class MediaExtension(
 
         val playbackState = controller.playbackState
         val metadata = controller.metadata
+        val artwork = buildArtwork(metadata)
         return MediaStateData(
             playbackState = mapPlaybackState(playbackState?.state),
             title = metadata?.getString(MediaMetadata.METADATA_KEY_TITLE),
             artist = metadata?.getString(MediaMetadata.METADATA_KEY_ARTIST),
             album = metadata?.getString(MediaMetadata.METADATA_KEY_ALBUM),
+            artwork = artwork,
             sourceApp = resolveApplicationName(controller.packageName),
             sourcePackage = controller.packageName,
             positionMs = playbackState?.position ?: 0L,
@@ -234,6 +241,47 @@ class MediaExtension(
         }
     }
 
+    private fun buildArtwork(metadata: MediaMetadata?): BinaryData? {
+        val source = metadata?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
+            ?: metadata?.getBitmap(MediaMetadata.METADATA_KEY_ART)
+            ?: metadata?.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON)
+            ?: return null
+
+        if (source.width <= 0 || source.height <= 0) return null
+
+        var scaled: Bitmap? = null
+        var cropped: Bitmap? = null
+        return try {
+            val scale = maxOf(
+                ARTWORK_SIZE_PX.toFloat() / source.width.toFloat(),
+                ARTWORK_SIZE_PX.toFloat() / source.height.toFloat(),
+            )
+            val scaledWidth = (source.width * scale).roundToInt().coerceAtLeast(ARTWORK_SIZE_PX)
+            val scaledHeight = (source.height * scale).roundToInt().coerceAtLeast(ARTWORK_SIZE_PX)
+
+            scaled = if (scaledWidth == source.width && scaledHeight == source.height) {
+                source
+            } else {
+                source.scale(scaledWidth, scaledHeight)
+            }
+
+            val x = ((scaledWidth - ARTWORK_SIZE_PX) / 2).coerceAtLeast(0)
+            val y = ((scaledHeight - ARTWORK_SIZE_PX) / 2).coerceAtLeast(0)
+            cropped = Bitmap.createBitmap(scaled, x, y, ARTWORK_SIZE_PX, ARTWORK_SIZE_PX)
+
+            cropped.toJpegBinaryData(ARTWORK_JPEG_QUALITY)
+        } catch (_: Throwable) {
+            null
+        } finally {
+            if (cropped != null && cropped !== scaled && !cropped.isRecycled) {
+                cropped.recycle()
+            }
+            if (scaled != null && scaled !== source && !scaled.isRecycled) {
+                scaled.recycle()
+            }
+        }
+    }
+
     private fun fingerprint(payload: MediaStateData): String = buildString {
         append(payload.playbackState.name)
         append('|')
@@ -250,6 +298,15 @@ class MediaExtension(
         append(payload.durationMs)
         append('|')
         append(payload.actionsMask)
+        append('|')
+        val artwork = payload.artwork?.bytes
+        if (artwork == null) {
+            append("none")
+        } else {
+            append(artwork.size)
+            append(':')
+            append(artwork.contentHashCode())
+        }
     }
 
     companion object {
@@ -257,6 +314,8 @@ class MediaExtension(
         private const val POSITION_THROTTLE_MS = 1000L
         private const val POST_COMMAND_SYNC_DELAY_MS = 250L
         private const val POST_COMMAND_SYNC_DELAY_LATE_MS = 900L
+        private const val ARTWORK_SIZE_PX = 360
+        private const val ARTWORK_JPEG_QUALITY = 95
     }
 }
 

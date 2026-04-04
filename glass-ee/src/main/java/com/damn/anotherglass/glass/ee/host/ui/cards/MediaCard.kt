@@ -1,10 +1,13 @@
 package com.damn.anotherglass.glass.ee.host.ui.cards
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
+import com.damn.anotherglass.glass.ee.host.R
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutCardMediaBinding
 import com.damn.anotherglass.shared.media.MediaCommandData
 import com.damn.anotherglass.shared.media.MediaStateData
@@ -74,16 +77,35 @@ class MediaCard : BaseFragment() {
         mediaTitle.text = state.title ?: ""
         mediaArtist.text = state.artist ?: ""
         mediaState.text = when (state.playbackState) {
-            MediaStateData.PlaybackStateValue.Playing    -> "▶ Playing"
-            MediaStateData.PlaybackStateValue.Paused     -> "⏸ Paused"
-            MediaStateData.PlaybackStateValue.Buffering  -> "⏳ Buffering"
-            MediaStateData.PlaybackStateValue.Stopped    -> "⏹ Stopped"
+            MediaStateData.PlaybackStateValue.Playing    -> root.context.getString(R.string.media_state_playing)
+            MediaStateData.PlaybackStateValue.Paused     -> root.context.getString(R.string.media_state_paused)
+            MediaStateData.PlaybackStateValue.Buffering  -> root.context.getString(R.string.media_state_buffering)
+            MediaStateData.PlaybackStateValue.Stopped    -> root.context.getString(R.string.media_state_stopped)
             MediaStateData.PlaybackStateValue.None       -> ""
         }
-        footer.text = "Tap: play/pause  •  Double tap: next  •  ✌ tap: stop"
+        footer.text = root.context.getString(R.string.media_hint)
+
+        val artworkBytes = state.artwork?.bytes
+        if (artworkBytes == null || artworkBytes.isEmpty()) {
+            mediaArtwork.setImageResource(R.drawable.ic_music_50)
+            return
+        }
+
+        try {
+            val bitmap = BitmapFactory.decodeByteArray(artworkBytes, 0, artworkBytes.size)
+            if (bitmap != null) {
+                mediaArtwork.setImageBitmap(bitmap)
+            } else {
+                mediaArtwork.setImageResource(R.drawable.ic_music_50)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to decode media artwork: " + e.message, e)
+            mediaArtwork.setImageResource(R.drawable.ic_music_50)
+        }
     }
 
     companion object {
+        private const val TAG = "MediaCard"
         private const val DOUBLE_TAP_TIMEOUT_MS = 280L
 
         @JvmStatic

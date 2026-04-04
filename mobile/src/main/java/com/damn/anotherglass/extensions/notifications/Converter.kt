@@ -6,14 +6,12 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.service.notification.StatusBarNotification
 import androidx.core.graphics.createBitmap
 import com.applicaster.xray.core.Logger
 import com.damn.anotherglass.logging.ALog
 import com.damn.anotherglass.shared.notifications.NotificationData
-import java.io.ByteArrayOutputStream
-import java.io.IOException
+import com.damn.anotherglass.utility.toPngBinaryData
 
 object Converter {
     private const val TAG = "IconConverter"
@@ -59,15 +57,13 @@ object Converter {
         data: NotificationData,
         notification: Notification
     ) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            var icon = notification.getLargeIcon()
-            if (null == icon) icon = notification.smallIcon
-            if (null != icon) {
-                val drawable = icon.loadDrawable(context)
-                if (null != drawable) {
-                    val bitmap = drawableToBitmap(drawable)
-                    setIconData(data, bitmap)
-                }
+        var icon = notification.getLargeIcon()
+        if (null == icon) icon = notification.smallIcon
+        if (null != icon) {
+            val drawable = icon.loadDrawable(context)
+            if (null != drawable) {
+                val bitmap = drawableToBitmap(drawable)
+                setIconData(data, bitmap)
             }
         }
         if (null != data.icon) return
@@ -78,14 +74,7 @@ object Converter {
     }
 
     private fun setIconData(data: NotificationData, bitmap: Bitmap) {
-        try {
-            ByteArrayOutputStream().use { memoryStream ->
-                bitmap.compress(Bitmap.CompressFormat.PNG, 0, memoryStream)
-                data.icon = memoryStream.toByteArray()
-            }
-        } catch (e: IOException) {
-            log.e(TAG, "Failed to compress icon bitmap: " + e.message, e)
-        }
+        data.icon = bitmap.toPngBinaryData()
     }
 
     fun drawableToBitmap(drawable: Drawable): Bitmap {
