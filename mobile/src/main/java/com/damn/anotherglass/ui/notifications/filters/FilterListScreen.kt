@@ -166,29 +166,54 @@ fun FilterListScreen(
 @Preview(showBackground = true)
 @Composable
 fun FilterListScreenPreview_WithItems() {
-
-    val sampleFilter = NotificationFilter(
-        id = "1",
-        name = "Sample Filter",
-        isEnabled = true,
-        conditions = listOf(
-            FilterConditionItem(
-                type = ConditionType.IS_ONGOING_EQUALS,
-                value = "false"
+    val sampleFilters = listOf(
+        NotificationFilter(
+            id = "1",
+            name = "Chat messages",
+            isEnabled = true,
+            conditions = listOf(
+                FilterConditionItem(
+                    type = ConditionType.TITLE_CONTAINS,
+                    value = "Telegram"
+                ),
+                FilterConditionItem(
+                    type = ConditionType.IS_ONGOING_EQUALS,
+                    value = "false"
+                )
             ),
-            FilterConditionItem(
-                type = ConditionType.TITLE_EQUALS,
-                value = "title"
-            )
+            action = FilterAction.ALLOW_WITH_NOTIFICATION
         ),
-        action = FilterAction.ALLOW_SILENTLY
+        NotificationFilter(
+            id = "2",
+            name = "Downloads",
+            isEnabled = false,
+            conditions = listOf(
+                FilterConditionItem(
+                    type = ConditionType.TITLE_CONTAINS,
+                    value = "Download"
+                )
+            ),
+            action = FilterAction.ALLOW_SILENTLY
+        ),
+        NotificationFilter(
+            id = "3",
+            name = "Promotions",
+            isEnabled = true,
+            conditions = listOf(
+                FilterConditionItem(
+                    type = ConditionType.TEXT_CONTAINS,
+                    value = "sale"
+                )
+            ),
+            action = FilterAction.BLOCK
+        )
     )
 
     val previewViewModel = FilterListViewModel(
         appDetailsProvider = AndroidAppDetailsProvider(Application()),
         filterRepository = object : IFilterRepository {
             override fun getFiltersFlow(): Flow<List<NotificationFilter>> =
-                MutableStateFlow(listOf(sampleFilter)) // Mocking repository response
+                MutableStateFlow(sampleFilters) // Mocking repository response
 
             override suspend fun saveFilters(filters: List<NotificationFilter>) = Unit
             override suspend fun addFilter(newFilter: NotificationFilter) = Unit
