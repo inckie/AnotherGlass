@@ -48,10 +48,10 @@ internal class JsonMessageSerializer(inputStream: InputStream, outputStream: Out
     @Throws(Exception::class)
     override fun readMessage(): RPCMessage? {
         // do not read from the stream directly,
-        // since it will look like multiple concatenated jsons
+        // since it will look like multiple concatenated JSONs
         val line = reader.readLine()
         try {
-            return gson.fromJson<RPCMessage?>(line, RPCMessage::class.java)
+            return gson.fromJson(line, RPCMessage::class.java)
         } catch (e: JsonParseException) {
             throw Exception("Unable to parse message: $line", e)
         } catch (e: NullPointerException) {

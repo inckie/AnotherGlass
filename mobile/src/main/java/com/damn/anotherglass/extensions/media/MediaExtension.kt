@@ -48,13 +48,9 @@ class MediaExtension(
         }
 
     private val controllerCallback = object : MediaController.Callback() {
-        override fun onPlaybackStateChanged(state: PlaybackState?) {
-            emitState()
-        }
+        override fun onPlaybackStateChanged(state: PlaybackState?) = emitState()
 
-        override fun onMetadataChanged(metadata: MediaMetadata?) {
-            emitState()
-        }
+        override fun onMetadataChanged(metadata: MediaMetadata?) = emitState()
 
         override fun onSessionDestroyed() {
             activeController = null
@@ -225,9 +221,8 @@ class MediaExtension(
         else -> MediaStateData.PlaybackStateValue.None
     }
 
-    private fun resolveApplicationName(packageName: String): String {
-        return appDetailsProvider.getAppDetails(packageName).appName
-    }
+    private fun resolveApplicationName(packageName: String): String =
+        appDetailsProvider.getAppDetails(packageName).appName
 
     private fun getActiveSessionsSafe(): List<MediaController> {
         if (!NotificationService.isEnabled(service)) {

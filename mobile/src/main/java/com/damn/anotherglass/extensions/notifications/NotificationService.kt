@@ -2,8 +2,7 @@ package com.damn.anotherglass.extensions.notifications
 
 import android.app.Notification
 import android.content.Context
-import android.content.Intent
-import android.os.IBinder
+import android.provider.Settings.Secure
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.applicaster.xray.core.Logger
@@ -18,8 +17,8 @@ import org.greenrobot.eventbus.EventBus
 // todo: filter self notifications
 // todo: add whitelist
 class NotificationService : NotificationListenerService() {
-    private var mSettings: Settings? = null
 
+    private lateinit var mSettings: Settings
     private val log = ALog(Logger.get(TAG))
 
     override fun onCreate() {
@@ -27,17 +26,15 @@ class NotificationService : NotificationListenerService() {
         mSettings = Settings(this)
     }
 
-    override fun onBind(intent: Intent?): IBinder? = super.onBind(intent)
-
-    override fun onNotificationPosted(sbn: StatusBarNotification) {
+    override fun onNotificationPosted(sbn: StatusBarNotification) =
         emit(sbn, NotificationData.Action.Posted)
-    }
 
-    override fun onNotificationRemoved(sbn: StatusBarNotification) = emit(sbn, NotificationData.Action.Removed)
+    override fun onNotificationRemoved(sbn: StatusBarNotification) =
+        emit(sbn, NotificationData.Action.Removed)
 
     private fun emit(sbn: StatusBarNotification, posted: NotificationData.Action) {
-        if (mSettings!!.isNotificationsEnabled &&
-            !(mSettings!!.isMediaNotificationsIgnored && isMediaNotification(sbn)) &&
+        if (mSettings.isNotificationsEnabled &&
+            !(mSettings.isMediaNotificationsIgnored && isMediaNotification(sbn)) &&
             isRunning(this)
         ) {
             log.d(TAG, "Notification received")
@@ -55,7 +52,7 @@ class NotificationService : NotificationListenerService() {
         // https://stackoverflow.com/a/51724784
         fun isEnabled(context: Context): Boolean {
             val contentResolver = context.contentResolver
-            val enabledNotificationListeners = android.provider.Settings.Secure.getString(
+            val enabledNotificationListeners = Secure.getString(
                 contentResolver,
                 "enabled_notification_listeners"
             )

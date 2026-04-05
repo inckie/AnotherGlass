@@ -10,7 +10,7 @@ Currently, the application can:
  * forward ongoing and one-shot notifications to the Glass
  * control media playback on the phone (play/pause, next, previous) directly from Glass
  * perform tilt to wake up on Enterprise Edition like on Explorer Edition (be aware of battery usage)
- * pass WiFi network information (SSID and password) from the phone to the Glass (Explorer Edition only)
+ * pass Wi-Fi network information (SSID and password) from the phone to the Glass (Explorer Edition only)
 
 ## Building
 
@@ -35,7 +35,7 @@ key_password=<key password>
 
 ### Google Glass Explorer Edition
 
-Supports both Bluetooth and WiFi connection modes.
+Supports both Bluetooth and Wi-Fi connection modes.
 
 1. Install both applications.
 2. Start Host Service from the phone app.
@@ -51,25 +51,25 @@ For Bluetooth mode:
 3. Select Bluetooth connection mode in the phone application.
 4. Start service on Glass and choose `Bluetooth`.
 
-For WiFi mode:
+For Wi-Fi mode:
 1. Ensure Glass and phone are on the same network, or use phone hotspot.
 2. Start service on Glass and choose `Wi-Fi`, or `Scan Barcode` to provide an explicit server IP.
 3. If QR scan succeeds, the scanned IP is remembered and shown as a quick reconnect option.
 
 ### Google Glass Enterprise Edition
 
-Uses WiFi to connect to the phone. Bluetooth is not supported (it has issues connecting from UI on latest firmware, and can only be connected from hidden Applications settings on my device, but disconnects often).
+Uses Wi-Fi to connect to the phone. Bluetooth is not supported (it has issues connecting from UI on latest firmware, and can only be connected from hidden Applications settings on my device, but disconnects often).
 
-1. Setup and start WiFi hotspot on the phone.
-2. Connect the Glass to the phone's WiFi hotspot.
+1. Setup and start Wi-Fi hotspot on the phone.
+2. Connect the Glass to the phone's Wi-Fi hotspot.
 3. Install both applications.
-4. Select WiFi connection mode in the mobile application.
+4. Select Wi-Fi connection mode in the mobile application.
 5. Toggle service switch on the phone application to start Host Service. Accept the permissions requests.
 6. Run AnotherGlass application the Glass device from the launcher. Accept the permission requests.
 
 Connection service keeps running in the background even if application is closed. Use swipe up or two fingers swipe down gestures to stop the service when in the application.
 
-Without using a hotspot, if both devices are on the same WiFi network, you can generate a QR code with the phone local IP address and scan it on the Glass by long-pressing the Service state card and selecting `Barcode` option.
+Without using a hotspot, if both devices are on the same Wi-Fi network, you can generate a QR code with the phone local IP address and scan it on the Glass by long-pressing the Service state card and selecting `Barcode` option.
 
 To enable GPS location passthrough on the Glass you will need to give the applicationMOCK_LOCATION permission. Run ADB command `adb shell appops set com.damn.anotherglass.glass.ee android:mock_location allow`, or tap on the Map card to open Developer settings and set AnotherGlass as GPS mocking application. Restart the service after the change.
 
@@ -102,7 +102,7 @@ There is a simple Python client in `python` folder to test the Glass Enterprise 
 Make sure to change communication protocol to JSON Lines by setting `SerializerProvider.currentSerializer` to `JSON`.
 
 ## APK Server
-There is a small GUI tool in `python/apk_server.py` to simplify sideloading APK files onto the Glass over WiFi without ADB.
+There is a small GUI tool in `python/apk_server.py` to simplify sideloading APK files onto the Glass over Wi-Fi without ADB.
 
 1. Run `apk_server.py` (requires `qrcode` and `Pillow` from `python/requirements.txt`).
 2. The tool scans its own directory for `.apk` files and lists them.
@@ -125,7 +125,7 @@ There is a small GUI tool in `python/apk_server.py` to simplify sideloading APK 
 * Improve initial connect experience on the Glass Enterprise Edition:
    * handle permissions and MockGPS status changes without restarting the service.
 * Add option to run service without mobile application connection to simulate Explorer Edition features:
-    * Add Voice Commands
+    * Add useful Voice Commands
     * Implement WidgetHost to simulate Explorer Edition Timeline LiveCards
     * Add Notifications "Tail" to simulate Explorer Edition
     * Probably replace Launcher (need to add shortcut to Glass Settings then)
