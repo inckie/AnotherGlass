@@ -92,9 +92,9 @@ class WiFiClient(private val hostIP: String? = null) : IRPCClient {
                                 return
                             }
                         }
-                        while (inputStream.available() > 0) {
+                        while (serializer.isReady || inputStream.available() > 0) {
                             val message = serializer.readMessage()
-                            if (message.service == null) {
+                            if (message?.service == null) {
                                 return
                             }
                             handler.onDataReceived(message)

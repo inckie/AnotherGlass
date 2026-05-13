@@ -1,8 +1,8 @@
 [submodule "externals/x-ray"]
 	path = externals/x-ray
-	url = git@github.com:inckie/x-ray.git
+	url = https://github.com/inckie/x-ray.git
 	shallow = true
 [submodule "externals/glass-enterprise-samples"]
 	path = externals/glass-enterprise-samples
-	url = git@github.com:inckie/glass-enterprise-samples.git
+	url = https://github.com/inckie/glass-enterprise-samples.git
 	branch = feat/update-project
