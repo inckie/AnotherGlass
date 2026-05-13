@@ -26,4 +26,9 @@ class ObjectMessageSerializer implements IMessageSerializer {
     public RPCMessage readMessage() throws Exception {
         return (RPCMessage) ois.readObject();
     }
+
+    @Override
+    public boolean isReady() throws Exception {
+        return ois.available() > 0;
+    }
 }

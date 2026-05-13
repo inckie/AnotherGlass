@@ -59,6 +59,11 @@ internal class JsonMessageSerializer(inputStream: InputStream, outputStream: Out
         }
     }
 
+    @Throws(Exception::class)
+    override fun isReady(): Boolean {
+        return reader.ready()
+    }
+
     private class RPCMessageDeserializer : JsonDeserializer<RPCMessage?> {
         @Throws(JsonParseException::class)
         override fun deserialize(

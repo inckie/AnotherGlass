@@ -151,9 +151,9 @@ public class BluetoothHost implements IRPCHost {
                      OutputStream outputStream = socket.getOutputStream()) {
                     IMessageSerializer serializer = SerializerProvider.getSerializer(inputStream, outputStream);
                     while (mActive) {
-                        while (inputStream.available() > 0) {
+                        while (serializer.isReady() || inputStream.available() > 0) {
                             RPCMessage objectReceived = serializer.readMessage();
-                            if (null == objectReceived.service)
+                            if (null == objectReceived || null == objectReceived.service)
                                 return; // shutdown requested
                             mHandler.onDataReceived(objectReceived);
                         }

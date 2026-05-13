@@ -110,9 +110,9 @@ class WiFiHost(listener: RPCMessageListener) : IRPCHost {
                                 return // disconnect requested
                             }
                         }
-                        while (mActive && inputStream.available() > 0) {
+                        while (mActive && (serializer.isReady || inputStream.available() > 0)) {
                             val message = serializer.readMessage()
-                            if (message.service == null) {
+                            if (message?.service == null) {
                                 return // client disconnected
                             }
                             mHandler.onDataReceived(message)

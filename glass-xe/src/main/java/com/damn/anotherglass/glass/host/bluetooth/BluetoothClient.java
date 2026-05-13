@@ -20,6 +20,7 @@ import com.damn.anotherglass.shared.rpc.SerializerProvider;
 import com.damn.anotherglass.shared.utility.DisconnectReceiver;
 import com.damn.anotherglass.shared.utility.Sleep;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
@@ -48,6 +49,7 @@ public class BluetoothClient implements IRPCClient {
             mHandler = new RPCHandler(listener);
         }
 
+        @SuppressLint("MissingPermission")
         @Override
         public void run() {
             try {
@@ -56,6 +58,7 @@ public class BluetoothClient implements IRPCClient {
 //                    return;
 //                }
                 BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
+                bt.cancelDiscovery();
                 Set<BluetoothDevice> pairedDevices = bt.getBondedDevices();
                 if (null == pairedDevices || pairedDevices.isEmpty()) {
                     Log.e(TAG, "No paired devices found, aborting the connection");
@@ -68,6 +71,8 @@ public class BluetoothClient implements IRPCClient {
                         break;
                     }
                 }
+            } catch (IOException e) {
+                Log.w(TAG, "Connection lost: " + e.getMessage());
             } catch (Exception e) {
                 Log.e(TAG, "Connection exception", e);
             } finally {
@@ -97,35 +102,52 @@ public class BluetoothClient implements IRPCClient {
 
         @SuppressLint("MissingPermission")
         private void runLoop(@NonNull BluetoothDevice device) throws Exception {
-            try (BluetoothSocket socket = device.createInsecureRfcommSocketToServiceRecord(Constants.uuid)) {
-                socket.connect();
+            BluetoothSocket socket = null;
+            try {
+                try {
+                    socket = device.createInsecureRfcommSocketToServiceRecord(Constants.uuid);
+                    socket.connect();
+                } catch (Exception e) {
+                    Log.w(TAG, "Standard connection failed, trying fallback: " + e.getMessage());
+                    if (socket != null)
+                        socket.close();
+                    Sleep.sleep(500);
+                    socket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", int.class).invoke(device, 1);
+                    socket.connect();
+                }
                 Log.i(TAG, "Client has connected to " + device.getName());
                 AtomicBoolean active = new AtomicBoolean(true);
-                try (DisconnectReceiver ignored = new DisconnectReceiver(mContext, device, () -> active.getAndSet(false))) {
-                    try (OutputStream outputStream = socket.getOutputStream();
-                        InputStream inputStream = socket.getInputStream()) {
-                        IMessageSerializer serializer = SerializerProvider.getSerializer(inputStream, outputStream);
-                        mConnected = true;
-                        mHandler.onConnectionStarted(device.getName());
-                        while (active.get()) {
-                            while (null != mQueue.peek()) {
-                                RPCMessage message = mQueue.take();
-                                serializer.writeMessage(message);
-                                Log.v(TAG, "Message " + message.service + "/" + message.type + " was sent");
-                                if (null == message.service) {
-                                    Log.d(TAG, "Shutdown requested");
-                                    return;
-                                }
+                try (DisconnectReceiver ignored = new DisconnectReceiver(mContext, device, () -> active.getAndSet(false));
+                     OutputStream outputStream = socket.getOutputStream();
+                     InputStream inputStream = socket.getInputStream()) {
+                    IMessageSerializer serializer = SerializerProvider.getSerializer(inputStream, outputStream);
+                    mConnected = true;
+                    mHandler.onConnectionStarted(device.getName());
+                    while (active.get()) {
+                        while (null != mQueue.peek()) {
+                            RPCMessage message = mQueue.take();
+                            serializer.writeMessage(message);
+                            Log.v(TAG, "Message " + message.service + "/" + message.type + " was sent");
+                            if (null == message.service) {
+                                Log.d(TAG, "Shutdown requested");
+                                return;
                             }
-                            while (inputStream.available() > 0) {
-                                RPCMessage objectReceived = serializer.readMessage();
-                                mHandler.onDataReceived(objectReceived);
-                                Log.v(TAG, "Message " + objectReceived.service + "/" + objectReceived.type + " was received");
-                            }
-                            Sleep.sleep(100);
                         }
+                        while (serializer.isReady() || inputStream.available() > 0) {
+                            RPCMessage objectReceived = serializer.readMessage();
+                            if (null == objectReceived || null == objectReceived.service) {
+                                Log.d(TAG, "Remote shutdown or connection lost");
+                                return;
+                            }
+                            mHandler.onDataReceived(objectReceived);
+                            Log.v(TAG, "Message " + objectReceived.service + "/" + objectReceived.type + " was received");
+                        }
+                        Sleep.sleep(100);
                     }
                 }
+            } finally {
+                if (socket != null)
+                    socket.close();
             }
         }
 
