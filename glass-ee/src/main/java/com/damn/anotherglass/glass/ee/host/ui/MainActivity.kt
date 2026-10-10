@@ -54,22 +54,43 @@ class MainActivity : BaseActivity() {
     private val serviceState = MutableLiveData<IService.ServiceState?>()
 
     private val timeLine = object : ITimeline {
-        override fun addFragment(fragment: BaseFragment, priority: Int, scrollTo: Boolean) {
-            // todo: implement priority
-            fragments.add(0, fragment)
+        override fun addFragment(fragment: BaseFragment, index: Int, scrollTo: Boolean) {
+            val targetIndex = index.coerceIn(0, fragments.size)
+            val current = viewPager.currentItem
+            fragments.add(targetIndex, fragment)
             viewPager.adapter?.notifyDataSetChanged()
-            if(scrollTo) viewPager.setCurrentItem(0, false)
+            if (scrollTo) {
+                viewPager.setCurrentItem(targetIndex, false)
+            } else if (targetIndex <= current) {
+                viewPager.setCurrentItem(current + 1, false)
+            }
         }
 
         override fun removeFragment(tag: String) {
-            if(fragments.removeIf { it.tag == tag }) {
+            val removeIndex = fragments.indexOfFirst { it.tag == tag }
+            if (removeIndex != -1) {
+                val current = viewPager.currentItem
+                fragments.removeAt(removeIndex)
                 viewPager.adapter?.notifyDataSetChanged()
+                if (removeIndex < current) {
+                    viewPager.setCurrentItem((current - 1).coerceAtLeast(0), false)
+                } else if (current >= fragments.size && fragments.isNotEmpty()) {
+                    viewPager.setCurrentItem(fragments.size - 1, false)
+                }
             }
         }
 
         override fun <T : BaseFragment> removeByType(cls: Class<T>) {
-            if(fragments.removeIf { it.javaClass == cls }) {
+            val removeIndex = fragments.indexOfFirst { it.javaClass == cls }
+            if (removeIndex != -1) {
+                val current = viewPager.currentItem
+                fragments.removeAt(removeIndex)
                 viewPager.adapter?.notifyDataSetChanged()
+                if (removeIndex < current) {
+                    viewPager.setCurrentItem((current - 1).coerceAtLeast(0), false)
+                } else if (current >= fragments.size && fragments.isNotEmpty()) {
+                    viewPager.setCurrentItem(fragments.size - 1, false)
+                }
             }
         }
 
@@ -113,7 +134,10 @@ class MainActivity : BaseActivity() {
         addNotificationsModule(timeLine)
         addMediaModule(timeLine)
 
-        timeLine.setCurrent(1, false)
+        val defaultIndex = timeLine.indexOfFirst(ServiceStateCard::class.java)
+        if (defaultIndex != -1) {
+            timeLine.setCurrent(defaultIndex, false)
+        }
 
         if(Settings(this).tiltToWake)
             TiltToWakeService.startService(this)
