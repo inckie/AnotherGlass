@@ -95,12 +95,8 @@ object Converter {
                         }
 
                         icon?.let {
-                            try {
-                                it.loadDrawable(context)?.let { drawable ->
-                                    msg.senderIcon = drawableToBitmap(drawable).toPngBinaryData()
-                                }
-                            } catch (e: Exception) {
-                                log.e(TAG, "Failed to load person icon", e)
+                            loadIconToBitmap(it, context, data.packageName)?.let { bitmap ->
+                                msg.senderIcon = bitmap.toPngBinaryData()
                             }
                         }
                         data.messages.add(msg)
@@ -115,19 +111,32 @@ object Converter {
 
         try {
             extractIcon(context, data, notification)
-            extractImage(data, notification)
+            extractImage(context, data, notification)
         } catch (e: Exception) {
             log.e(TAG, "Failed to extract icon or image from notification", e)
         }
         return data
     }
 
-    private fun extractImage(data: NotificationData, notification: Notification) {
+    private fun extractImage(context: Context, data: NotificationData, notification: Notification) {
         val extras = notification.extras
-        // Try BigPicture
-        (extras.getParcelable<Bitmap>(Notification.EXTRA_PICTURE) 
-            ?: extras.getParcelable<Bitmap>("android.pictureIcon"))?.let {
-            data.image = it.toPngBinaryData()
+        // Try BigPicture as Bitmap
+        @Suppress("DEPRECATION")
+        val pictureBitmap = (extras.getParcelable(Notification.EXTRA_PICTURE) as? Bitmap)
+            ?: (extras.getParcelable("android.pictureIcon") as? Bitmap)
+        if (pictureBitmap != null && !pictureBitmap.isRecycled) {
+            data.image = pictureBitmap.toPngBinaryData()
+            return
+        }
+
+        // Try BigPicture as Icon (Android 9+)
+        @Suppress("DEPRECATION")
+        val pictureIcon = (extras.getParcelable(Notification.EXTRA_PICTURE) as? android.graphics.drawable.Icon)
+            ?: (extras.getParcelable("android.pictureIcon") as? android.graphics.drawable.Icon)
+        if (pictureIcon != null) {
+            loadIconToBitmap(pictureIcon, context, data.packageName)?.let {
+                data.image = it.toPngBinaryData()
+            }
         }
     }
 
@@ -136,23 +145,94 @@ object Converter {
         data: NotificationData,
         notification: Notification
     ) {
-        var icon = notification.getLargeIcon()
-        if (null == icon) icon = notification.smallIcon
-        if (null != icon) {
-            try {
-                val drawable = icon.loadDrawable(context)
-                if (null != drawable) {
-                    val bitmap = drawableToBitmap(drawable)
-                    setIconData(data, bitmap)
-                }
-            } catch (e: Exception) {
-                log.e(TAG, "Failed to load icon drawable", e)
+        val packageName = data.packageName
+
+        // 1. Try to extract large icon first (custom notification icon, contact photo, thumbnail)
+        @Suppress("DEPRECATION")
+        val largeIcon = notification.getLargeIcon()
+            ?: (notification.extras.getParcelable(Notification.EXTRA_LARGE_ICON) as? android.graphics.drawable.Icon)
+            ?: (notification.extras.getParcelable("android.largeIcon.big") as? android.graphics.drawable.Icon)
+
+        if (largeIcon != null) {
+            loadIconToBitmap(largeIcon, context, packageName)?.let {
+                setIconData(data, it)
+                return
             }
         }
-        if (null != data.icon) return
-        
+
+        // Try large icon as Bitmap (from extras or deprecated field)
         @Suppress("DEPRECATION")
-        if (null != notification.largeIcon) setIconData(data, notification.largeIcon)
+        val largeBitmap = (notification.extras.getParcelable(Notification.EXTRA_LARGE_ICON) as? Bitmap)
+            ?: (notification.extras.getParcelable("android.largeIcon.big") as? Bitmap)
+            ?: notification.largeIcon
+
+        if (largeBitmap != null && !largeBitmap.isRecycled) {
+            setIconData(data, largeBitmap)
+            return
+        }
+
+        // 2. Try small icon from notification
+        @Suppress("DEPRECATION")
+        val smallIcon = notification.smallIcon
+            ?: (notification.extras.getParcelable(Notification.EXTRA_SMALL_ICON) as? android.graphics.drawable.Icon)
+
+        if (smallIcon != null) {
+            loadIconToBitmap(smallIcon, context, packageName)?.let {
+                setIconData(data, it)
+                return
+            }
+        }
+
+        // Try legacy small icon resource ID
+        @Suppress("DEPRECATION")
+        val iconResId = notification.icon
+        if (iconResId != 0 && !packageName.isNullOrBlank()) {
+            try {
+                val packageContext = context.createPackageContext(packageName, 0)
+                val drawable = packageContext.getDrawable(iconResId)
+                if (drawable != null) {
+                    setIconData(data, drawableToBitmap(drawable))
+                    return
+                }
+            } catch (e: Exception) {
+                // Ignore and fall back to app icon
+            }
+        }
+
+        // 3. Fallback to Application icon (guaranteed to exist for every installed app)
+        if (!packageName.isNullOrBlank()) {
+            try {
+                val pm = context.packageManager
+                val appDrawable = pm.getApplicationIcon(packageName)
+                setIconData(data, drawableToBitmap(appDrawable))
+            } catch (e: Exception) {
+                log.e(TAG, "Failed to load application icon as fallback for $packageName", e)
+            }
+        }
+    }
+
+    private fun loadIconToBitmap(
+        icon: android.graphics.drawable.Icon,
+        context: Context,
+        packageName: String?
+    ): Bitmap? {
+        var drawable: Drawable? = null
+        if (!packageName.isNullOrBlank()) {
+            try {
+                val packageContext = context.createPackageContext(packageName, 0)
+                drawable = icon.loadDrawable(packageContext)
+            } catch (e: Exception) {
+                // Ignore and fall back to context
+            }
+        }
+        if (drawable == null) {
+            try {
+                drawable = icon.loadDrawable(context)
+            } catch (e: Exception) {
+                // Ignore
+            }
+        }
+        return drawable?.let { drawableToBitmap(it) }
     }
 
     private fun setIconData(data: NotificationData, bitmap: Bitmap) {
@@ -161,15 +241,30 @@ object Converter {
 
     fun drawableToBitmap(drawable: Drawable): Bitmap {
         if (drawable is BitmapDrawable) {
-            if (null != drawable.bitmap) {
-                return drawable.bitmap
+            if (null != drawable.bitmap && !drawable.bitmap.isRecycled) {
+                val bmp = drawable.bitmap
+                if (bmp.width in 1..256 && bmp.height in 1..256) {
+                    return bmp
+                }
             }
         }
-        val bitmap: Bitmap = if (drawable.intrinsicWidth <= 0 || drawable.intrinsicHeight <= 0) {
-            createBitmap(1, 1)
+        val defaultSize = 96
+        val rawWidth = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else defaultSize
+        val rawHeight = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else defaultSize
+
+        val maxDim = 192
+        val (finalWidth, finalHeight) = if (rawWidth > maxDim || rawHeight > maxDim) {
+            val ratio = rawWidth.toFloat() / rawHeight.toFloat()
+            if (rawWidth > rawHeight) {
+                maxDim to (maxDim / ratio).toInt().coerceAtLeast(1)
+            } else {
+                (maxDim * ratio).toInt().coerceAtLeast(1) to maxDim
+            }
         } else {
-            createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
+            rawWidth to rawHeight
         }
+
+        val bitmap = createBitmap(finalWidth, finalHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         drawable.setBounds(0, 0, canvas.width, canvas.height)
         drawable.draw(canvas)

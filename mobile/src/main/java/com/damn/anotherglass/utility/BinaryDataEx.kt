@@ -1,8 +1,15 @@
 package com.damn.anotherglass.utility
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import com.damn.anotherglass.shared.BinaryData
 import java.io.ByteArrayOutputStream
+
+fun BinaryData?.toBitmap(): Bitmap? {
+    val bytes = this?.bytes ?: return null
+    if (bytes.isEmpty()) return null
+    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+}
 
 fun Bitmap.toPngBinaryData(): BinaryData? {
     return toBinaryData(Bitmap.CompressFormat.PNG, 100, MIME_TYPE_PNG)

@@ -19,9 +19,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.damn.anotherglass.R
 import com.damn.anotherglass.shared.notifications.NotificationData
 import com.damn.anotherglass.utility.AppDetails
+import com.damn.anotherglass.utility.toBitmap
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
 @Composable
@@ -55,9 +59,15 @@ fun NotificationHistoryItemView(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                    appDetails?.icon?.let {
+                    val iconBitmap = remember(notification.icon) { notification.icon.toBitmap() }
+                    val iconPainter = when {
+                        appDetails?.icon != null -> rememberDrawablePainter(drawable = appDetails.icon)
+                        iconBitmap != null -> BitmapPainter(iconBitmap.asImageBitmap())
+                        else -> null
+                    }
+                    if (iconPainter != null) {
                         Image(
-                            painter = rememberDrawablePainter(drawable = it),
+                            painter = iconPainter,
                             contentDescription = "App Icon",
                             modifier = Modifier
                                 .size(24.dp)
