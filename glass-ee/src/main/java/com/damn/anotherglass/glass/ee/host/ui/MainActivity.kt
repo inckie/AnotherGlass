@@ -36,7 +36,6 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-
 // TODO:
 //  - add Bluetooth connection support (and WiFi for xe)?
 //  - add zoom levels to map card
@@ -137,7 +136,6 @@ class MainActivity : BaseActivity() {
     }
 
     fun tryStartService(ip: String? = null) {
-
         HostService.startService(this, ip)
         connection.bindGlassService()
         reloadVoiceCommands()
@@ -183,9 +181,8 @@ class MainActivity : BaseActivity() {
                 it == PackageManager.PERMISSION_GRANTED
             }
             reloadVoiceCommands()
-        } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     override fun onGesture(gesture: GlassGestureDetector.Gesture): Boolean =
@@ -208,7 +205,7 @@ class MainActivity : BaseActivity() {
     fun getServiceState(): LiveData<IService.ServiceState?> = serviceState
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
-        if(BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG) {
             when(keyCode) {
                 KeyEvent.KEYCODE_N -> {
                     if (event.isShiftPressed)

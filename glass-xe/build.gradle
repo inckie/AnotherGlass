@@ -51,6 +51,8 @@ repositories {
 }
 
 dependencies {
+    implementation 'androidx.annotation:annotation:1.11.0'
+
     // gdk.jar is a compile-time stub only; the real implementation is provided by the Glass system.
     // Using 'implementation' causes ProGuard to process and break GDK classes in release builds.
     compileOnly fileTree(dir: 'libs', include: ['*.jar'])
