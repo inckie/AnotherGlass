@@ -4,7 +4,7 @@ apply plugin: 'kotlin-android'
 android {
 
     defaultConfig {
-        compileSdk = 36
+        compileSdk = 37
         minSdkVersion 19
         //noinspection ExpiredTargetSdkVersion
     }
@@ -34,7 +34,7 @@ kotlin {
 }
 
 dependencies {
-    implementation "androidx.annotation:annotation:1.9.1"
-    implementation "com.google.code.gson:gson:2.13.2"
+    implementation "androidx.annotation:annotation:1.11.0"
+    implementation "com.google.code.gson:gson:2.14.0"
     testImplementation "junit:junit:4.13.2"
 }

@@ -7,7 +7,7 @@ android {
     namespace 'com.damn.glass.shared'
 
     defaultConfig {
-        compileSdk = 36
+        compileSdk = 37
         minSdk 19
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -32,6 +32,6 @@ kotlin {
 
 dependencies {
     implementation project(':shared')
-    implementation 'androidx.annotation:annotation:1.9.1'
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
+    implementation 'androidx.annotation:annotation:1.11.0'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0"
 }
