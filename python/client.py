@@ -4,10 +4,15 @@ import socket
 import threading
 import time
 from enum import StrEnum
-from typing import TypedDict, Optional, Union
+from typing import TypedDict, Optional, Union, Callable
 
 import netifaces
 import qrcode
+
+PING_SERVICE = "Ping"
+PONG_SERVICE = "Pong"
+PING_INTERVAL_SEC = 5.0
+PING_TIMEOUT_SEC = 20.0
 
 '''
 IMPORTANT:
@@ -282,19 +287,36 @@ class Core:
         self.notification_id = 0
         self.conn: Optional[socket.socket] = None
         self.media = MediaDebugController()
+        self._send_lock = threading.Lock()
+        self.last_sent_time = 0.0
+        self.last_received_time = 0.0
 
-    def send_message(self, message: RPCMessage) -> bool:
-        if not self.conn:
-            print("Not connected.")
-            return False
-        try:
-            self.conn.sendall(json.dumps(message).encode('utf-8'))
-            self.conn.sendall(b'\n')
-            print(f"Sent message: {message.get('service')}")
-            return True
-        except socket.error as e:
-            print(f"Error sending message: {e}")
-            return False
+    def send_message(self, message: RPCMessage, log: bool = True) -> bool:
+        with self._send_lock:
+            conn = self.conn
+            if not conn:
+                if log:
+                    print("Not connected.")
+                return False
+            try:
+                data = json.dumps(message).encode('utf-8') + b'\n'
+                conn.sendall(data)
+                self.last_sent_time = time.time()
+                if log:
+                    print(f"Sent message: {message.get('service')}")
+                return True
+            except socket.error as e:
+                if log:
+                    print(f"Error sending message: {e}")
+                return False
+
+    def send_ping(self) -> bool:
+        message: RPCMessage = {"service": PING_SERVICE, "type": None, "payload": None}
+        return self.send_message(message, log=False)
+
+    def send_pong(self) -> bool:
+        message: RPCMessage = {"service": PONG_SERVICE, "type": None, "payload": None}
+        return self.send_message(message, log=False)
 
     def send_gps(self):
         location = random.choice(LOCATIONS)
@@ -350,10 +372,91 @@ class Core:
         self.media.next_track()
         self.send_media_state()
 
+    def handle_connection(
+        self,
+        conn: socket.socket,
+        on_message: Optional[Callable[[RPCMessage], None]] = None,
+        on_disconnect: Optional[Callable[[], None]] = None
+    ) -> None:
+        try:
+            conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except Exception:
+            pass
+        conn.settimeout(1.0)
+
+        with self._send_lock:
+            self.conn = conn
+            self.last_sent_time = time.time()
+            self.last_received_time = time.time()
+
+        buffer = b''
+        try:
+            while self.conn is not None:
+                try:
+                    data = conn.recv(1024)
+                    if not data:
+                        print("Client closed connection.")
+                        break
+                    buffer += data
+                    while b'\n' in buffer:
+                        line, buffer = buffer.split(b'\n', 1)
+                        if line:
+                            try:
+                                message: RPCMessage = json.loads(line.decode('utf-8'))
+                                self.last_received_time = time.time()
+                                service = message.get('service')
+                                if service is None:
+                                    print("Client requested disconnect.")
+                                    return
+                                elif service == PING_SERVICE:
+                                    self.send_pong()
+                                elif service == PONG_SERVICE:
+                                    pass
+                                else:
+                                    if on_message:
+                                        on_message(message)
+                            except json.JSONDecodeError:
+                                print(f"Error decoding JSON: {line.decode('utf-8')}")
+                except socket.timeout:
+                    pass
+                except (socket.error, ConnectionResetError) as e:
+                    print(f"Connection error: {e}")
+                    break
+
+                now = time.time()
+                if now - self.last_sent_time >= PING_INTERVAL_SEC:
+                    self.send_ping()
+                if now - self.last_received_time > PING_TIMEOUT_SEC:
+                    print(f"Ping timeout: no response from client for {PING_TIMEOUT_SEC}s")
+                    break
+        finally:
+            with self._send_lock:
+                if self.conn is conn:
+                    self.conn = None
+            try:
+                conn.close()
+            except Exception:
+                pass
+            if on_disconnect:
+                on_disconnect()
+
     def exit(self):
-        if self.conn:
+        conn = self.conn
+        if conn:
             message: RPCMessage = {"service": None, "type": None, "payload": None}
             self.send_message(message)
+            try:
+                conn.shutdown(socket.SHUT_WR)
+            except Exception:
+                pass
+            time.sleep(0.2)
+            try:
+                conn.close()
+            except Exception:
+                pass
+            with self._send_lock:
+                if self.conn is conn:
+                    self.conn = None
 
 
 def main_ui():
@@ -507,36 +610,25 @@ def main_ui():
 
         def run_server(self):
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 s.bind((self.ip_address, 9090))
                 s.listen()
                 while True:
                     self.status_var.set("Listening...")
                     print("Server listening on port 9090...")
-                    self.core.conn, addr = s.accept()
+                    conn, addr = s.accept()
                     self.status_var.set(f"Connected by {addr}")
                     print(f"Connected by {addr}")
 
-                    buffer = b''
-                    try:
-                        while True:
-                            data = self.core.conn.recv(1024)
-                            if not data:
-                                break
-                            buffer += data
-                            while b'\n' in buffer:
-                                line, buffer = buffer.split(b'\n', 1)
-                                if line:
-                                    try:
-                                        message: RPCMessage = json.loads(line.decode('utf-8'))
-                                        self.handle_message(message)
-                                    except json.JSONDecodeError:
-                                        print(f"Error decoding JSON: {line.decode('utf-8')}")
-                    except ConnectionResetError:
-                        pass  # client disconnected
+                    self.core.handle_connection(
+                        conn,
+                        on_message=self.handle_message,
+                        on_disconnect=self.on_client_disconnected
+                    )
 
-                    self.core.conn = None
-                    self.status_var.set("Disconnected")
-                    self.clear_device_info()
+        def on_client_disconnected(self):
+            self.status_var.set("Disconnected")
+            self.clear_device_info()
 
         def handle_message(self, message: RPCMessage):
             service = message.get('service')
@@ -614,57 +706,105 @@ def main_console():
     qr.print_tty()
     print(f"IP Address: {ip_address}")
 
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind((ip_address, 9090))
-        s.listen()
-        print("Server listening on port 9090...")
-        conn, addr = s.accept()
-        with conn:
-            core.conn = conn
-            print(f"Connected by {addr}")
-            while True:
-                media = core.media
-                track = media.current_track
-                track_name = f"{track['title']} - {track['artist']}" if track else "N/A"
-                print(f"\nMedia state: {media.playback_state.value}; Track: {track_name}")
-                print(f"Available media actions: {', '.join([k for k, v in media.available_buttons.items() if v])}")
-
-                print("\nMenu:")
-                print("1. Send random GPS location")
-                print("2. Add debug notification")
-                print("3. Remove debug notification")
-                print("4. Media: Start App")
-                print("5. Media: Stop App")
-                print("6. Media: Play")
-                print("7. Media: Pause")
-                print("8. Media: Prev")
-                print("9. Media: Next")
-                print("0. Exit")
-                choice = input("Enter your choice: ")
-
-                if choice == '1':
-                    core.send_gps()
-                elif choice == '2':
-                    core.add_notification()
-                elif choice == '3':
-                    core.remove_notification()
-                elif choice == '4':
-                    core.media_start_app()
-                elif choice == '5':
-                    core.media_stop_app()
-                elif choice == '6':
+    def console_handler(msg: RPCMessage):
+        service = msg.get('service')
+        msg_type = msg.get('type')
+        payload = msg.get('payload')
+        if service == 'device':
+            if msg_type == 'name':
+                print(f"\n[Device Connected]: {payload}")
+            elif msg_type == 'com.damn.anotherglass.shared.device.BatteryStatusData' and isinstance(payload, dict):
+                charging = " ⚡" if payload.get('isCharging') else ""
+                print(f"\n[Device Battery]: {payload.get('level')}%{charging}")
+        elif service == 'Media':
+            if msg_type == 'com.damn.anotherglass.shared.media.MediaCommandData' and isinstance(payload, dict):
+                cmd = payload.get('command')
+                print(f"\n[Media Command]: {cmd}")
+                if cmd == 'TogglePlayPause':
+                    if core.media.playback_state == PlaybackStateValue.Playing:
+                        core.media_pause()
+                    else:
+                        core.media_play()
+                elif cmd == 'Play':
                     core.media_play()
-                elif choice == '7':
+                elif cmd == 'Pause':
                     core.media_pause()
-                elif choice == '8':
-                    core.media_prev()
-                elif choice == '9':
+                elif cmd == 'Next':
                     core.media_next()
-                elif choice == '0':
-                    core.exit()
+                elif cmd == 'Previous':
+                    core.media_prev()
+
+    stop_event = threading.Event()
+
+    def server_worker():
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind((ip_address, 9090))
+            s.listen()
+            s.settimeout(1.0)
+            print("Server listening on port 9090...")
+            while not stop_event.is_set():
+                try:
+                    conn, addr = s.accept()
+                except socket.timeout:
+                    continue
+                except Exception:
                     break
-                else:
-                    print("Invalid choice. Please try again.")
+                print(f"\nConnected by {addr}")
+                core.handle_connection(conn, on_message=console_handler)
+                if not stop_event.is_set():
+                    print("\nClient disconnected. Waiting for connection...")
+
+    server_thread = threading.Thread(target=server_worker, daemon=True)
+    server_thread.start()
+
+    while True:
+        media = core.media
+        track = media.current_track
+        track_name = f"{track['title']} - {track['artist']}" if track else "N/A"
+        print(f"\nMedia state: {media.playback_state.value}; Track: {track_name}")
+        print(f"Available media actions: {', '.join([k for k, v in media.available_buttons.items() if v])}")
+
+        print("\nMenu:")
+        print("1. Send random GPS location")
+        print("2. Add debug notification")
+        print("3. Remove debug notification")
+        print("4. Media: Start App")
+        print("5. Media: Stop App")
+        print("6. Media: Play")
+        print("7. Media: Pause")
+        print("8. Media: Prev")
+        print("9. Media: Next")
+        print("0. Exit")
+        try:
+            choice = input("Enter your choice: ")
+        except (EOFError, KeyboardInterrupt):
+            choice = '0'
+
+        if choice == '1':
+            core.send_gps()
+        elif choice == '2':
+            core.add_notification()
+        elif choice == '3':
+            core.remove_notification()
+        elif choice == '4':
+            core.media_start_app()
+        elif choice == '5':
+            core.media_stop_app()
+        elif choice == '6':
+            core.media_play()
+        elif choice == '7':
+            core.media_pause()
+        elif choice == '8':
+            core.media_prev()
+        elif choice == '9':
+            core.media_next()
+        elif choice == '0':
+            stop_event.set()
+            core.exit()
+            break
+        else:
+            print("Invalid choice. Please try again.")
 
 if __name__ == "__main__":
     import sys
