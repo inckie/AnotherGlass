@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Center Content: Settings info -->
+    <LinearLayout
+        android:id="@+id/body_layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/glass_card_margin"
+        android:layout_marginEnd="@dimen/glass_card_margin"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@id/ok_glass"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/settings_icon"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginEnd="20dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_settings" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/settings_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/title_settings"
+                android:textColor="@android:color/white"
+                android:textSize="32sp" />
+
+            <TextView
+                android:id="@+id/settings_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@string/menu_font"
+                android:text="@string/hint_tap_to_open_settings"
+                android:textColor="#CCFFFFFF"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/settings_preview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@string/menu_font"
+                android:textColor="#80FFFFFF"
+                android:textSize="14sp"
+                tools:text="Tilt to Wake: Enabled (25°)" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Bottom-Left: "OK Glass" prompt -->
+    <TextView
+        android:id="@+id/ok_glass"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/glass_card_margin"
+        android:layout_marginBottom="24dp"
+        android:fontFamily="@string/menu_font"
+        android:text="@string/ok_glass"
+        android:textColor="#80FFFFFF"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

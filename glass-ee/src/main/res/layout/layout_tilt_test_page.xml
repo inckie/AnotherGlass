@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Top Info -->
+    <TextView
+        android:id="@+id/test_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/glass_card_margin"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@string/menu_font"
+        android:text="@string/tilt_test_title"
+        android:textColor="#CCFFFFFF"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/threshold_display"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="@dimen/glass_card_margin"
+        android:fontFamily="@string/menu_font"
+        android:textColor="#80FFFFFF"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Threshold: 25°" />
+
+    <!-- Center Readings -->
+    <LinearLayout
+        android:id="@+id/center_content"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/glass_card_margin"
+        android:layout_marginEnd="@dimen/glass_card_margin"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/nav_hint"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/test_title">
+
+        <!-- Live Pitch Value -->
+        <TextView
+            android:id="@+id/current_angle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@android:color/white"
+            android:textSize="48sp"
+            tools:text="14°" />
+
+        <TextView
+            android:id="@+id/angle_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@string/menu_font"
+            android:text="@string/tilt_lbl_current_pitch_angle"
+            android:textColor="#80FFFFFF"
+            android:textSize="14sp" />
+
+        <!-- Status / Trigger banner -->
+        <TextView
+            android:id="@+id/trigger_banner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="sans-serif-medium"
+            android:paddingStart="20dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="6dp"
+            android:text="@string/tilt_test_ready"
+            android:textColor="#CCFFFFFF"
+            android:textSize="18sp"
+            tools:text="READY — LOOK UP" />
+    </LinearLayout>
+
+    <!-- Bottom Navigation Hint -->
+    <TextView
+        android:id="@+id/nav_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/glass_card_margin"
+        android:layout_marginBottom="24dp"
+        android:fontFamily="@string/menu_font"
+        android:text="@string/tilt_nav_hint_exit"
+        android:textColor="#80FFFFFF"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

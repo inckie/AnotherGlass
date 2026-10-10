@@ -28,7 +28,7 @@ import com.damn.anotherglass.glass.ee.host.ui.MainActivityEx.addMediaModule
 import com.damn.anotherglass.glass.ee.host.ui.cards.BaseFragment
 import com.damn.anotherglass.glass.ee.host.ui.cards.MapCard
 import com.damn.anotherglass.glass.ee.host.ui.cards.ServiceStateCard
-import com.damn.anotherglass.glass.ee.host.ui.cards.TiltToWakeCard
+import com.damn.anotherglass.glass.ee.host.ui.cards.SettingsCard
 import com.damn.anotherglass.glass.ee.host.utility.isRunning
 import com.example.glass.ui.GlassGestureDetector
 import com.google.android.material.tabs.TabLayout
@@ -90,7 +90,7 @@ class MainActivity : BaseActivity() {
         if (!hasVoiceCommandPermission) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, REQUEST_PERMISSION_CODE)
         }
-        fragments.add(TiltToWakeCard.newInstance()) // -1 fragment (settings)
+        fragments.add(SettingsCard.newInstance()) // -1 fragment (settings)
         fragments.add(ServiceStateCard.newInstance()) // default fragment
         fragments.add(MapCard.newInstance())
 
