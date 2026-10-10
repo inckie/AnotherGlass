@@ -207,15 +207,7 @@ class GlassService
 
 
     private fun createChannels() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-        val defaultChannel = NotificationChannel(
-            sCHANNEL_DEFAULT,
-            getString(R.string.notification_channel_state),
-            NotificationManager.IMPORTANCE_DEFAULT
-        )
-        defaultChannel.setShowBadge(false)
-        defaultChannel.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-        mNM.createNotificationChannel(defaultChannel)
+        createChannels(this)
     }
 
     private fun buildNotification(): Notification {
@@ -226,6 +218,9 @@ class GlassService
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOnlyAlertOnce(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setVibrate(longArrayOf(0))
+            .setSound(null)
 
         val device = mConnectedDevice.value
         if (null != device) {
@@ -293,5 +288,26 @@ class GlassService
 
         @JvmStatic
         fun isRunning(context: Context): Boolean = context.isServiceRunning(GlassService::class.java)
+
+        fun createChannels(context: Context) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+            val nm = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            val existing = nm.getNotificationChannel(sCHANNEL_DEFAULT)
+            if (existing != null && (existing.importance > NotificationManager.IMPORTANCE_LOW || existing.shouldVibrate())) {
+                nm.deleteNotificationChannel(sCHANNEL_DEFAULT)
+            }
+            val defaultChannel = NotificationChannel(
+                sCHANNEL_DEFAULT,
+                context.getString(R.string.notification_channel_state),
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                setShowBadge(false)
+                lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+                enableVibration(false)
+                vibrationPattern = longArrayOf(0)
+                setSound(null, null)
+            }
+            nm.createNotificationChannel(defaultChannel)
+        }
     }
 }

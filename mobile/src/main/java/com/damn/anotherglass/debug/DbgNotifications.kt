@@ -10,7 +10,7 @@ import com.damn.anotherglass.utility.getService
 object DbgNotifications {
 
     fun postNotification(context: Context) {
-        // Service should be running for these calls, it will register the channel
+        GlassService.createChannels(context)
         ++notificationId
         val notification = NotificationCompat
             .Builder(context, GlassService.sCHANNEL_DEFAULT)
@@ -19,6 +19,9 @@ object DbgNotifications {
             .setTicker("Debug notification $notificationId")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setVibrate(longArrayOf(0))
+            .setSound(null)
             .build()
 
         notificationManager(context).notify(NOTIFICATION_BASE_ID + notificationId, notification)
