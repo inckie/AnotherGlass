@@ -58,10 +58,20 @@ class NotificationHistoryViewModel(
     fun formatTimestamp(timestamp: Long): String = timeFormat.format(Date(timestamp))
 
     fun onCreateFilterFromNotification(notificationId: Int, navController: NavController?) {
-        val notification =
-            _historyItems.value.find { it.notification.id == notificationId }?.notification
+        val historyItem = _historyItems.value.find { it.notification.id == notificationId }
+        val notification = historyItem?.notification
         notification?.let {
+            val appDetailsName = historyItem.appDetails?.appName
+            val appName = when {
+                !appDetailsName.isNullOrBlank() && appDetailsName != it.packageName && !appDetailsName.contains('.') -> appDetailsName
+                !it.appName.isNullOrBlank() && it.appName != it.packageName && !it.appName.contains('.') -> it.appName
+                !appDetailsName.isNullOrBlank() && appDetailsName != it.packageName -> appDetailsName
+                !it.appName.isNullOrBlank() && it.appName != it.packageName -> it.appName
+                !appDetailsName.isNullOrBlank() -> appDetailsName
+                else -> it.appName
+            }
             val route = AppRoute.FilterEditScreen.buildFilterEditRoute(
+                appName = appName,
                 title = it.title,
                 text = it.text,
                 packageName = it.packageName,

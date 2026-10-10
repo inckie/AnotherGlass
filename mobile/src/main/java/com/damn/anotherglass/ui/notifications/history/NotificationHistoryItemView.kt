@@ -64,8 +64,19 @@ fun NotificationHistoryItemView(
                                 .padding(end = 8.dp)
                         )
                     }
+                    val appDetailsName = appDetails?.appName
+                    val notifAppName = notification.appName
+                    val notifPkgName = notification.packageName
+                    val displayAppName: String = when {
+                        !appDetailsName.isNullOrBlank() && appDetailsName != notifPkgName -> appDetailsName
+                        !notifAppName.isNullOrBlank() && notifAppName != notifPkgName -> notifAppName
+                        !appDetailsName.isNullOrBlank() -> appDetailsName
+                        !notifAppName.isNullOrBlank() -> notifAppName
+                        !notifPkgName.isNullOrBlank() -> notifPkgName
+                        else -> "Unknown App"
+                    }
                     Text(
-                        text = appDetails?.appName ?: notification.packageName ?: "Unknown App",
+                        text = displayAppName,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,

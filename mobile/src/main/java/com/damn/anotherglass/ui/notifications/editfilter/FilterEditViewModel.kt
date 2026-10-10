@@ -14,8 +14,11 @@ import com.damn.anotherglass.extensions.notifications.filter.IFilterRepository
 import com.damn.anotherglass.extensions.notifications.filter.NotificationFilter
 import com.damn.anotherglass.extensions.notifications.filter.from
 import com.damn.anotherglass.ui.AppRoute
+import com.damn.anotherglass.utility.AndroidAppDetailsProvider
+import com.damn.anotherglass.utility.AppDetailsProvider
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import java.util.Locale
 import java.util.UUID
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -28,7 +31,8 @@ data class FilterConditionVM(
 
 class FilterEditViewModel(
     savedStateHandle: SavedStateHandle,
-    private val filterRepository: IFilterRepository
+    private val filterRepository: IFilterRepository,
+    private val appDetailsProvider: AppDetailsProvider? = null
 ) : ViewModel() {
 
     // --- State for the filter being edited ---
@@ -56,13 +60,23 @@ class FilterEditViewModel(
                 isNewFilter = true
 
                 // Set package name from navigation arguments
-                savedStateHandle.get<String>(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_PACKAGE_NAME)
+                val navPackageName = savedStateHandle.get<String>(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_PACKAGE_NAME)
                     ?.urlDecode()
-                    ?.let { value ->
-                        if (value.isNotBlank()) {
-                            packageName.value = value
-                        }
-                    }
+                if (!navPackageName.isNullOrBlank()) {
+                    packageName.value = navPackageName
+                }
+
+                val navAppName = savedStateHandle.get<String>(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_APP_NAME)
+                    ?.urlDecode()
+
+                val navTitle = savedStateHandle.get<String>(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_TITLE)
+                    ?.urlDecode()
+
+                val navText = savedStateHandle.get<String>(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_TEXT)
+                    ?.urlDecode()
+
+                val navTickerText = savedStateHandle.get<String>(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_TICKER_TEXT)
+                    ?.urlDecode()
 
                 ARG_TO_CONDITION_MAP.forEach { (argKey, conditionType) ->
                     savedStateHandle.get<String>(argKey)
@@ -80,24 +94,35 @@ class FilterEditViewModel(
                         }
                 }
 
-                if (savedStateHandle.contains(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_IS_ONGOING)) {
-                    val isOngoingFromNav: Boolean =
-                        savedStateHandle[AppRoute.FilterEditScreen.FILTER_EDIT_ARG_IS_ONGOING]
-                            ?: false
-                    conditions.add(
-                        FilterConditionVM(
-                            id = UUID.randomUUID().toString(),
-                        FilterConditionItem(
-                            type = ConditionType.IS_ONGOING_EQUALS,
-                            value = isOngoingFromNav.toString()
-                        ))
-                    )
-                }
+                val isOngoingFromNav: Boolean? =
+                    if (savedStateHandle.contains(AppRoute.FilterEditScreen.FILTER_EDIT_ARG_IS_ONGOING)) {
+                        val isOngoing: Boolean =
+                            savedStateHandle[AppRoute.FilterEditScreen.FILTER_EDIT_ARG_IS_ONGOING]
+                                ?: false
+                        conditions.add(
+                            FilterConditionVM(
+                                id = UUID.randomUUID().toString(),
+                                FilterConditionItem(
+                                    type = ConditionType.IS_ONGOING_EQUALS,
+                                    value = isOngoing.toString()
+                                )
+                            )
+                        )
+                        isOngoing
+                    } else null
 
-                if ((conditions.isNotEmpty() || packageName.value.isNotEmpty()) && filterName.value.isBlank()) {
-                    filterName.value = "New Filter from Notification"
-                } else if (filterName.value.isBlank()) {
-                    filterName.value = "New Filter"
+                val isFromNotification = conditions.isNotEmpty() || packageName.value.isNotEmpty() || !navAppName.isNullOrBlank()
+
+                if (filterName.value.isBlank()) {
+                    if (isFromNotification) {
+                        filterName.value = suggestFilterName(
+                            appName = navAppName,
+                            packageName = packageName.value.takeIf { it.isNotBlank() },
+                            title = navTitle
+                        )
+                    } else {
+                        filterName.value = "New Filter"
+                    }
                 }
                 filterAction.value = FilterAction.BLOCK // Or UserFilter().action
             }
@@ -183,6 +208,76 @@ class FilterEditViewModel(
         }
     }
 
+    fun suggestFilterName(
+        appName: String? = null,
+        packageName: String? = null,
+        title: String? = null
+    ): String {
+        val resolvedAppName = resolveAppName(appName, packageName)
+        val subject = title?.let { cleanTitle(it, resolvedAppName) }
+
+        val rawName = when {
+            resolvedAppName != null && subject != null -> "$resolvedAppName: $subject"
+            resolvedAppName != null -> resolvedAppName
+            subject != null -> subject
+            else -> "New Filter"
+        }
+
+        return truncateToLength(rawName, maxLength = 20)
+    }
+
+    private fun resolveAppName(appName: String?, packageName: String?): String? {
+        val providerName = packageName?.let { appDetailsProvider?.getAppDetails(it)?.appName?.trim() }
+        val candidates = listOfNotNull(
+            appName?.trim()?.takeIf { it.isNotBlank() },
+            providerName?.takeIf { it.isNotBlank() }
+        )
+
+        // 1. Highest priority: candidate that does not equal packageName and does not contain '.'
+        val friendly = candidates.firstOrNull { it != packageName && !it.contains('.') }
+        if (friendly != null) return friendly
+
+        // 2. Candidate that differs from packageName
+        val distinct = candidates.firstOrNull { it != packageName }
+        if (distinct != null) return distinct
+
+        // 3. Fallback: format package name into a friendly title-cased name (e.g. com.whatsapp -> Whatsapp)
+        val rawPkg = packageName ?: appName
+        return rawPkg?.let { formatPackageNameFallback(it) }
+    }
+
+    private fun cleanTitle(title: String, appName: String?): String? {
+        val firstLine = title.lineSequence().firstOrNull { it.isNotBlank() }?.trim() ?: return null
+        if (appName.isNullOrBlank()) return firstLine
+        if (firstLine.equals(appName, ignoreCase = true)) return null
+
+        val stripped = when {
+            firstLine.startsWith("$appName: ", ignoreCase = true) ->
+                firstLine.substring(appName.length + 2).trim()
+            firstLine.startsWith("$appName - ", ignoreCase = true) ->
+                firstLine.substring(appName.length + 3).trim()
+            firstLine.startsWith("$appName ", ignoreCase = true) ->
+                firstLine.substring(appName.length + 1).trim()
+            else -> firstLine
+        }
+        return stripped.takeIf { it.isNotBlank() }
+    }
+
+    private fun truncateToLength(text: String, maxLength: Int = 20): String {
+        return if (text.length > maxLength) {
+            text.take(maxLength - 1).trimEnd() + "…"
+        } else {
+            text
+        }
+    }
+
+    private fun formatPackageNameFallback(pkg: String): String {
+        val segment = pkg.substringAfterLast('.').takeIf { it.isNotBlank() } ?: pkg
+        return segment.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+        }
+    }
+
     companion object {
 
         private val ARG_TO_CONDITION_MAP = mapOf(
@@ -211,7 +306,8 @@ class FilterEditViewModel(
                     @Suppress("UNCHECKED_CAST")
                     return FilterEditViewModel(
                         savedStateHandle,
-                        IFilterRepository.from(context)
+                        IFilterRepository.from(context),
+                        AndroidAppDetailsProvider(context)
                     ) as T
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")

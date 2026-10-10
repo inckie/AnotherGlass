@@ -29,6 +29,7 @@ sealed class AppRoute(val route: String) {
     data object NotificationHistory : AppRoute("notification_history")
     data object FilterEditScreen : AppRoute("filter_edit_screen") {
 
+        const val FILTER_EDIT_ARG_APP_NAME = "appName"
         const val FILTER_EDIT_ARG_TITLE = "title"
         const val FILTER_EDIT_ARG_TEXT = "text"
         const val FILTER_EDIT_ARG_PACKAGE_NAME = "packageName"
@@ -40,6 +41,7 @@ sealed class AppRoute(val route: String) {
 
         // Construct route with optional and required arguments
         val routeTemplate: String = "${super.route}?" +
+                "${FILTER_EDIT_ARG_APP_NAME}={${FILTER_EDIT_ARG_APP_NAME}}&" +
                 "${FILTER_EDIT_ARG_TITLE}={${FILTER_EDIT_ARG_TITLE}}&" +
                 "${FILTER_EDIT_ARG_TEXT}={${FILTER_EDIT_ARG_TEXT}}&" +
                 "${FILTER_EDIT_ARG_PACKAGE_NAME}={${FILTER_EDIT_ARG_PACKAGE_NAME}}&" +
@@ -49,6 +51,7 @@ sealed class AppRoute(val route: String) {
 
         // Helper to navigate to filter edit screen
         fun buildFilterEditRoute(
+            appName: String? = null,
             title: String? = null,
             text: String? = null,
             packageName: String? = null,
@@ -57,6 +60,7 @@ sealed class AppRoute(val route: String) {
             filterId: String? = null
         ): String {
             val params = mutableListOf<String>()
+            appName?.let { params.add("$FILTER_EDIT_ARG_APP_NAME=${it.urlEncode()}") }
             title?.let { params.add("$FILTER_EDIT_ARG_TITLE=${it.urlEncode()}") }
             text?.let { params.add("$FILTER_EDIT_ARG_TEXT=${it.urlEncode()}") }
             packageName?.let { params.add("$FILTER_EDIT_ARG_PACKAGE_NAME=${it.urlEncode()}") }
@@ -70,6 +74,9 @@ sealed class AppRoute(val route: String) {
         }
 
         val arguments = listOf(
+            navArgument(FILTER_EDIT_ARG_APP_NAME) {
+                type = NavType.StringType; nullable = true
+            },
             navArgument(FILTER_EDIT_ARG_TITLE) {
                 type = NavType.StringType; nullable = true
             },
