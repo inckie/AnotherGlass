@@ -55,7 +55,11 @@ class MainActivity : BaseActivity() {
 
     private val timeLine = object : ITimeline {
         override fun addFragment(fragment: BaseFragment, index: Int, scrollTo: Boolean) {
-            val targetIndex = index.coerceIn(0, fragments.size)
+            val minIndex = if (fragment !is SettingsCard) {
+                val settingsIndex = fragments.indexOfFirst { it is SettingsCard }
+                if (settingsIndex != -1) settingsIndex + 1 else 0
+            } else 0
+            val targetIndex = index.coerceIn(minIndex, fragments.size)
             val current = viewPager.currentItem
             fragments.add(targetIndex, fragment)
             viewPager.adapter?.notifyDataSetChanged()

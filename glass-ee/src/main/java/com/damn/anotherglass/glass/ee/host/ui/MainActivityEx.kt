@@ -10,6 +10,7 @@ import com.damn.anotherglass.glass.ee.host.ui.cards.MapCard
 import com.damn.anotherglass.glass.ee.host.ui.cards.MediaCard
 import com.damn.anotherglass.glass.ee.host.ui.cards.NotificationsCard
 import com.damn.anotherglass.glass.ee.host.ui.cards.ServiceStateCard
+import com.damn.anotherglass.glass.ee.host.ui.cards.SettingsCard
 import com.damn.anotherglass.glass.ee.host.utility.wakeScreen
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -17,6 +18,14 @@ import kotlinx.coroutines.flow.onEach
 object MainActivityEx {
 
     private const val TAG = "MainActivityEx"
+
+    private fun getMediaInsertIndex(timeLine: ITimeline): Int {
+        val settingsIndex = timeLine.indexOfFirst(SettingsCard::class.java)
+        if (settingsIndex != -1) {
+            return settingsIndex + 1
+        }
+        return 0
+    }
 
     private fun getNotificationInsertIndex(timeLine: ITimeline): Int {
         val mapIndex = timeLine.indexOfFirst(MapCard::class.java)
@@ -26,6 +35,10 @@ object MainActivityEx {
         val defaultIndex = timeLine.indexOfFirst(ServiceStateCard::class.java)
         if (defaultIndex != -1) {
             return defaultIndex + 1
+        }
+        val settingsIndex = timeLine.indexOfFirst(SettingsCard::class.java)
+        if (settingsIndex != -1) {
+            return settingsIndex + 1
         }
         return 0
     }
@@ -84,14 +97,18 @@ object MainActivityEx {
         val mediaFlow = MediaController.instance.getState()
         // Initial check — show card if there is already a media state
         if (mediaFlow.value != null) {
-            timeLine.addFragment(MediaCard.newInstance(), 0, false)
+            val insertIndex = getMediaInsertIndex(timeLine)
+            timeLine.addFragment(MediaCard.newInstance(), insertIndex, false)
         }
 
         mediaFlow.onEach { state ->
             if (state == null)
                 timeLine.removeByType(MediaCard::class.java)
             else when (timeLine.indexOfFirst(MediaCard::class.java)) {
-                -1 -> timeLine.addFragment(MediaCard.newInstance(), 0, true)
+                -1 -> {
+                    val insertIndex = getMediaInsertIndex(timeLine)
+                    timeLine.addFragment(MediaCard.newInstance(), insertIndex, true)
+                }
                 // card already present — it updates itself via its own flow observer
             }
         }.launchIn(this.lifecycleScope)
