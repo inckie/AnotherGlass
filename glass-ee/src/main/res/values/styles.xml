@@ -52,4 +52,23 @@
     <item name="android:textSize">@dimen/title_text_size</item>
   </style>
 
+  <!-- Shared text styles for Glass display: solid, high-contrast, no transparency -->
+  <style name="GlassTitle">
+    <item name="android:fontFamily">sans-serif-medium</item>
+    <item name="android:textSize">@dimen/glass_card_title_size</item>
+    <item name="android:textColor">@color/glass_primary_text</item>
+  </style>
+
+  <style name="GlassSubtitle">
+    <item name="android:fontFamily">@string/menu_font</item>
+    <item name="android:textSize">@dimen/glass_card_subtitle_size</item>
+    <item name="android:textColor">@color/glass_subtitle_text</item>
+  </style>
+
+  <style name="GlassHint">
+    <item name="android:fontFamily">@string/menu_font</item>
+    <item name="android:textSize">@dimen/glass_card_hint_size</item>
+    <item name="android:textColor">@color/glass_hint_text</item>
+  </style>
+
 </resources>

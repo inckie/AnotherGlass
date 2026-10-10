@@ -9,13 +9,11 @@
     <!-- Top-Right: Battery Status indicator -->
     <TextView
         android:id="@+id/battery_value"
+        style="@style/GlassSubtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="@dimen/glass_card_margin"
-        android:fontFamily="@string/menu_font"
-        android:textColor="#CCFFFFFF"
-        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="🔋 85% ⚡" />
@@ -50,46 +48,38 @@
 
             <TextView
                 android:id="@+id/service_state"
+                style="@style/GlassTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-medium"
-                android:textColor="@android:color/white"
-                android:textSize="32sp"
                 tools:text="Connect to Phone" />
 
             <TextView
                 android:id="@+id/hint"
+                style="@style/GlassSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:fontFamily="@string/menu_font"
-                android:textColor="#CCFFFFFF"
-                android:textSize="18sp"
                 tools:text="Tap to connect • Long tap for options" />
 
             <TextView
                 android:id="@+id/two_finger_tap_hint"
+                style="@style/GlassHint"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:fontFamily="@string/menu_font"
-                android:text="@string/hint_two_finger_tap_launcher"
-                android:textColor="#80FFFFFF"
-                android:textSize="14sp" />
+                android:text="@string/hint_two_finger_tap_launcher" />
         </LinearLayout>
     </LinearLayout>
 
     <!-- Bottom-Left: "OK Glass" prompt -->
     <TextView
         android:id="@+id/ok_glass"
+        style="@style/GlassHint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/glass_card_margin"
         android:layout_marginBottom="24dp"
-        android:fontFamily="@string/menu_font"
         android:text="@string/ok_glass"
-        android:textColor="#80FFFFFF"
-        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 

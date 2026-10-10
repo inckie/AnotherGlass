@@ -34,31 +34,26 @@
             android:orientation="vertical">
 
             <TextView
+                style="@style/GlassSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@string/menu_font"
-                android:text="@string/tilt_title"
-                android:textColor="#CCFFFFFF"
-                android:textSize="20sp" />
+                android:text="@string/tilt_title" />
 
             <TextView
                 android:id="@+id/toggle_status"
+                style="@style/GlassTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:fontFamily="sans-serif-medium"
-                android:textColor="@android:color/white"
                 android:textSize="36sp"
                 tools:text="Enabled" />
 
             <TextView
                 android:id="@+id/toggle_action_hint"
+                style="@style/GlassHint"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:fontFamily="@string/menu_font"
-                android:textColor="#80FFFFFF"
-                android:textSize="16sp"
                 tools:text="Tap to turn off" />
         </LinearLayout>
     </LinearLayout>
@@ -66,14 +61,12 @@
     <!-- Bottom Navigation Hint -->
     <TextView
         android:id="@+id/nav_hint"
+        style="@style/GlassHint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/glass_card_margin"
         android:layout_marginBottom="24dp"
-        android:fontFamily="@string/menu_font"
         android:text="@string/tilt_nav_hint_sensitivity"
-        android:textColor="#80FFFFFF"
-        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 

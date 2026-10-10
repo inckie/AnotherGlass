@@ -18,4 +18,9 @@
 <resources>
   <color name="semi_transparent">#96000000</color>
   <color name="ic_launcher_background">#C31B2F</color>
+
+  <!-- Solid high-contrast colors for Glass optical display (NO transparency) -->
+  <color name="glass_primary_text">#FFFFFF</color>
+  <color name="glass_subtitle_text">#FFFFFF</color>
+  <color name="glass_hint_text">#FFFFFF</color>
 </resources>

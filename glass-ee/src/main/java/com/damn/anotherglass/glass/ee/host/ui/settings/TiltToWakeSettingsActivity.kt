@@ -111,10 +111,10 @@ class TiltToWakeSettingsActivity : BaseActivity() {
                         holder.currentAngle.text = "${pitch.toInt()}°"
                         if (isTilted && holder.triggerBanner.text != getString(R.string.tilt_test_triggered)) {
                             holder.triggerBanner.text = getString(R.string.tilt_test_holding)
-                            holder.triggerBanner.setTextColor(0xFFFFF176.toInt()) // Soft yellow
+                            holder.triggerBanner.setTextColor(0xFFFFEB3B.toInt()) // Solid bright yellow
                         } else if (!isTilted && holder.triggerBanner.text != getString(R.string.tilt_test_triggered)) {
                             holder.triggerBanner.text = getString(R.string.tilt_test_ready)
-                            holder.triggerBanner.setTextColor(0xCCFFFFFF.toInt())
+                            holder.triggerBanner.setTextColor(ContextCompat.getColor(this@TiltToWakeSettingsActivity, R.color.glass_subtitle_text))
                         }
                     }
                 }
@@ -122,12 +122,12 @@ class TiltToWakeSettingsActivity : BaseActivity() {
                     handler.post {
                         val holder = testViewHolder ?: return@post
                         holder.triggerBanner.text = getString(R.string.tilt_test_triggered)
-                        holder.triggerBanner.setTextColor(0xFF00E676.toInt()) // Bright green
+                        holder.triggerBanner.setTextColor(0xFF00E676.toInt()) // Solid bright green
                         soundController.playSound(SoundController.SoundEffect.NotificationPosted)
 
                         handler.postDelayed({
                             holder.triggerBanner.text = getString(R.string.tilt_test_ready)
-                            holder.triggerBanner.setTextColor(0xCCFFFFFF.toInt())
+                            holder.triggerBanner.setTextColor(ContextCompat.getColor(this@TiltToWakeSettingsActivity, R.color.glass_subtitle_text))
                         }, 1500)
                     }
                 }
@@ -216,7 +216,12 @@ class TiltToWakeSettingsActivity : BaseActivity() {
                     } else {
                         holder.itemView.context.getString(R.string.tilt_tap_to_turn_on)
                     }
-                    holder.icon.alpha = if (enabled) 1.0f else 0.4f
+                    val iconColor = ContextCompat.getColor(
+                        holder.itemView.context,
+                        if (enabled) R.color.glass_primary_text else R.color.glass_hint_text
+                    )
+                    holder.icon.setColorFilter(iconColor)
+                    holder.icon.alpha = 1.0f
                     holder.itemView.setOnClickListener { onToggleClick() }
                 }
                 is SensitivityViewHolder -> {
@@ -233,7 +238,9 @@ class TiltToWakeSettingsActivity : BaseActivity() {
                     )
                     holder.currentAngle.text = "--°"
                     holder.triggerBanner.text = holder.itemView.context.getString(R.string.tilt_test_ready)
-                    holder.triggerBanner.setTextColor(0xCCFFFFFF.toInt())
+                    holder.triggerBanner.setTextColor(
+                        ContextCompat.getColor(holder.itemView.context, R.color.glass_subtitle_text)
+                    )
                     onBindTest(holder)
                 }
             }

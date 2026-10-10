@@ -39,4 +39,8 @@
 
   <dimen name="title_text_size">32sp</dimen>
 
+  <dimen name="glass_card_title_size">32sp</dimen>
+  <dimen name="glass_card_subtitle_size">20sp</dimen>
+  <dimen name="glass_card_hint_size">16sp</dimen>
+
 </resources>

@@ -36,31 +36,25 @@
 
             <TextView
                 android:id="@+id/settings_title"
+                style="@style/GlassTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-medium"
-                android:text="@string/title_settings"
-                android:textColor="@android:color/white"
-                android:textSize="32sp" />
+                android:text="@string/title_settings" />
 
             <TextView
                 android:id="@+id/settings_hint"
+                style="@style/GlassSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:fontFamily="@string/menu_font"
-                android:text="@string/hint_tap_to_open_settings"
-                android:textColor="#CCFFFFFF"
-                android:textSize="18sp" />
+                android:text="@string/hint_tap_to_open_settings" />
 
             <TextView
                 android:id="@+id/settings_preview"
+                style="@style/GlassHint"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:fontFamily="@string/menu_font"
-                android:textColor="#80FFFFFF"
-                android:textSize="14sp"
                 tools:text="Tilt to Wake: Enabled (25°)" />
         </LinearLayout>
     </LinearLayout>
@@ -68,14 +62,12 @@
     <!-- Bottom-Left: "OK Glass" prompt -->
     <TextView
         android:id="@+id/ok_glass"
+        style="@style/GlassHint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/glass_card_margin"
         android:layout_marginBottom="24dp"
-        android:fontFamily="@string/menu_font"
         android:text="@string/ok_glass"
-        android:textColor="#80FFFFFF"
-        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 

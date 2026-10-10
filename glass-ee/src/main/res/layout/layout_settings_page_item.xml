@@ -35,31 +35,25 @@
 
             <TextView
                 android:id="@+id/item_title"
+                style="@style/GlassTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-medium"
-                android:textColor="@android:color/white"
-                android:textSize="32sp"
                 tools:text="Tilt to Wake" />
 
             <TextView
                 android:id="@+id/item_status"
+                style="@style/GlassSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:fontFamily="@string/menu_font"
-                android:textColor="#CCFFFFFF"
-                android:textSize="20sp"
                 tools:text="Status: Enabled (25°)" />
 
             <TextView
                 android:id="@+id/item_action_hint"
+                style="@style/GlassHint"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:fontFamily="@string/menu_font"
-                android:textColor="#80FFFFFF"
-                android:textSize="14sp"
                 tools:text="Tap to configure" />
         </LinearLayout>
     </LinearLayout>
@@ -67,14 +61,12 @@
     <!-- Bottom Navigation Hint -->
     <TextView
         android:id="@+id/nav_hint"
+        style="@style/GlassHint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/glass_card_margin"
         android:layout_marginBottom="24dp"
-        android:fontFamily="@string/menu_font"
         android:text="@string/settings_nav_hint"
-        android:textColor="#80FFFFFF"
-        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 

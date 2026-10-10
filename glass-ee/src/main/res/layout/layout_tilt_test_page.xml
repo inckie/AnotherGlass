@@ -8,26 +8,22 @@
     <!-- Top Info -->
     <TextView
         android:id="@+id/test_title"
+        style="@style/GlassSubtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/glass_card_margin"
         android:layout_marginTop="20dp"
-        android:fontFamily="@string/menu_font"
         android:text="@string/tilt_test_title"
-        android:textColor="#CCFFFFFF"
-        android:textSize="20sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/threshold_display"
+        style="@style/GlassSubtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="@dimen/glass_card_margin"
-        android:fontFamily="@string/menu_font"
-        android:textColor="#80FFFFFF"
-        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Threshold: 25°" />
@@ -52,22 +48,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-medium"
-            android:textColor="@android:color/white"
+            android:textColor="@color/glass_primary_text"
             android:textSize="48sp"
             tools:text="14°" />
 
         <TextView
             android:id="@+id/angle_subtitle"
+            style="@style/GlassHint"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@string/menu_font"
-            android:text="@string/tilt_lbl_current_pitch_angle"
-            android:textColor="#80FFFFFF"
-            android:textSize="14sp" />
+            android:text="@string/tilt_lbl_current_pitch_angle" />
 
         <!-- Status / Trigger banner -->
         <TextView
             android:id="@+id/trigger_banner"
+            style="@style/GlassSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -77,22 +72,18 @@
             android:paddingEnd="20dp"
             android:paddingBottom="6dp"
             android:text="@string/tilt_test_ready"
-            android:textColor="#CCFFFFFF"
-            android:textSize="18sp"
             tools:text="READY — LOOK UP" />
     </LinearLayout>
 
     <!-- Bottom Navigation Hint -->
     <TextView
         android:id="@+id/nav_hint"
+        style="@style/GlassHint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/glass_card_margin"
         android:layout_marginBottom="24dp"
-        android:fontFamily="@string/menu_font"
         android:text="@string/tilt_nav_hint_exit"
-        android:textColor="#80FFFFFF"
-        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
