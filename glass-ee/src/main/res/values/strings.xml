@@ -49,6 +49,11 @@
     <string name="settings_about_title">About Glass</string>
     <string name="settings_about_subtitle">AnotherGlass EE • v1.0</string>
     <string name="settings_about_hint">Google Glass Enterprise Edition</string>
+    <string name="settings_wake_on_notification_title">Wake on Notification</string>
+    <string name="settings_wake_on_notification_enabled">Status: Enabled</string>
+    <string name="settings_wake_on_notification_disabled">Status: Disabled</string>
+    <string name="settings_tap_to_turn_off">Tap to turn off</string>
+    <string name="settings_tap_to_turn_on">Tap to turn on</string>
 
     <!-- Tilt to Wake Settings Activity -->
     <string name="tilt_title">Tilt to Wake</string>

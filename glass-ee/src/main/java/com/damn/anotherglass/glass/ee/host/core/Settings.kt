@@ -15,6 +15,10 @@ class Settings(context: Context) {
         get() = sharedPreferences.getInt(KEY_TILT_ANGLE_THRESHOLD, DEFAULT_TILT_ANGLE_THRESHOLD)
         set(value) = sharedPreferences.edit() { putInt(KEY_TILT_ANGLE_THRESHOLD, value) }
 
+    var wakeOnNotification: Boolean
+        get() = sharedPreferences.getBoolean(KEY_WAKE_ON_NOTIFICATION, true)
+        set(value) = sharedPreferences.edit() { putBoolean(KEY_WAKE_ON_NOTIFICATION, value) }
+
     var lastScannedServerIp: String?
         get() = sharedPreferences.getString(KEY_LAST_SCANNED_SERVER_IP, null)
         set(value) = sharedPreferences.edit() { putString(KEY_LAST_SCANNED_SERVER_IP, value) }
@@ -23,6 +27,7 @@ class Settings(context: Context) {
         const val DEFAULT_TILT_ANGLE_THRESHOLD = 25
         const val KEY_TILT_TO_WAKE = "tilt_to_wake"
         const val KEY_TILT_ANGLE_THRESHOLD = "tilt_angle_threshold"
+        const val KEY_WAKE_ON_NOTIFICATION = "wake_on_notification"
         private const val KEY_LAST_SCANNED_SERVER_IP = "last_scanned_server_ip"
         const val PREFS_NAME = "settings"
     }

@@ -24,3 +24,19 @@ inline fun <reified T : Service> Context.isRunning(): Boolean {
     val srvname: String = T::class.java.getName()
     return services.any { pkgname == it.service.packageName && srvname == it.service.className && it.started }
 }
+
+@Suppress("DEPRECATION")
+fun Context.wakeScreen(durationMs: Long = 5000L, tag: String = "AnotherGlass:ScreenWake") {
+    try {
+        val powerManager = getSystemService(android.os.PowerManager::class.java) ?: return
+        val wakeLock = powerManager.newWakeLock(
+            android.os.PowerManager.SCREEN_BRIGHT_WAKE_LOCK or
+                    android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP or
+                    android.os.PowerManager.ON_AFTER_RELEASE,
+            tag
+        )
+        wakeLock.acquire(durationMs)
+    } catch (e: Exception) {
+        android.util.Log.e("ScreenWake", "Failed to acquire wake lock: ${e.message}")
+    }
+}

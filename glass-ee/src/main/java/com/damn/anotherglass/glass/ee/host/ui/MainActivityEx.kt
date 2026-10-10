@@ -5,8 +5,10 @@ import androidx.lifecycle.lifecycleScope
 import com.damn.glass.shared.media.MediaController
 import com.damn.glass.shared.notifications.NotificationController
 import com.damn.glass.shared.notifications.NotificationId
+import com.damn.anotherglass.glass.ee.host.core.Settings
 import com.damn.anotherglass.glass.ee.host.ui.cards.MediaCard
 import com.damn.anotherglass.glass.ee.host.ui.cards.NotificationsCard
+import com.damn.anotherglass.glass.ee.host.utility.wakeScreen
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -54,6 +56,10 @@ object MainActivityEx {
                         Log.d(TAG, "NotificationsCard already at index $index, not scrolling (only updates/removals)")
                     }
                 }
+            }
+
+            if (hasNewNotification && Settings(this@addNotificationsModule).wakeOnNotification) {
+                wakeScreen(5000L, "AnotherGlass:NotificationWake")
             }
         }.launchIn(lifecycleScope)
     }

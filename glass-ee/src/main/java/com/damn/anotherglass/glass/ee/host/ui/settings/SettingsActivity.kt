@@ -57,6 +57,18 @@ class SettingsActivity : BaseActivity() {
             getString(R.string.tilt_status_disabled_label)
         }
 
+        val wakeOnNotif = settings.wakeOnNotification
+        val notifStatus = if (wakeOnNotif) {
+            getString(R.string.settings_wake_on_notification_enabled)
+        } else {
+            getString(R.string.settings_wake_on_notification_disabled)
+        }
+        val notifHint = if (wakeOnNotif) {
+            getString(R.string.settings_tap_to_turn_off)
+        } else {
+            getString(R.string.settings_tap_to_turn_on)
+        }
+
         return listOf(
             SettingsPageItem(
                 id = PAGE_TILT_TO_WAKE,
@@ -64,6 +76,13 @@ class SettingsActivity : BaseActivity() {
                 title = getString(R.string.tilt_title),
                 status = tiltStatus,
                 actionHint = getString(R.string.settings_tap_to_configure)
+            ),
+            SettingsPageItem(
+                id = PAGE_WAKE_ON_NOTIFICATION,
+                icon = R.drawable.ic_notifications,
+                title = getString(R.string.settings_wake_on_notification_title),
+                status = notifStatus,
+                actionHint = notifHint
             ),
             SettingsPageItem(
                 id = PAGE_ABOUT,
@@ -81,6 +100,10 @@ class SettingsActivity : BaseActivity() {
             PAGE_TILT_TO_WAKE -> {
                 val intent = Intent(this, TiltToWakeSettingsActivity::class.java)
                 startActivity(intent)
+            }
+            PAGE_WAKE_ON_NOTIFICATION -> {
+                settings.wakeOnNotification = !settings.wakeOnNotification
+                adapter.updatePages(getPages())
             }
             PAGE_ABOUT -> {
                 // Info only, no sub-activity
@@ -157,6 +180,7 @@ class SettingsActivity : BaseActivity() {
 
     companion object {
         private const val PAGE_TILT_TO_WAKE = 1
-        private const val PAGE_ABOUT = 2
+        private const val PAGE_WAKE_ON_NOTIFICATION = 2
+        private const val PAGE_ABOUT = 3
     }
 }

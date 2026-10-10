@@ -74,7 +74,7 @@ class HostService : LifecycleService(), IService {
         super.onCreate()
         gps = MockGPS(this)
         sounds = SoundController(this)
-        notificationNotifier = NotificationNotifier(sounds)
+        notificationNotifier = NotificationNotifier(this, sounds)
         batteryStatus.observe(this) {
             client?.send(RPCMessage(DeviceAPI.SERVICE_NAME, it))
         }
