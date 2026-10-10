@@ -85,11 +85,14 @@
     <string name="tilt_sensitivity_low_title">Low (35°)</string>
     <string name="tilt_sensitivity_low_desc">Requires deliberate head tilt up</string>
     <!-- Media Card -->
-    <string name="media_state_playing">▶ Playing</string>
-    <string name="media_state_paused">⏸ Paused</string>
-    <string name="media_state_buffering">⏳ Buffering</string>
-    <string name="media_state_stopped">⏹ Stopped</string>
-    <string name="media_hint">Tap: play/pause  •  Double tap: next  •  ✌ tap: stop</string>
+    <string name="media_state_playing">Playing</string>
+    <string name="media_state_paused">Paused</string>
+    <string name="media_state_buffering">Buffering</string>
+    <string name="media_state_stopped">Stopped</string>
+    <string name="media_status_with_app">%1$s • %2$s</string>
+    <string name="media_hint_playing">Tap: Pause  •  2× Tap: Next</string>
+    <string name="media_hint_paused">Tap: Play  •  2× Tap: Next</string>
+    <string name="media_hint">Tap: Play/Pause  •  2× Tap: Next</string>
     <string name="media_artwork_content_description">Media artwork</string>
 </resources>
 

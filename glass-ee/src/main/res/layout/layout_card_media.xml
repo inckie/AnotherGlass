@@ -4,37 +4,50 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
 
+    <!-- Left Column: Album Artwork or Music Placeholder -->
     <FrameLayout
         android:id="@+id/left_column"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:background="#303030"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent=".333">
+        app:layout_constraintWidth_percent=".36">
 
-        <ImageView
-            android:id="@+id/media_artwork"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="@string/media_artwork_content_description"
-            android:padding="8dp"
-            android:scaleType="fitCenter"
-            tools:src="@drawable/ic_music_50" />
+        <androidx.cardview.widget.CardView
+            android:id="@+id/artwork_card"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_gravity="center"
+            app:cardBackgroundColor="@android:color/black"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:cardPreventCornerOverlap="false">
+
+            <ImageView
+                android:id="@+id/media_artwork"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/media_artwork_content_description"
+                android:scaleType="fitCenter"
+                tools:src="@drawable/ic_music_50" />
+
+        </androidx.cardview.widget.CardView>
 
     </FrameLayout>
 
+    <!-- Right Column: Track Information -->
     <LinearLayout
         android:id="@+id/body_layout"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="@dimen/glass_card_two_column_margin"
-        android:layout_marginTop="@dimen/glass_card_two_column_margin"
-        android:layout_marginEnd="@dimen/glass_card_margin"
-        android:layout_marginBottom="@dimen/glass_card_two_column_margin"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="12dp"
         android:gravity="center_vertical"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@id/footer"
@@ -42,55 +55,74 @@
         app:layout_constraintStart_toEndOf="@id/left_column"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/media_app"
+        <!-- Status & App Badge -->
+        <LinearLayout
+            android:id="@+id/status_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            tools:text="Spotify" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
+            <ImageView
+                android:id="@+id/media_state_icon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_play_arrow"
+                app:tint="@color/glass_subtitle_text" />
+
+            <TextView
+                android:id="@+id/media_status"
+                style="@style/GlassHint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="@color/glass_subtitle_text"
+                android:textSize="16sp"
+                tools:text="PLAYING • SPOTIFY" />
+
+        </LinearLayout>
+
+        <!-- Track Title -->
         <TextView
             android:id="@+id/media_title"
-            style="@style/TextViewStyleTitle"
+            style="@style/GlassTitle"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:ellipsize="end"
-            android:maxLines="2"
-            tools:text="Song Title" />
-
-        <TextView
-            android:id="@+id/media_artist"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:ellipsize="end"
-            android:maxLines="2"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            tools:text="Artist Name" />
-
-        <TextView
-            android:id="@+id/media_state"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            tools:text="▶ Playing" />
+            android:ellipsize="end"
+            android:lineSpacingMultiplier="1.05"
+            android:maxLines="2"
+            tools:text="Voodoo Child (remix)" />
+
+        <!-- Artist -->
+        <TextView
+            android:id="@+id/media_artist"
+            style="@style/GlassSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="Brick+Mortar" />
 
     </LinearLayout>
 
+    <!-- Bottom Footer Hint (positioned safely above ViewPager indicator dots) -->
     <TextView
         android:id="@+id/footer"
+        style="@style/GlassHint"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/glass_card_two_column_margin"
-        android:layout_marginEnd="@dimen/glass_card_margin"
-        android:layout_marginBottom="@dimen/glass_card_margin"
-        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="32dp"
+        android:ellipsize="end"
+        android:singleLine="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/left_column"
-        tools:text="Tap: play/pause  •  2× tap: next  •  ✌ tap: stop" />
+        tools:text="Tap: Pause  •  2× Tap: Next" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
