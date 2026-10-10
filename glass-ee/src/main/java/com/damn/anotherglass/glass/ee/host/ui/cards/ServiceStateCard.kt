@@ -21,6 +21,9 @@ import com.damn.anotherglass.glass.ee.host.ui.launcher.AppLauncherActivity
 import com.damn.anotherglass.glass.ee.host.ui.qr2.CameraActivity
 import com.damn.anotherglass.glass.ee.host.ui.MainActivity
 import com.damn.anotherglass.glass.ee.host.ui.menu.DynamicMenuActivity
+import com.damn.anotherglass.glass.ee.host.ui.voice.VoiceMenuActivity
+import android.content.res.ColorStateList
+import android.graphics.Color
 import com.damn.glass.shared.rpc.ConnectionUtils.getHostIPAddress
 
 class ServiceStateCard : BaseFragment() {
@@ -39,24 +42,44 @@ class ServiceStateCard : BaseFragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = LayoutCardServiceBinding.inflate(layoutInflater)
-        binding.serviceState.apply {
-            val state = mainActivity().getServiceState()
-            setText(serviceState(state.value))
-            binding.hint.text = serviceHint(state.value, resources)
-            binding.voiceCommands.text = availableVoiceCommands(state.value, resources)
-            state.observe(viewLifecycleOwner) {
-                setText(serviceState(it))
-                binding.hint.text = serviceHint(it, resources)
-                binding.voiceCommands.text = availableVoiceCommands(it, resources)
+        val state = mainActivity().getServiceState()
+        binding.serviceState.setText(serviceState(state.value))
+        binding.hint.text = serviceHint(state.value, resources)
+        updateStatusIcon(state.value)
+        state.observe(viewLifecycleOwner) {
+            binding.serviceState.setText(serviceState(it))
+            binding.hint.text = serviceHint(it, resources)
+            updateStatusIcon(it)
+        }
+        binding.okGlass.setOnClickListener { openVoiceMenu() }
+        return binding.root
+    }
+
+    private fun updateStatusIcon(state: IService.ServiceState?) {
+        when (state) {
+            null, IService.ServiceState.DISCONNECTED -> {
+                binding.statusIcon.setImageResource(R.drawable.ic_phone_android)
+                binding.statusIcon.imageTintList = null
+                binding.statusIcon.alpha = 0.85f
+            }
+            IService.ServiceState.INITIALIZING, IService.ServiceState.WAITING -> {
+                binding.statusIcon.setImageResource(R.drawable.ic_wifi_tethering)
+                binding.statusIcon.imageTintList = null
+                binding.statusIcon.alpha = 1.0f
+            }
+            IService.ServiceState.CONNECTED -> {
+                binding.statusIcon.setImageResource(R.drawable.ic_phone_android)
+                binding.statusIcon.imageTintList = ColorStateList.valueOf(Color.parseColor("#4CAF50"))
+                binding.statusIcon.alpha = 1.0f
             }
         }
-        return binding.root
     }
 
     override fun onSingleTapUp() {
         super.onSingleTapUp()
         mainActivity().let {
-            if (null == it.getServiceState().value) {
+            val state = it.getServiceState().value
+            if (state == null || state == IService.ServiceState.DISCONNECTED) {
                 it.tryStartService()
             }
         }
@@ -80,6 +103,13 @@ class ServiceStateCard : BaseFragment() {
                     Log.d("BarcodeScanner", "Scanned IP: $ip")
                     Settings(requireContext()).lastScannedServerIp = ip
                     mainActivity().tryStartService(ip)
+                }
+            }
+            REQUEST_CODE_VOICE_MENU -> data?.getStringExtra(VoiceMenuActivity.EXTRA_ACTION)?.let { action ->
+                when (action) {
+                    VoiceMenuActivity.ACTION_START_SERVICE -> mainActivity().tryStartService()
+                    VoiceMenuActivity.ACTION_STOP_SERVICE -> mainActivity().stopService()
+                    VoiceMenuActivity.ACTION_START_APP -> startActivity(Intent(requireContext(), AppLauncherActivity::class.java))
                 }
             }
         }
@@ -116,36 +146,27 @@ class ServiceStateCard : BaseFragment() {
     }
 
     override fun onCreateVoiceCommandMenu(menu: Menu): Boolean {
-        val mainActivity = mainActivityOrNull() ?: return false
-        val serviceState = mainActivity.getServiceState().value
-        val canStart = serviceState == null || serviceState == IService.ServiceState.DISCONNECTED
-        if (canStart) {
-            menu.add(0, VOICE_COMMAND_START_SERVICE, 0, "Start service")
-        } else {
-            menu.add(0, VOICE_COMMAND_STOP_SERVICE, 0, "Stop service")
-        }
-        menu.add(0, VOICE_COMMAND_START_APP, 1, "Start application")
+        val ctx = context ?: return false
+        val okGlass = ctx.getString(R.string.ok_glass)
+        menu.add(0, VOICE_COMMAND_OK_GLASS, 0, okGlass)
+        menu.add(0, VOICE_COMMAND_OK_GLASS, 0, "ok glass")
         return true
     }
 
     override fun onVoiceCommand(itemId: Int): Boolean = when (itemId) {
-        VOICE_COMMAND_START_SERVICE -> {
-            mainActivityOrNull()?.let {
-                it.tryStartService()
-                true
-            } ?: false
-        }
-        VOICE_COMMAND_STOP_SERVICE -> {
-            mainActivityOrNull()?.let {
-                it.stopService()
-                true
-            } ?: false
-        }
-        VOICE_COMMAND_START_APP -> {
-            startActivity(Intent(requireContext(), AppLauncherActivity::class.java))
+        VOICE_COMMAND_OK_GLASS -> {
+            openVoiceMenu()
             true
         }
         else -> false
+    }
+
+    private fun openVoiceMenu() {
+        val ctx = context ?: return
+        val serviceState = mainActivityOrNull()?.getServiceState()?.value
+        val canStart = serviceState == null || serviceState == IService.ServiceState.DISCONNECTED
+        val intent = VoiceMenuActivity.createIntent(ctx, canStart)
+        startActivityForResult(intent, REQUEST_CODE_VOICE_MENU)
     }
 
     private fun showIPPicker(activity: MainActivity) {
@@ -162,9 +183,8 @@ class ServiceStateCard : BaseFragment() {
 
         private const val REQUEST_CODE_PICK_IP = 1
         private const val REQUEST_CODE_SCAN_BARCODE = 2
-        private const val VOICE_COMMAND_START_SERVICE = 10_001
-        private const val VOICE_COMMAND_STOP_SERVICE = 10_002
-        private const val VOICE_COMMAND_START_APP = 10_003
+        private const val REQUEST_CODE_VOICE_MENU = 3
+        private const val VOICE_COMMAND_OK_GLASS = 10_000
 
         @JvmStatic
         fun newInstance(): ServiceStateCard = ServiceStateCard()
@@ -180,27 +200,10 @@ class ServiceStateCard : BaseFragment() {
 
         fun serviceHint(state: IService.ServiceState?, resources: Resources): String = when (state) {
             null -> resources.getString(R.string.msg_service_not_running_hint)
-            IService.ServiceState.INITIALIZING -> ""
-            IService.ServiceState.WAITING -> ""
+            IService.ServiceState.INITIALIZING -> resources.getString(R.string.msg_service_initializing)
+            IService.ServiceState.WAITING -> resources.getString(R.string.msg_service_waiting)
             IService.ServiceState.CONNECTED -> resources.getString(R.string.msg_service_connected_hint)
-            IService.ServiceState.DISCONNECTED -> ""
-        }
-
-        private fun availableVoiceCommands(
-            state: IService.ServiceState?,
-            resources: Resources
-        ): String {
-            val serviceCommandRes = when (state) {
-                null, IService.ServiceState.DISCONNECTED -> R.string.voice_start_service
-                IService.ServiceState.INITIALIZING,
-                IService.ServiceState.WAITING,
-                IService.ServiceState.CONNECTED -> R.string.voice_stop_service
-            }
-            val lines = listOf(
-                resources.getString(serviceCommandRes),
-                resources.getString(R.string.voice_start_app)
-            )
-            return "\uD83C\uDF99 ${lines.joinToString(" / ")}"
+            IService.ServiceState.DISCONNECTED -> resources.getString(R.string.msg_service_disconnected_hint)
         }
 
         private fun ipMenuItems(context: Context): ArrayList<DynamicMenuActivity.DynamicMenuItem> {

@@ -10,15 +10,17 @@
     <string name="menu_item">Menu item</string>
 
     <!-- Service state card -->
-    <string name="msg_service_not_running">Service is not running</string>
-    <string name="msg_service_not_running_hint">Tap to start. Long tap for options.</string>
-    <string name="msg_service_initializing">Initializing…</string>
-    <string name="msg_service_waiting">Waiting…</string>
-    <string name="msg_service_connected">Connected</string>
-    <string name="msg_service_connected_hint">Long press to stop.</string>
-    <string name="msg_service_disconnected">Disconnected</string>
-    <string name="voice_start_service">Start service</string>
-    <string name="voice_stop_service">Stop service</string>
+    <string name="msg_service_not_running">Connect to Phone</string>
+    <string name="msg_service_not_running_hint">Tap to connect • Long tap for options</string>
+    <string name="msg_service_initializing">Connecting to Phone…</string>
+    <string name="msg_service_waiting">Waiting for Phone…</string>
+    <string name="msg_service_connected">Connected to Phone</string>
+    <string name="msg_service_connected_hint">Connected • Long tap to disconnect</string>
+    <string name="msg_service_disconnected">Phone Disconnected</string>
+    <string name="msg_service_disconnected_hint">Tap to reconnect • Long tap for options</string>
+    <string name="ok_glass">OK Glass</string>
+    <string name="voice_start_service">Connect to Phone</string>
+    <string name="voice_stop_service">Disconnect from Phone</string>
     <string name="voice_start_app">Start application</string>
     <string name="lbl_app_icon">Application icon</string>
     <string name="hint_two_finger_tap_launcher">✌ Two-finger tap to browse apps</string>

@@ -91,6 +91,10 @@
             android:name=".ui.launcher.AppLauncherActivity"
             android:exported="false"
             android:theme="@style/AppTheme" />
+        <activity
+            android:name=".ui.voice.VoiceMenuActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme" />
 
         <service
             android:name=".core.HostService"

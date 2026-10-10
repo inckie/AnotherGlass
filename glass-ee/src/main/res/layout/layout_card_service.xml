@@ -6,93 +6,91 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <FrameLayout
+    <!-- Top-Right: Battery Status indicator -->
+    <TextView
+        android:id="@+id/battery_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="@dimen/glass_card_margin"
+        android:fontFamily="@string/menu_font"
+        android:textColor="#CCFFFFFF"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="🔋 85% ⚡" />
+
+    <!-- Center Content: Phone Connection Status -->
+    <LinearLayout
         android:id="@+id/body_layout"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_margin="@dimen/glass_card_margin"
-        app:layout_constraintBottom_toTopOf="@id/footer"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/glass_card_margin"
+        android:layout_marginEnd="@dimen/glass_card_margin"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@id/ok_glass"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <ImageView
+            android:id="@+id/status_icon"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginEnd="20dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_phone_android" />
+
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/service_state"
-                style="@style/TextViewStyleTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="@string/msg_service_not_running" />
+                android:fontFamily="sans-serif-medium"
+                android:textColor="@android:color/white"
+                android:textSize="32sp"
+                tools:text="Connect to Phone" />
 
             <TextView
                 android:id="@+id/hint"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                tools:text="@string/msg_service_not_running_hint" />
-
-            <TextView
-                android:id="@+id/battery_value"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                tools:text="🔋 85%" />
-
-            <TextView
-                android:id="@+id/voice_commands"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                tools:text="🎤 Start service" />
+                android:layout_marginTop="4dp"
+                android:fontFamily="@string/menu_font"
+                android:textColor="#CCFFFFFF"
+                android:textSize="18sp"
+                tools:text="Tap to connect • Long tap for options" />
 
             <TextView
                 android:id="@+id/two_finger_tap_hint"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@string/menu_font"
                 android:text="@string/hint_two_finger_tap_launcher"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                android:textColor="#80FFFFFF"
+                android:textSize="14sp" />
         </LinearLayout>
+    </LinearLayout>
 
-    </FrameLayout>
-
-    <!-- The footer view will grow to fit as much content as possible while the
-           timestamp view keeps its width. If the footer text is too long, it
-           will be ellipsized with a 40dp margin between it and the timestamp. -->
-
+    <!-- Bottom-Left: "OK Glass" prompt -->
     <TextView
-        android:id="@+id/footer"
-        android:layout_width="0dp"
+        android:id="@+id/ok_glass"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/glass_card_margin"
-        android:layout_marginEnd="@dimen/glass_card_margin"
-        android:layout_marginBottom="@dimen/glass_card_margin"
-        android:ellipsize="end"
-        android:singleLine="true"
-        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:layout_marginBottom="24dp"
+        android:fontFamily="@string/menu_font"
+        android:text="@string/ok_glass"
+        android:textColor="#80FFFFFF"
+        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/timestamp"
         app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/timestamp"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/glass_card_margin"
-        android:layout_marginBottom="@dimen/glass_card_margin"
-        android:ellipsize="end"
-        android:singleLine="true"
-        android:textAlignment="viewEnd"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

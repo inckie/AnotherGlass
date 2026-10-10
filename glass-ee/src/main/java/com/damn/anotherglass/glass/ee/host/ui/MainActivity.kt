@@ -225,7 +225,10 @@ class MainActivity : BaseActivity() {
         reloadVoiceCommands()
     }
 
-    private fun focusedFragment(): BaseFragment? = fragments.getOrNull(viewPager.currentItem)
+    private fun focusedFragment(): BaseFragment? {
+        val fragment = fragments.getOrNull(viewPager.currentItem)
+        return if (fragment != null && fragment.isAdded && fragment.context != null) fragment else null
+    }
 
     private fun hasRecordAudioPermission(): Boolean =
         ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) ==

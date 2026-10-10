@@ -8,3 +8,7 @@
 .externalNativeBuild
 /.settings/org.eclipse.buildship.core.prefs
 /python/.idea
+*.py[cod]
+*$py.class
+__pycache__/
+
