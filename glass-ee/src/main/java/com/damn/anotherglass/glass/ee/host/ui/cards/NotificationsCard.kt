@@ -1,16 +1,15 @@
 package com.damn.anotherglass.glass.ee.host.ui.cards
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
-import com.damn.glass.shared.notifications.NotificationController
 import com.damn.anotherglass.glass.ee.host.databinding.LayoutNotificationsStackBinding
+import com.damn.anotherglass.glass.ee.host.ui.extensions.bindData
 import com.damn.anotherglass.glass.ee.host.ui.notifications.NotificationsActivity
-import com.damn.anotherglass.glass.ee.host.ui.extensions.LayoutNotificationsStackBindingEx.bindData
+import com.damn.glass.shared.notifications.NotificationController
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -27,19 +26,19 @@ class NotificationsCard : BaseFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = LayoutNotificationsStackBinding.inflate(inflater).apply {
-        binding = this
+    ): View = LayoutNotificationsStackBinding.inflate(inflater, container, false).also {
+        binding = it
     }.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        NotificationController.instance.getNotifications()
-            .onEach {
-                if (it.isEmpty()) return@onEach  // we are about to be removed
+        NotificationController.instance.notifications
+            .onEach { list ->
+                val latest = list.lastOrNull() ?: return@onEach
                 binding?.apply {
-                    bindData(it.last(), requireContext())
+                    bindData(latest)
                     // todo: add another place for counter
-                    if (it.size > 1) footer.text = "" + it.size
+                    if (list.size > 1) footer.text = list.size.toString()
                 }
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
@@ -51,12 +50,10 @@ class NotificationsCard : BaseFragment() {
     }
 
     override fun onSingleTapUp() {
-        requireActivity().startActivity(Intent(requireActivity(), NotificationsActivity::class.java))
+        startActivity(Intent(requireActivity(), NotificationsActivity::class.java))
     }
 
     companion object {
-        private const val TAG = "NotificationsCard"
-
         @JvmStatic
         fun newInstance(): NotificationsCard = NotificationsCard()
     }

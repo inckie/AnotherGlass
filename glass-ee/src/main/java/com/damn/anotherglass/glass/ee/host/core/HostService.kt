@@ -119,9 +119,10 @@ class HostService : LifecycleService(), IService {
                     }
 
                     NotificationsAPI.ID -> {
-                        Log.d(TAG, "Notification data received")
                         val notificationData = data.payload as NotificationData
-                        NotificationController.instance.onNotificationUpdate(notificationData)
+                        Log.d(TAG, "Notification data received: pkg=${notificationData.packageName}, id=${notificationData.id}, action=${notificationData.action}, isOngoing=${notificationData.isOngoing}, mode=${notificationData.deliveryMode}, title='${notificationData.title}', text='${notificationData.text}'")
+                        val isNew = NotificationController.instance.onNotificationUpdate(notificationData)
+                        Log.d(TAG, "onNotificationUpdate returned isNew=$isNew")
                         notificationNotifier.notify(notificationData)
                     }
 

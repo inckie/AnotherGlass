@@ -1,49 +1,56 @@
 package com.damn.glass.shared.notifications
 
+import android.util.Log
 import com.damn.anotherglass.shared.notifications.NotificationData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class NotificationController {
 
-    private val notifications = MutableStateFlow(listOf<NotificationData>())
+    private val _notifications = MutableStateFlow<List<NotificationData>>(emptyList())
+    val notifications: StateFlow<List<NotificationData>> = _notifications.asStateFlow()
 
-    fun getNotifications(): StateFlow<List<NotificationData>> = notifications
-
-    fun onNotificationUpdate(notification: NotificationData) {
-        // We expect that modification will always happen, so make mutable copy in any case
-        val current = notifications.value.toMutableList()
-        when (notification.action) {
-            NotificationData.Action.Posted -> {
-                when (val index = current.indexOfFirst { it.id == notification.id && it.packageName == notification.packageName }) {
-                    -1 -> current += notification
-                    else -> current[index] = notification
+    fun onNotificationUpdate(notification: NotificationData): Boolean {
+        var isNew = false
+        _notifications.update { current ->
+            when (notification.action) {
+                NotificationData.Action.Posted -> {
+                    val index = current.indexOfFirst { it.matches(notification) }
+                    if (index == -1) {
+                        isNew = true
+                        current + notification
+                    } else {
+                        current.toMutableList().apply { set(index, notification) }
+                    }
                 }
-                notifications.value = current
-            }
-
-            NotificationData.Action.Removed -> {
-                if (current.removeAll { it.id == notification.id && it.packageName == notification.packageName }) {
-                    notifications.value = current
-                }
+                NotificationData.Action.Removed -> current.filterNot { it.matches(notification) }
             }
         }
+        Log.d(TAG, "onNotificationUpdate: pkg=${notification.packageName}, id=${notification.id}, action=${notification.action}, isOngoing=${notification.isOngoing}, isNew=$isNew, totalActive=${_notifications.value.size}")
+        return isNew
     }
 
     fun onServiceConnected() {
         // Clear all notifications on service reconnection to avoid stale ones
-        notifications.value = emptyList()
+        _notifications.value = emptyList()
     }
 
     fun dismissNotification(notificationId: NotificationId) {
-        val current = notifications.value.toMutableList()
-        if (current.removeAll { it.id == notificationId.id && it.packageName == notificationId.packageName }) {
-            notifications.value = current
+        _notifications.update { current ->
+            current.filterNot { it.matches(notificationId) }
         }
     }
 
+    private fun NotificationData.matches(target: NotificationData) =
+        id == target.id && packageName == target.packageName
+
+    private fun NotificationData.matches(target: NotificationId) =
+        id == target.id && packageName == target.packageName
+
     companion object {
-        private val TAG = "NotificationController"
+        private const val TAG = "NotificationController"
         @JvmStatic
         val instance: NotificationController by lazy { NotificationController() }
     }

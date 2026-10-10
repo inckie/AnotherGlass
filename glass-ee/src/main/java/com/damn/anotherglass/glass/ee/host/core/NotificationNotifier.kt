@@ -1,32 +1,37 @@
 package com.damn.anotherglass.glass.ee.host.core
 
+import android.util.Log
 import com.damn.anotherglass.shared.notifications.NotificationData
+import com.damn.glass.shared.notifications.NotificationId
 
 class NotificationNotifier(
     private val soundController: SoundController
 ) {
+    private val seenNotifications = mutableSetOf<NotificationId>()
+
     fun notify(notification: NotificationData) {
+        val id = NotificationId(notification)
         synchronized(seenNotifications) {
             if (notification.action == NotificationData.Action.Removed) {
-                seenNotifications.removeAll { it.id == notification.id && it.packageName == notification.packageName }
+                seenNotifications.remove(id)
+                Log.d(TAG, "Removed seen notification: $id")
                 return
             }
-            // only track non-silent notifications
             if (notification.deliveryMode == NotificationData.DeliveryMode.Silent) {
+                Log.d(TAG, "Ignoring silent notification: $id")
                 return
             }
-            if (!seenNotifications.any { it.id == notification.id && it.packageName == notification.packageName }) {
-                seenNotifications.add(SeenNotification(notification.id, notification.packageName))
+            if (seenNotifications.add(id)) {
+                Log.d(TAG, "Playing sound for new notification: $id (ongoing=${notification.isOngoing})")
                 soundController.playSound(SoundController.SoundEffect.NotificationPosted)
                 // todo: turn on the screen if app is running
+            } else {
+                Log.d(TAG, "Notification already seen: $id")
             }
         }
     }
 
-    data class SeenNotification(
-        val id: Int, // probably its system-wide unique ID, but just in case we will also track package name
-        val packageName: String,
-    )
-
-    private val seenNotifications = mutableSetOf<SeenNotification>()
+    companion object {
+        private const val TAG = "NotificationNotifier"
+    }
 }

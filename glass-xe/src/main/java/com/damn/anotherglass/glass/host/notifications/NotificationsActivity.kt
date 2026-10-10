@@ -41,7 +41,7 @@ class NotificationsActivity : Activity() {
         }
 
         customScope.launch{
-            NotificationController.instance.getNotifications().collect {
+            NotificationController.instance.notifications.collect {
                 mNotifications = it.filter { !it.isOngoing }.sortedByDescending { it.postedTime }
                 if(mNotifications.isEmpty())
                     finish()
@@ -95,4 +95,4 @@ class NotificationsActivity : Activity() {
 }
 
 fun NotificationController.getDismissibleNotifications(): List<NotificationData> =
-    this.getNotifications().value.filter { !it.isOngoing }
+    this.notifications.value.filter { !it.isOngoing }

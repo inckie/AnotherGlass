@@ -53,14 +53,14 @@ public class NotificationsCardController extends BroadcastReceiver {
     public void onNotificationUpdate(NotificationData data) {
         // we do not observe NotificationController in XE app,
         // since the service is always running and we can handle events directly
-        NotificationController.getInstance().onNotificationUpdate(data);
+        boolean isNew = NotificationController.getInstance().onNotificationUpdate(data);
         NotificationId id = new NotificationId(data);
         if (data.action == NotificationData.Action.Posted) {
             if (data.isOngoing) {
                 showOngoing(id, data);
             } else {
                 removeOngoing(id); // dismissible notification can replace ongoing with the same id
-                showDismissible(data);
+                showDismissible(data, isNew);
             }
         } else if (data.action == NotificationData.Action.Removed) {
             removeOngoing(id); // don't bother to check if it was ongoing there, just try to remove
@@ -83,7 +83,7 @@ public class NotificationsCardController extends BroadcastReceiver {
         }
     }
 
-    private void showDismissible(NotificationData data) {
+    private void showDismissible(NotificationData data, boolean isNew) {
         if (mStackedCard == null) {
             mStackedCard = new LiveCard(service, STACK_LIVE_CARD_TAG);
         }
@@ -101,7 +101,7 @@ public class NotificationsCardController extends BroadcastReceiver {
 
         if (!mStackedCard.isPublished())
             mStackedCard.publish(LiveCard.PublishMode.REVEAL);
-        else
+        else if (isNew)
             mStackedCard.navigate();
     }
 
