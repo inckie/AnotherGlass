@@ -7,7 +7,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
-import com.applicaster.xray.ui.utility.SharedFileHelper
+import com.damn.xray.ui.utility.SharedFileHelper
 import kotlinx.coroutines.launch
 
 class IImportExportController(

@@ -5,12 +5,12 @@ include ':mobile', ':glass-xe', ':glass-ee', ':shared',  ':glass-shared'
 
 def xray = [
         ':xray-core',
-        ':xray-ui',
-        ':xray-crashreporter'
+        ':xray-android',
+        ':xray-ui'
 ]
 
 include(*xray)
-xray.forEach { project(it).projectDir = new File("externals/x-ray/android/" + it.drop(1)) }
+xray.forEach { project(it).projectDir = new File("xray/" + it.drop(1)) }
 gradle.ext.xray = xray
 
 include ':glass-ee-gestures'

@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.applicaster.xray.core.Logger
+import com.damn.xray.core.Logger
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -61,7 +61,7 @@ object UserFilterRepository {
                         gson.fromJson(it, Filters::class.java)
                     } catch (e: Exception) {
                         context.filterDataStore.edit { it.clear() }
-                        logger.e("UserFilterRepository").exception(e).message("Error parsing filters, data will be dropped")
+                        logger.e(e) { "Error parsing filters, data will be dropped" }
                         return@let null
                     }
                 }

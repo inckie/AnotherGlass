@@ -9,7 +9,7 @@ import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
-import com.applicaster.xray.core.Logger
+import com.damn.xray.core.Logger
 import com.damn.anotherglass.R
 import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.logging.ALog

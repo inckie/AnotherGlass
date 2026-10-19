@@ -10,7 +10,7 @@ import android.os.Build
 import android.os.Bundle
 import android.service.notification.StatusBarNotification
 import androidx.core.graphics.createBitmap
-import com.applicaster.xray.core.Logger
+import com.damn.xray.core.Logger
 import com.damn.anotherglass.logging.ALog
 import com.damn.anotherglass.shared.notifications.NotificationData
 import com.damn.anotherglass.utility.toPngBinaryData

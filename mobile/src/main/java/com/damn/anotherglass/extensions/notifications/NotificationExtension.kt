@@ -1,6 +1,6 @@
 package com.damn.anotherglass.extensions.notifications
 
-import com.applicaster.xray.core.Logger
+import com.damn.xray.core.Logger
 import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.extensions.notifications.filter.FilterAction
 import com.damn.anotherglass.extensions.notifications.filter.NotificationFilterChecker
@@ -28,15 +28,17 @@ class NotificationExtension(private val service: GlassService) {
         CoroutineScope(Dispatchers.IO).launch {
             val action = filterChecker.filter(notificationData) ?: FilterAction.ALLOW_WITH_NOTIFICATION
             if (action == FilterAction.BLOCK) {
-                log.d(TAG)
-                    .putData(logDetails(notificationData))
-                    .message("Notification was blocked by a filter")
+                log.d {
+                    data(logDetails(notificationData))
+                    "Notification was blocked by a filter"
+                }
             } else {
                 notificationData.deliveryMode = deliveryModeFromAction(action)
                 service.send(RPCMessage(NotificationsAPI.ID, notificationData))
-                log.d(TAG)
-                    .putData(logDetails(notificationData))
-                    .message("Notification was forwarded to the service")
+                log.d {
+                    data(logDetails(notificationData))
+                    "Notification was forwarded to the service"
+                }
             }
             // Always add to history, even if blocked, so user can see what was blocked.
             NotificationHistoryRepository.addNotification(notificationData)
@@ -47,14 +49,14 @@ class NotificationExtension(private val service: GlassService) {
         if (!EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().register(this)
         }
-        log.i(TAG).message("Notification extension started")
+        log.i { "Notification extension started" }
     }
 
     fun stop() {
         if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this)
         }
-        log.i(TAG).message("Notification extension stopped")
+        log.i { "Notification extension stopped" }
     }
 
     companion object {

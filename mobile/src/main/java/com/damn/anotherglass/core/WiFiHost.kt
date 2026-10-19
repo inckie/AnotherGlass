@@ -1,7 +1,7 @@
 package com.damn.anotherglass.core
 
 import android.content.Context
-import com.applicaster.xray.core.Logger
+import com.damn.xray.core.Logger
 import com.damn.anotherglass.logging.ALog
 import com.damn.anotherglass.shared.Constants
 import com.damn.anotherglass.shared.rpc.IRPCHost

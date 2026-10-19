@@ -2,9 +2,9 @@ package com.damn.anotherglass;
 
 import android.app.Application;
 
-import com.applicaster.xray.android.sinks.ADBSink;
-import com.applicaster.xray.core.Core;
-import com.applicaster.xray.ui.sinks.InMemoryLogSink;
+import com.damn.xray.android.sinks.ADBSink;
+import com.damn.xray.core.Core;
+import com.damn.xray.ui.sinks.InMemoryLogSink;
 
 public class App extends Application {
 

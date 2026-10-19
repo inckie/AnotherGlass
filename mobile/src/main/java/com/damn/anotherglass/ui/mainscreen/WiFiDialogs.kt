@@ -9,7 +9,7 @@ import android.text.format.Formatter
 import android.widget.ImageView
 import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AlertDialog
-import com.applicaster.xray.android.adapters.ALog
+import com.damn.xray.android.adapters.ALog
 import com.damn.anotherglass.databinding.ViewWifiDialogBinding
 import com.damn.anotherglass.shared.rpc.RPCMessage
 import com.damn.anotherglass.shared.wifi.WiFiAPI

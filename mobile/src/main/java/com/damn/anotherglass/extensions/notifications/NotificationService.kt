@@ -5,7 +5,7 @@ import android.content.Context
 import android.provider.Settings.Secure
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import com.applicaster.xray.core.Logger
+import com.damn.xray.core.Logger
 import com.damn.anotherglass.core.GlassService.Companion.isRunning
 import com.damn.anotherglass.core.Settings
 import com.damn.anotherglass.extensions.notifications.Converter.convert

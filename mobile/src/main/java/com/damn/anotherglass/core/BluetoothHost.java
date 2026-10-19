@@ -11,7 +11,7 @@ import android.content.pm.PackageManager;
 
 import androidx.core.app.ActivityCompat;
 
-import com.applicaster.xray.android.adapters.ALog;
+import com.damn.xray.android.adapters.ALog;
 import com.damn.anotherglass.shared.Constants;
 import com.damn.anotherglass.shared.rpc.IMessageSerializer;
 import com.damn.anotherglass.shared.rpc.IRPCHost;

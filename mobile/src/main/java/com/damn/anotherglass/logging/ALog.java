@@ -1,6 +1,6 @@
 package com.damn.anotherglass.logging;
 
-import com.applicaster.xray.core.Logger;
+import com.damn.xray.core.Logger;
 
 public class ALog {
 

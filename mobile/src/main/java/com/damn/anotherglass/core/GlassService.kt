@@ -14,7 +14,7 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import com.applicaster.xray.core.Logger
+import com.damn.xray.core.Logger
 import com.damn.anotherglass.R
 import com.damn.anotherglass.extensions.GPSExtension
 import com.damn.anotherglass.extensions.media.MediaExtension

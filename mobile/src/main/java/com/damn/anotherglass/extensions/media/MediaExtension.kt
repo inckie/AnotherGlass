@@ -11,7 +11,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import androidx.core.graphics.scale
-import com.applicaster.xray.core.Logger
+import com.damn.xray.core.Logger
 import com.damn.anotherglass.core.GlassService
 import com.damn.anotherglass.extensions.notifications.NotificationService
 import com.damn.anotherglass.logging.ALog
