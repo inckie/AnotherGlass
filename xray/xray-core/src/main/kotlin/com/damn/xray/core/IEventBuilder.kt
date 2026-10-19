@@ -6,6 +6,8 @@ annotation class XRayDsl
 interface IEventBuilder {
     fun build(): Event?
 
+    fun tag(tag: String): IEventBuilder
+
     fun setLevel(level: LogLevel): IEventBuilder
 
     fun setLevel(level: Int): IEventBuilder = setLevel(LogLevel.fromLevel(level))

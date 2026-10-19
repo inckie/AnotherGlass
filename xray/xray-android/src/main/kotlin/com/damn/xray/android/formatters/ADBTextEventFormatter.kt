@@ -7,8 +7,8 @@ class ADBTextEventFormatter : IEventFormatter {
 
     override fun format(event: Event): String {
         val sb = StringBuilder()
-        if (event.subsystem.isNotEmpty()) {
-            sb.append("[${event.subsystem}] ")
+        if (event.loggerName.isNotEmpty()) {
+            sb.append("[${event.loggerName}] ")
         }
         sb.append(event.message)
         if (!event.data.isNullOrEmpty()) {

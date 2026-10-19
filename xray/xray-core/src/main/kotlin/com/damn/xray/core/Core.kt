@@ -5,112 +5,116 @@ import com.damn.xray.core.routing.Mapper
 
 class Core {
 
-    // LinkedHashMap retains key order
-    private val sinks = LinkedHashMap<String, ISink>()
+    private val writeLock = Any()
 
-    private val mapper = Mapper(sinks)
+    // LinkedHashMap retains key order
+    private val internalSinks = LinkedHashMap<String, ISink>()
+
+    @Volatile
+    private var sinksSnapshot: Map<String, ISink> = emptyMap()
+
+    private val mapper = Mapper(internalSinks)
+
+    val rootLogger: Logger = Logger("", null, this)
 
     // are any logging classes allowed to throw exceptions to client
     var neverThrow: Boolean = false
 
+    // region Loggers
+
+    fun getLogger(): Logger = rootLogger
+
+    fun getLogger(name: String): Logger = if (name.isEmpty()) rootLogger else rootLogger.getChild(name)
+
+    // endregion
+
     // region Sinks management
 
     fun addSink(name: String, sink: ISink): Core {
-        synchronized(sinks) {
-            if (sinks.put(name, sink) != null) {
+        synchronized(writeLock) {
+            if (internalSinks.put(name, sink) != null) {
                 if (!neverThrow) {
                     throw IllegalStateException("Sink with name '$name' is already registered!")
                 }
             }
+            sinksSnapshot = LinkedHashMap(internalSinks)
         }
         return this
     }
 
-    fun getSink(name: String): ISink? {
-        synchronized(sinks) {
-            return sinks[name]
-        }
-    }
+    fun getSink(name: String): ISink? = sinksSnapshot[name]
 
     fun removeSink(sink: ISink) {
-        synchronized(sinks) {
-            sinks.values.remove(sink)
+        synchronized(writeLock) {
+            internalSinks.values.remove(sink)
+            sinksSnapshot = LinkedHashMap(internalSinks)
         }
     }
 
     fun removeSink(sinkName: String) {
-        synchronized(sinks) {
-            sinks.remove(sinkName)
+        synchronized(writeLock) {
+            internalSinks.remove(sinkName)
+            sinksSnapshot = LinkedHashMap(internalSinks)
         }
     }
+
+    fun resolveSinks(
+        hierarchyPaths: List<String>,
+        loggerName: String,
+        tag: String,
+        level: LogLevel
+    ): List<ISink> = mapper.resolveSinks(sinksSnapshot, hierarchyPaths, loggerName, tag, level)
+
+    fun resolveSinks(
+        loggerName: String,
+        tag: String,
+        level: LogLevel
+    ): List<ISink> = mapper.resolveSinks(sinksSnapshot, Mapper.computeHierarchyPaths(loggerName), loggerName, tag, level)
+
+    fun getMapping(event: Event): ArrayList<ISink> =
+        ArrayList(resolveSinks(event.loggerName, event.tag, event.level))
 
     // early-exit filter
-    fun hasSinks(loggerName: String, tag: String, level: LogLevel): Boolean {
-        synchronized(mapper) {
-            return mapper.hasSinks(loggerName, tag, level)
-        }
-    }
+    fun hasSinks(loggerName: String, tag: String, level: LogLevel): Boolean =
+        resolveSinks(loggerName, tag, level).isNotEmpty()
 
-    fun hasSinks(loggerName: String, tag: String, level: Int): Boolean {
-        synchronized(mapper) {
-            return mapper.hasSinks(loggerName, tag, level)
-        }
-    }
-
-    fun getMapping(event: Event): ArrayList<ISink> {
-        val result = ArrayList<ISink>()
-        val enabledSinks: Set<String> = synchronized(mapper) {
-            mapper.getMapping(event.subsystem, event.category, event.level)
-        }
-        synchronized(sinks) {
-            // keeping the sink order
-            for ((key, value) in sinks) {
-                if (enabledSinks.contains(key)) {
-                    result.add(value)
-                }
-            }
-        }
-        return result
-    }
+    fun hasSinks(loggerName: String, tag: String, level: Int): Boolean =
+        hasSinks(loggerName, tag, LogLevel.fromLevel(level))
 
     fun setFilter(
         sinkName: String,
         loggerName: String,
         filter: ISinkFilter?
     ): Core {
-        // do not care if the sink already/still exists
-        synchronized(mapper) {
-            mapper.setFilter(loggerName, sinkName, filter)
-        }
+        mapper.setFilter(loggerName, sinkName, filter)
         return this
     }
 
     // endregion
 
-    fun submit(event: Event) {
-        val mapping = getMapping(event)
-        if (mapping.isNotEmpty()) {
-            for (sink in mapping) {
-                if (neverThrow) {
-                    try {
-                        sink.log(event)
-                    } catch (_: Throwable) {
-                        // Ignored when neverThrow is true
-                    }
-                } else {
+    @PublishedApi
+    internal fun dispatch(event: Event, targetSinks: List<ISink>) {
+        for (sink in targetSinks) {
+            if (neverThrow) {
+                try {
                     sink.log(event)
+                } catch (_: Throwable) {
+                    // Ignored when neverThrow is true
                 }
+            } else {
+                sink.log(event)
             }
         }
     }
 
+    fun submit(event: Event) = dispatch(event, resolveSinks(event.loggerName, event.tag, event.level))
+
     fun reset() {
-        synchronized(sinks) {
-            sinks.clear()
+        synchronized(writeLock) {
+            internalSinks.clear()
+            sinksSnapshot = emptyMap()
         }
-        synchronized(mapper) {
-            mapper.reset()
-        }
+        mapper.reset()
     }
 
     companion object {

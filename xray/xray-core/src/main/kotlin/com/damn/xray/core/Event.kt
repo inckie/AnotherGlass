@@ -1,8 +1,8 @@
 package com.damn.xray.core
 
 data class Event @JvmOverloads constructor(
-    val category: String,
-    val subsystem: String,
+    val loggerName: String,
+    val tag: String,
     val timestamp: Long = System.currentTimeMillis(),
     val level: LogLevel = LogLevel.DEBUG,
     val message: String = "",
@@ -14,8 +14,8 @@ data class Event @JvmOverloads constructor(
         get() = level.level
 
     constructor(
-        category: String,
-        subsystem: String,
+        loggerName: String,
+        tag: String,
         timestamp: Long,
         level: Int,
         message: String,
@@ -23,8 +23,8 @@ data class Event @JvmOverloads constructor(
         context: Map<String, Any?>?,
         exception: Throwable?,
     ) : this(
-        category = category,
-        subsystem = subsystem,
+        loggerName = loggerName,
+        tag = tag,
         timestamp = timestamp,
         level = LogLevel.fromLevel(level),
         message = message,

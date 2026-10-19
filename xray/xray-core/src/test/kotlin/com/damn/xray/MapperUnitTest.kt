@@ -135,8 +135,8 @@ class MapperUnitTest {
         val testSink1 = TestSink("Error")
 
         val testEvent = Event(
-            category = "tag",
-            subsystem = "subsystem",
+            loggerName = "subsystem",
+            tag = "tag",
             timestamp = 0L,
             level = LogLevel.DEBUG,
             message = "message"

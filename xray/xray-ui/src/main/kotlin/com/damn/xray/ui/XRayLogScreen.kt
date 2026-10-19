@@ -176,8 +176,8 @@ class XRayLogController(
                 if (i % 256 == 0 && !isActive) return@launch
                 val event = eventsSnapshot[i]
                 if (event.level.level >= level.level &&
-                    (subsystem.isBlank() || event.subsystem.contains(subsystem, ignoreCase = true)) &&
-                    (category.isBlank() || event.category.contains(category, ignoreCase = true))
+                    (subsystem.isBlank() || event.loggerName.contains(subsystem, ignoreCase = true)) &&
+                    (category.isBlank() || event.tag.contains(category, ignoreCase = true))
                 ) {
                     filtered.add(event)
                 }
@@ -455,11 +455,11 @@ class XRayLogController(
     private fun formatEventForCopy(event: Event): String {
         val sb = StringBuilder()
         sb.append("${formatTimestamp(event.timestamp)} [${event.level.name}] ")
-        if (event.subsystem.isNotEmpty()) {
-            sb.append("[${event.subsystem}] ")
+        if (event.loggerName.isNotEmpty()) {
+            sb.append("[${event.loggerName}] ")
         }
-        if (event.category.isNotEmpty()) {
-            sb.append("${event.category}: ")
+        if (event.tag.isNotEmpty()) {
+            sb.append("${event.tag}: ")
         }
         sb.append(event.message).append("\n")
         if (!event.data.isNullOrEmpty()) {
@@ -481,8 +481,8 @@ class XRayLogController(
     ): Boolean {
         if (query.isEmpty()) return false
         if (SearchField.MESSAGE in fields && event.message.contains(query, ignoreCase = true)) return true
-        if (SearchField.CATEGORY in fields && event.category.contains(query, ignoreCase = true)) return true
-        if (SearchField.SUBSYSTEM in fields && event.subsystem.contains(query, ignoreCase = true)) return true
+        if (SearchField.CATEGORY in fields && event.tag.contains(query, ignoreCase = true)) return true
+        if (SearchField.SUBSYSTEM in fields && event.loggerName.contains(query, ignoreCase = true)) return true
         if (SearchField.CONTEXT in fields && event.context?.toString()?.contains(query, ignoreCase = true) == true) return true
         if (SearchField.DATA in fields && event.data?.toString()?.contains(query, ignoreCase = true) == true) return true
         return false
@@ -966,18 +966,18 @@ private fun EventItemRow(
                         fontWeight = FontWeight.Bold,
                         color = getLevelColor(event.level),
                     )
-                    if (event.subsystem.isNotEmpty()) {
+                    if (event.loggerName.isNotEmpty()) {
                         Text(
-                            text = "[${event.subsystem}]",
+                            text = "[${event.loggerName}]",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
-                    if (event.category.isNotEmpty()) {
+                    if (event.tag.isNotEmpty()) {
                         Text(
-                            text = event.category,
+                            text = event.tag,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -1079,9 +1079,9 @@ private fun XRayLogScreenPreview() {
         XRayLogScreen(
             sinkName = "preview_sink",
             sink = InMemoryLogSink().apply {
-                log(Event(category = "Network", subsystem = "HTTP", message = "Request completed 200 OK", level = LogLevel.INFO))
-                log(Event(category = "Auth", subsystem = "Token", message = "Token refreshed", level = LogLevel.DEBUG))
-                log(Event(category = "Database", subsystem = "Room", message = "Failed to query table", level = LogLevel.ERROR, exception = RuntimeException("Disk full")))
+                log(Event(loggerName = "HTTP", tag = "Network", message = "Request completed 200 OK", level = LogLevel.INFO))
+                log(Event(loggerName = "Token", tag = "Auth", message = "Token refreshed", level = LogLevel.DEBUG))
+                log(Event(loggerName = "Room", tag = "Database", message = "Failed to query table", level = LogLevel.ERROR, exception = RuntimeException("Disk full")))
             },
         )
     }

@@ -21,7 +21,7 @@ class ADBSink(
         if (event.exception != null) {
             text += "\n" + Log.getStackTraceString(event.exception)
         }
-        val tag = event.category.ifEmpty { "XRay" }
+        val tag = event.tag.ifEmpty { "XRay" }
         Log.println(priority, tag, text)
     }
 }

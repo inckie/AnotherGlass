@@ -3,6 +3,7 @@ package com.damn.xray
 import com.damn.xray.core.Core
 import com.damn.xray.core.LogLevel
 import com.damn.xray.core.Logger
+import com.damn.xray.core.logger
 import com.damn.xray.core.routing.DefaultSinkFilter
 import com.damn.xray.core.routing.DisabledFilter
 import com.damn.xray.core.routing.and
@@ -36,8 +37,8 @@ class LoggerDslUnitTest {
         val event = sink.events[0]
         assertEquals("simple debug message", event.message)
         assertEquals(LogLevel.DEBUG, event.level)
-        assertEquals("TestLogger", event.subsystem)
-        assertEquals("TestLogger", event.category) // defaultTag for "TestLogger"
+        assertEquals("TestLogger", event.loggerName)
+        assertEquals("TestLogger", event.tag) // defaultTag for "TestLogger"
         assertNull(event.exception)
     }
 
@@ -70,7 +71,7 @@ class LoggerDslUnitTest {
         assertTrue(sink.isEmpty())
         assertEquals(1, sink.events.size)
         val event = sink.events[0]
-        assertEquals("CUSTOM_TAG", event.category)
+        assertEquals("CUSTOM_TAG", event.tag)
         assertEquals("data message", event.message)
         assertNotNull(event.data)
         assertEquals("val1", event.data?.get("key1"))
@@ -93,7 +94,7 @@ class LoggerDslUnitTest {
         assertTrue(sink.isEmpty())
         assertEquals(1, sink.events.size)
         val event = sink.events[0]
-        assertEquals("CUSTOM_TAG", event.category)
+        assertEquals("CUSTOM_TAG", event.tag)
         assertEquals("explicit message", event.message)
         assertSame(exc, event.exception)
         assertNotNull(event.data)
@@ -125,9 +126,72 @@ class LoggerDslUnitTest {
         assertTrue(sink.isEmpty())
         assertEquals(1, sink.events.size)
         val event = sink.events[0]
-        assertEquals("INFO_TAG", event.category)
+        assertEquals("INFO_TAG", event.tag)
         assertEquals("direct info", event.message)
         assertEquals(LogLevel.INFO, event.level)
+    }
+
+    @Test
+    fun testOneArgAndTwoArgDirectLogging() {
+        val log = Logger.get("TestLogger")
+        sink.addExpectedMessage("one arg message")
+        log.d("one arg message")
+
+        assertEquals(1, sink.events.size)
+        assertEquals("one arg message", sink.events[0].message)
+        assertEquals(LogLevel.DEBUG, sink.events[0].level)
+        assertEquals("TestLogger", sink.events[0].tag)
+
+        val exc = RuntimeException("crash")
+        sink.addExpectedMessage("error message")
+        log.e("error message", exc)
+
+        assertEquals(2, sink.events.size)
+        assertEquals("error message", sink.events[1].message)
+        assertEquals(LogLevel.ERROR, sink.events[1].level)
+        assertSame(exc, sink.events[1].exception)
+    }
+
+    class SampleService {
+        val delegatedLog by logger()
+    }
+
+    @Test
+    fun testPropertyDelegateLogger() {
+        val service = SampleService()
+        assertEquals("SampleService", service.delegatedLog.name)
+        sink.addExpectedMessage("service log")
+        service.delegatedLog.i("service log")
+
+        assertEquals(1, sink.events.size)
+        assertEquals("SampleService", sink.events[0].loggerName)
+        assertEquals("service log", sink.events[0].message)
+    }
+
+    @Test
+    fun testIsolatedCoreInstance() {
+        val customCore = Core()
+        val customSink = TestSink("CustomSink")
+        customCore.addSink("custom_sink", customSink)
+
+        val customLog = customCore.getLogger("Isolated")
+        customSink.addExpectedMessage("custom message")
+        customLog.i("custom message")
+
+        // Should be received by customSink
+        assertEquals(1, customSink.events.size)
+        assertEquals("custom message", customSink.events[0].message)
+        assertEquals("Isolated", customSink.events[0].loggerName)
+
+        // Global sink should NOT have received this message
+        assertTrue(sink.events.isEmpty())
+
+        // And logging to global logger does NOT go to customSink
+        val globalLog = Logger.get("GlobalLogger")
+        sink.addExpectedMessage("global message")
+        globalLog.i("global message")
+        assertEquals(1, sink.events.size)
+        assertEquals(1, customSink.events.size)
     }
 
     @Test

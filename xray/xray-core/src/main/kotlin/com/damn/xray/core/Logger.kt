@@ -4,13 +4,19 @@ import com.damn.xray.core.formatting.message.BasicMessageFormatter
 import com.damn.xray.core.formatting.message.IMessageFormatter
 import com.damn.xray.core.utility.Stack
 
-class Logger private constructor(
+class Logger internal constructor(
     val name: String,
     private val parent: Logger?,
+    val core: Core,
 ) {
+    internal constructor(name: String, parent: Logger?) : this(name, parent, Core.get())
+
     private val children = HashMap<String, Logger>()
     private var context = LogContext()
     private var messageFormatter: IMessageFormatter? = if (parent == null) BasicMessageFormatter() else null
+
+    val hierarchyPaths: List<String> =
+        if (parent == null) listOf("") else listOf(name) + parent.hierarchyPaths
 
     val defaultTag: String = if (name.isEmpty()) "" else name.substringAfterLast(NameSeparator)
 
@@ -28,99 +34,119 @@ class Logger private constructor(
         return "Undefined"
     }
 
-    private fun makeBuilder(tag: String, level: LogLevel): IEventBuilder {
-        if (!Core.get().hasSinks(name, tag, level)) {
+    // region Fluent Builders (Java & Kotlin)
+
+    fun builder(level: LogLevel, tag: String = ""): IEventBuilder {
+        val resolvedTag = resolveTag(tag)
+        val sinks = core.resolveSinks(hierarchyPaths, name, resolvedTag, level)
+        if (sinks.isEmpty()) {
             return NullEventBuilder.INSTANCE
         }
         return EventBuilder(
-            category = tag,
-            subsystem = name,
+            loggerName = name,
+            tag = resolvedTag,
             context = getFullContext(),
             messageFormatter = resolveMessageFormatter(),
             autoSubmit = true,
+            core = core,
+            hierarchyPaths = hierarchyPaths,
+            targetSinks = sinks,
         ).apply {
             setLevel(level)
         }
     }
 
-    // region Fluent Builders (Java & Kotlin)
-
-    fun v(): IEventBuilder = v(resolveTag(""))
-    fun v(tag: String): IEventBuilder = makeBuilder(tag, LogLevel.VERBOSE)
-
-    fun d(): IEventBuilder = d(resolveTag(""))
-    fun d(tag: String): IEventBuilder = makeBuilder(tag, LogLevel.DEBUG)
-
-    fun i(): IEventBuilder = i(resolveTag(""))
-    fun i(tag: String): IEventBuilder = makeBuilder(tag, LogLevel.INFO)
-
-    fun w(): IEventBuilder = w(resolveTag(""))
-    fun w(tag: String): IEventBuilder = makeBuilder(tag, LogLevel.WARNING)
-
-    fun e(): IEventBuilder = e(resolveTag(""))
-    fun e(tag: String): IEventBuilder = makeBuilder(tag, LogLevel.ERROR)
+    fun v(): IEventBuilder = builder(LogLevel.VERBOSE)
+    fun d(): IEventBuilder = builder(LogLevel.DEBUG)
+    fun i(): IEventBuilder = builder(LogLevel.INFO)
+    fun w(): IEventBuilder = builder(LogLevel.WARNING)
+    fun e(): IEventBuilder = builder(LogLevel.ERROR)
 
     // endregion
 
     // region Direct Convenience Methods
 
-    @JvmOverloads
-    fun v(tag: String, message: String, exception: Throwable? = null) {
+    private fun logDirect(level: LogLevel, tag: String, message: String, exception: Throwable?) {
         val resolvedTag = resolveTag(tag)
-        if (!Core.get().hasSinks(name, resolvedTag, LogLevel.VERBOSE)) return
-        createDslBuilder(resolvedTag, LogLevel.VERBOSE, exception).apply {
+        val sinks = core.resolveSinks(hierarchyPaths, name, resolvedTag, level)
+        if (sinks.isEmpty()) return
+        createDslBuilder(resolvedTag, level, exception, sinks).apply {
             this.message = message
             submit()
         }
     }
 
     @JvmOverloads
-    fun d(tag: String, message: String, exception: Throwable? = null) {
-        val resolvedTag = resolveTag(tag)
-        if (!Core.get().hasSinks(name, resolvedTag, LogLevel.DEBUG)) return
-        createDslBuilder(resolvedTag, LogLevel.DEBUG, exception).apply {
-            this.message = message
-            submit()
-        }
-    }
+    fun v(message: String, exception: Throwable? = null) =
+        logDirect(LogLevel.VERBOSE, "", message, exception)
+
+    fun v(tag: String, message: String) =
+        logDirect(LogLevel.VERBOSE, tag, message, null)
+
+    fun v(tag: String, message: String, exception: Throwable?) =
+        logDirect(LogLevel.VERBOSE, tag, message, exception)
 
     @JvmOverloads
-    fun i(tag: String, message: String, exception: Throwable? = null) {
-        val resolvedTag = resolveTag(tag)
-        if (!Core.get().hasSinks(name, resolvedTag, LogLevel.INFO)) return
-        createDslBuilder(resolvedTag, LogLevel.INFO, exception).apply {
-            this.message = message
-            submit()
-        }
-    }
+    fun d(message: String, exception: Throwable? = null) =
+        logDirect(LogLevel.DEBUG, "", message, exception)
+
+    fun d(tag: String, message: String) =
+        logDirect(LogLevel.DEBUG, tag, message, null)
+
+    fun d(tag: String, message: String, exception: Throwable?) =
+        logDirect(LogLevel.DEBUG, tag, message, exception)
 
     @JvmOverloads
-    fun w(tag: String, message: String, exception: Throwable? = null) {
-        val resolvedTag = resolveTag(tag)
-        if (!Core.get().hasSinks(name, resolvedTag, LogLevel.WARNING)) return
-        createDslBuilder(resolvedTag, LogLevel.WARNING, exception).apply {
-            this.message = message
-            submit()
-        }
-    }
+    fun i(message: String, exception: Throwable? = null) =
+        logDirect(LogLevel.INFO, "", message, exception)
+
+    fun i(tag: String, message: String) =
+        logDirect(LogLevel.INFO, tag, message, null)
+
+    fun i(tag: String, message: String, exception: Throwable?) =
+        logDirect(LogLevel.INFO, tag, message, exception)
 
     @JvmOverloads
-    fun e(tag: String, message: String, exception: Throwable? = null) {
-        val resolvedTag = resolveTag(tag)
-        if (!Core.get().hasSinks(name, resolvedTag, LogLevel.ERROR)) return
-        createDslBuilder(resolvedTag, LogLevel.ERROR, exception).apply {
-            this.message = message
-            submit()
-        }
-    }
+    fun w(message: String, exception: Throwable? = null) =
+        logDirect(LogLevel.WARNING, "", message, exception)
+
+    fun w(tag: String, message: String) =
+        logDirect(LogLevel.WARNING, tag, message, null)
+
+    fun w(tag: String, message: String, exception: Throwable?) =
+        logDirect(LogLevel.WARNING, tag, message, exception)
+
+    @JvmOverloads
+    fun e(message: String, exception: Throwable? = null) =
+        logDirect(LogLevel.ERROR, "", message, exception)
+
+    fun e(tag: String, message: String) =
+        logDirect(LogLevel.ERROR, tag, message, null)
+
+    fun e(tag: String, message: String, exception: Throwable?) =
+        logDirect(LogLevel.ERROR, tag, message, exception)
 
     // endregion
 
     // region Kotlin Inline DSL Methods
 
     @PublishedApi
-    internal fun createDslBuilder(tag: String, level: LogLevel, exception: Throwable? = null): EventBuilder =
-        EventBuilder(tag, name, getFullContext(), resolveMessageFormatter(), autoSubmit = false).apply {
+    internal fun createDslBuilder(
+        tag: String,
+        level: LogLevel,
+        exception: Throwable? = null,
+        targetSinks: List<ISink>? = null,
+    ): EventBuilder =
+        EventBuilder(
+            loggerName = name,
+            tag = tag,
+            context = getFullContext(),
+            messageFormatter = resolveMessageFormatter(),
+            autoSubmit = false,
+            core = core,
+            hierarchyPaths = hierarchyPaths,
+            targetSinks = targetSinks,
+        ).apply {
             this.level = level
             this.exception = exception
         }
@@ -132,8 +158,9 @@ class Logger private constructor(
         block: EventBuilder.() -> Any?,
     ) {
         val resolvedTag = resolveTag(tag)
-        if (!Core.get().hasSinks(name, resolvedTag, level)) return
-        val builder = createDslBuilder(resolvedTag, level, exception)
+        val sinks = core.resolveSinks(hierarchyPaths, name, resolvedTag, level)
+        if (sinks.isEmpty()) return
+        val builder = createDslBuilder(resolvedTag, level, exception, sinks)
         val result = builder.block()
         if (result is CharSequence) {
             builder.message = result.toString()
@@ -228,7 +255,7 @@ class Logger private constructor(
             return existing
         }
         val fullName = if (name.isEmpty()) childName else "$name$NameSeparator$childName"
-        val newLogger = Logger(fullName, this)
+        val newLogger = Logger(fullName, this, core)
         children[childName] = newLogger
         return newLogger
     }
@@ -238,12 +265,23 @@ class Logger private constructor(
     companion object {
         const val NameSeparator: Char = '/'
 
-        private val sRoot = Logger("", null)
+        @JvmStatic
+        fun get(): Logger = Core.get().getLogger()
 
         @JvmStatic
-        fun get(): Logger = sRoot
+        fun get(name: String): Logger = Core.get().getLogger(name)
 
         @JvmStatic
-        fun get(name: String): Logger = sRoot.getChild(name)
+        fun get(name: String, core: Core): Logger = core.getLogger(name)
+
+        inline fun <reified T : Any> get(core: Core = Core.get()): Logger =
+            core.getLogger(T::class.java.simpleName)
     }
+}
+
+inline fun <reified T : Any> T.logger(
+    name: String = "",
+    core: Core = Core.get(),
+): Lazy<Logger> = lazy(LazyThreadSafetyMode.PUBLICATION) {
+    core.getLogger(name.ifEmpty { T::class.java.simpleName })
 }

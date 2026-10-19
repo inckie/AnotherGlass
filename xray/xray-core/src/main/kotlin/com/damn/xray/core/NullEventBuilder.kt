@@ -4,6 +4,8 @@ class NullEventBuilder : IEventBuilder {
 
     override fun build(): Event? = null
 
+    override fun tag(tag: String): IEventBuilder = this
+
     override fun setLevel(level: LogLevel): IEventBuilder = this
 
     override fun setLevel(level: Int): IEventBuilder = this

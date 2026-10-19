@@ -1,15 +1,19 @@
 package com.damn.xray.core
 
 import com.damn.xray.core.formatting.message.IMessageFormatter
+import com.damn.xray.core.routing.Mapper
 import com.damn.xray.core.utility.Stack
 
 @XRayDsl
 class EventBuilder @JvmOverloads constructor(
-    val category: String,
-    val subsystem: String,
+    val loggerName: String,
+    var tag: String,
     context: Map<String, Any?>,
     private val messageFormatter: IMessageFormatter,
     @PublishedApi internal var autoSubmit: Boolean = true,
+    private val core: Core = Core.get(),
+    private val hierarchyPaths: List<String> = Mapper.computeHierarchyPaths(loggerName),
+    private val targetSinks: List<ISink>? = null,
 ) : IEventBuilder {
 
     val timestamp: Long = System.currentTimeMillis()
@@ -19,12 +23,18 @@ class EventBuilder @JvmOverloads constructor(
     val data: MutableMap<String, Any?> = LinkedHashMap()
     val context: MutableMap<String, Any?> = LinkedHashMap(context)
 
+    private val initialTag: String = tag
     private var expandData: Boolean = false
     private var submitted: Boolean = false
 
+    override fun tag(tag: String): EventBuilder {
+        this.tag = tag
+        return this
+    }
+
     override fun build(): Event = Event(
-        category = category,
-        subsystem = subsystem,
+        loggerName = loggerName,
+        tag = tag,
         timestamp = timestamp,
         level = level,
         message = message,
@@ -96,7 +106,14 @@ class EventBuilder @JvmOverloads constructor(
     internal fun submit() {
         if (!submitted) {
             submitted = true
-            Core.get().submit(build())
+            val sinks = if (targetSinks != null && tag == initialTag) {
+                targetSinks
+            } else {
+                core.resolveSinks(hierarchyPaths, loggerName, tag, level)
+            }
+            if (sinks.isNotEmpty()) {
+                core.dispatch(build(), sinks)
+            }
         }
     }
 }

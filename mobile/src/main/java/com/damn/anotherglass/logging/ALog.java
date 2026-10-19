@@ -11,42 +11,42 @@ public class ALog {
     }
 
     public void v(String tag, String message) {
-        log.v(tag).message(message);
+        log.v(tag, message);
     }
 
     public void v(String tag, String message, Throwable throwable) {
-        log.v(tag).exception(throwable).message(message);
+        log.v(tag, message, throwable);
     }
 
     public void d(String tag, String message) {
-        log.d(tag).message(message);
+        log.d(tag, message);
     }
 
     public void d(String tag, String message, Throwable throwable) {
-        log.d(tag).exception(throwable).message(message);
+        log.d(tag, message, throwable);
     }
 
     public void i(String tag, String message) {
-        log.i(tag).message(message);
+        log.i(tag, message);
     }
 
     public void i(String tag, String message, Throwable throwable) {
-        log.i(tag).exception(throwable).message(message);
+        log.i(tag, message, throwable);
     }
 
     public void w(String tag, String message) {
-        log.w(tag).message(message);
+        log.w(tag, message);
     }
 
     public void w(String tag, String message, Throwable throwable) {
-        log.w(tag).exception(throwable).message(message);
+        log.w(tag, message, throwable);
     }
 
     public void e(String tag, String message) {
-        log.e(tag).message(message);
+        log.e(tag, message);
     }
 
     public void e(String tag, String message, Throwable throwable) {
-        log.e(tag).exception(throwable).message(message);
+        log.e(tag, message, throwable);
     }
 }

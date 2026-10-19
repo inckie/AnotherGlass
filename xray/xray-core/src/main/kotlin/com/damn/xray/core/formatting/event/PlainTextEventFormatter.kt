@@ -15,8 +15,8 @@ class PlainTextEventFormatter : IEventFormatter {
         val sb = StringBuilder()
             .append(dateStr).append(" ")
             .append(event.level.name).append(" ")
-            .append(event.category).append(" ")
-            .append(event.subsystem).append(" ")
+            .append(event.tag).append(" ")
+            .append(event.loggerName).append(" ")
             .append(event.message)
             .append("\n")
 

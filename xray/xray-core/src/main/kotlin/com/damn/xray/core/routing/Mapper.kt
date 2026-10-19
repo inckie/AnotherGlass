@@ -7,52 +7,68 @@ import com.damn.xray.core.Logger
 /*
  Maps loggers to sinks using rules.
 */
-class Mapper(private val sinks: Map<String, ISink?>) {
+class Mapper(private val sinks: Map<String, ISink?> = emptyMap()) {
 
-    // map Logger subsystem -> (sink identifier -> sink filter)
-    private val loggerMapping: MutableMap<String, MutableMap<String, ISinkFilter>> = mutableMapOf()
+    // map Logger hierarchy path -> (sink identifier -> sink filter)
+    @Volatile
+    private var rules: Map<String, Map<String, ISinkFilter>> = emptyMap()
 
     fun setFilter(
         loggerName: String,
         sinkName: String,
         filter: ISinkFilter?
     ) {
-        synchronized(loggerMapping) {
-            val mappedSinks = loggerMapping[loggerName]
-            if (mappedSinks != null) {
-                if (filter != null) {
-                    mappedSinks[sinkName] = filter
-                } else {
-                    mappedSinks.remove(sinkName)
-                    if (mappedSinks.isEmpty()) {
-                        loggerMapping.remove(loggerName)
+        synchronized(this) {
+            val newRules = HashMap<String, MutableMap<String, ISinkFilter>>()
+            for ((k, v) in rules) {
+                newRules[k] = HashMap(v)
+            }
+            if (filter != null) {
+                val sinkMap = newRules.getOrPut(loggerName) { HashMap() }
+                sinkMap[sinkName] = filter
+            } else {
+                val sinkMap = newRules[loggerName]
+                if (sinkMap != null) {
+                    sinkMap.remove(sinkName)
+                    if (sinkMap.isEmpty()) {
+                        newRules.remove(loggerName)
                     }
                 }
-                return
             }
-            if (filter == null) {
-                return
-            }
-            loggerMapping[loggerName] = mutableMapOf(sinkName to filter)
+            rules = newRules.mapValues { it.value.toMap() }.toMap()
         }
     }
 
-    private fun getFilterForSink(sinkName: String, logger: String): ISinkFilter? {
-        // Check exact match
-        loggerMapping[logger]?.get(sinkName)?.let { return it }
-        if (logger.isEmpty()) return null
-
-        // Look for any parent mapping
-        var current = logger
-        var i = current.lastIndexOf(Logger.NameSeparator)
-        while (i > 0) {
-            current = current.substring(0, i)
-            loggerMapping[current]?.get(sinkName)?.let { return it }
-            i = current.lastIndexOf(Logger.NameSeparator)
+    private fun getFilterForSink(
+        currentRules: Map<String, Map<String, ISinkFilter>>,
+        sinkName: String,
+        hierarchyPaths: List<String>,
+    ): ISinkFilter? {
+        for (path in hierarchyPaths) {
+            currentRules[path]?.get(sinkName)?.let { return it }
         }
+        return null
+    }
 
-        // Fall back to root logger mapping
-        return loggerMapping[""]?.get(sinkName)
+    fun resolveSinks(
+        sinksSnapshot: Map<String, ISink?>,
+        hierarchyPaths: List<String>,
+        loggerName: String,
+        tag: String,
+        level: LogLevel,
+    ): List<ISink> {
+        if (sinksSnapshot.isEmpty()) return emptyList()
+        val currentRules = rules
+        var result: ArrayList<ISink>? = null
+        for ((sinkName, sink) in sinksSnapshot) {
+            if (sink == null) continue
+            val filter = getFilterForSink(currentRules, sinkName, hierarchyPaths)
+            if (filter == null || filter.accept(loggerName, tag, level)) {
+                if (result == null) result = ArrayList(sinksSnapshot.size)
+                result.add(sink)
+            }
+        }
+        return result ?: emptyList()
     }
 
     fun getMapping(
@@ -60,16 +76,14 @@ class Mapper(private val sinks: Map<String, ISink?>) {
         tag: String,
         level: LogLevel
     ): Set<String> {
-        val sinkKeys = synchronized(sinks) {
-            ArrayList(sinks.keys)
-        }
+        val currentRules = rules
+        val paths = computeHierarchyPaths(logger)
+        val sinkKeys = synchronized(sinks) { ArrayList(sinks.keys) }
         val result = HashSet<String>()
-        synchronized(loggerMapping) {
-            for (sinkName in sinkKeys) {
-                val filter = getFilterForSink(sinkName, logger)
-                if (filter == null || filter.accept(logger, tag, level)) {
-                    result.add(sinkName)
-                }
+        for (sinkName in sinkKeys) {
+            val filter = getFilterForSink(currentRules, sinkName, paths)
+            if (filter == null || filter.accept(logger, tag, level)) {
+                result.add(sinkName)
             }
         }
         return result
@@ -86,15 +100,13 @@ class Mapper(private val sinks: Map<String, ISink?>) {
         tag: String,
         level: LogLevel
     ): Boolean {
-        val sinkKeys = synchronized(sinks) {
-            ArrayList(sinks.keys)
-        }
-        synchronized(loggerMapping) {
-            for (sinkName in sinkKeys) {
-                val filter = getFilterForSink(sinkName, loggerName)
-                if (filter == null || filter.accept(loggerName, tag, level)) {
-                    return true
-                }
+        val currentRules = rules
+        val paths = computeHierarchyPaths(loggerName)
+        val sinkKeys = synchronized(sinks) { ArrayList(sinks.keys) }
+        for (sinkName in sinkKeys) {
+            val filter = getFilterForSink(currentRules, sinkName, paths)
+            if (filter == null || filter.accept(loggerName, tag, level)) {
+                return true
             }
         }
         return false
@@ -107,8 +119,25 @@ class Mapper(private val sinks: Map<String, ISink?>) {
     ): Boolean = hasSinks(loggerName, tag, LogLevel.fromLevel(level))
 
     fun reset() {
-        synchronized(loggerMapping) {
-            loggerMapping.clear()
+        synchronized(this) {
+            rules = emptyMap()
+        }
+    }
+
+    companion object {
+        @JvmStatic
+        fun computeHierarchyPaths(loggerName: String): List<String> {
+            if (loggerName.isEmpty()) return listOf("")
+            val paths = ArrayList<String>()
+            var current = loggerName
+            while (true) {
+                paths.add(current)
+                val idx = current.lastIndexOf(Logger.NameSeparator)
+                if (idx <= 0) break
+                current = current.substring(0, idx)
+            }
+            paths.add("")
+            return paths
         }
     }
 }
